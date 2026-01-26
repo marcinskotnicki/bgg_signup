@@ -1,0 +1,36 @@
+# SQLite database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Database backups
+backup/
+backups/
+
+# Log files
+*.log
+install_log.txt
+logs/
+
+# Uploaded files
+uploads/
+
+# Configuration files with sensitive data
+config_local.php
+
+# System files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Temporary files
+tmp/
+temp/
+cache/*.cache
