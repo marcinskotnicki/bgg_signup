@@ -1,0 +1,222 @@
+<?php
+/**
+ * Polish Language File for BGG Signup System
+ */
+
+return [
+    // Language name (displayed in language selector)
+    '_language_name' => 'Polski',
+    
+    // Admin Panel
+    'admin_panel' => 'Panel Administracyjny',
+    'admin_login' => 'Logowanie Administratora',
+    'admin_password' => 'Hasło Administratora',
+    'login' => 'Zaloguj',
+    'logout' => 'Wyloguj',
+    'invalid_password' => 'Nieprawidłowe hasło!',
+    'invalid_credentials' => 'Nieprawidłowy email lub hasło!',
+    'not_admin_user' => 'To konto nie ma uprawnień administratora!',
+    'admin_email' => 'Email Administratora',
+    'view_site' => 'Zobacz Stronę',
+    
+    // Admin Tabs
+    'tab_add_event' => 'Dodaj Nowe Wydarzenie',
+    'tab_options' => 'Opcje',
+    'tab_logs' => 'Logi',
+    'tab_update' => 'Aktualizuj System',
+    
+    // Add Event Form
+    'add_new_event' => 'Dodaj Nowe Wydarzenie',
+    'event_name' => 'Nazwa Wydarzenia',
+    'number_of_days' => 'Liczba Dni',
+    'day_number' => 'Dzień {number}',
+    'date' => 'Data',
+    'start_time' => 'Godzina Rozpoczęcia',
+    'end_time' => 'Godzina Zakończenia',
+    'number_of_tables' => 'Liczba Stołów',
+    'create_event' => 'Utwórz Wydarzenie',
+    'event_created_success' => 'Wydarzenie utworzone pomyślnie!',
+    'event_creation_error' => 'Błąd tworzenia wydarzenia: {error}',
+    
+    // Options
+    'system_options' => 'Opcje Systemu',
+    'general_settings' => 'Ustawienia Ogólne',
+    'venue_name' => 'Nazwa Miejsca',
+    'default_event_name' => 'Domyślna Nazwa Wydarzenia',
+    'default_start_time' => 'Domyślna Godzina Rozpoczęcia',
+    'default_end_time' => 'Domyślna Godzina Zakończenia',
+    'timeline_extension' => 'Rozszerzenie Osi Czasu (godziny po zakończeniu)',
+    'default_tables' => 'Domyślna Liczba Stołów',
+    'bgg_api_token' => 'Token API BoardGameGeek',
+    'default_language' => 'Domyślny Język',
+    
+    'smtp_settings' => 'Ustawienia SMTP (do powiadomień email)',
+    'smtp_email' => 'Email SMTP',
+    'smtp_login' => 'Login SMTP',
+    'smtp_password' => 'Hasło SMTP',
+    'smtp_server' => 'Serwer SMTP',
+    'smtp_port' => 'Port SMTP',
+    
+    'user_interaction_settings' => 'Ustawienia Interakcji Użytkownika',
+    'allow_reserve_list' => 'Pozwól na Listę Rezerwową',
+    'allow_logged_in' => 'Pozwól na Zalogowanych Użytkowników',
+    'require_emails' => 'Wymagaj Adresów Email',
+    'verification_method' => 'Metoda Weryfikacji (do edycji/usuwania)',
+    'send_emails' => 'Wysyłaj Powiadomienia Email',
+    'allow_full_deletion' => 'Pozwól na Pełne Usuwanie Gier',
+    'restrict_comments' => 'Ogranicz Komentarze do Zalogowanych Użytkowników',
+    'use_captcha' => 'Użyj CAPTCHA dla Komentarzy',
+    
+    'custom_messages' => 'Własne Wiadomości',
+    'homepage_message' => 'Wiadomość na Stronie Głównej (wyświetlana pod tytułem wydarzenia)',
+    'add_game_message' => 'Wiadomość Dodawania Gry (wyświetlana nad formularzem gry)',
+    'add_player_message' => 'Wiadomość Zapisu Gracza (wyświetlana nad formularzem zapisu)',
+    
+    'change_admin_password' => 'Zmień Hasło Administratora',
+    'new_admin_password' => 'Nowe Hasło Administratora (zostaw puste aby zachować obecne)',
+    
+    'save_options' => 'Zapisz Opcje',
+    'options_updated_success' => 'Opcje zaktualizowane pomyślnie!',
+    'options_and_password_updated' => 'Opcje i hasło zaktualizowane pomyślnie!',
+    'options_update_error' => 'Błąd aktualizacji opcji: {error}',
+    
+    // Options - Dropdowns
+    'yes' => 'Tak',
+    'no' => 'Nie',
+    'login_no' => 'Nie',
+    'login_yes' => 'Tak',
+    'login_required_games' => 'Wymagane do Dodawania Gier',
+    'login_required_all' => 'Wymagane Wszędzie',
+    'verification_email' => 'Wymagaj Dopasowania Email',
+    'verification_link' => 'Wyślij Link Potwierdzający',
+    'deletion_soft_only' => 'Nie (Tylko Miękkie Usuwanie)',
+    'deletion_allowed' => 'Tak',
+    
+    // Logs
+    'activity_logs' => 'Logi Aktywności',
+    'no_logs_found' => 'Nie znaleziono jeszcze logów.',
+    'logs_directory_not_found' => 'Katalog logów nie został znaleziony. Logi będą tworzone automatycznie przy wykonywaniu akcji.',
+    
+    // Update System
+    'update_system' => 'Aktualizuj System',
+    'update_warning' => 'Uwaga: To sprawdzi aktualizacje na GitHub i zastosuje je w systemie. Kopia zapasowa zostanie utworzona automatycznie przed jakimikolwiek zmianami.',
+    'github_repository' => 'Repozytorium GitHub',
+    'run_update' => 'Uruchom Aktualizację',
+    'update_confirm' => 'Czy na pewno chcesz uruchomić aktualizację? Kopia zapasowa zostanie utworzona najpierw.',
+    'update_completed_success' => 'Aktualizacja zakończona pomyślnie!',
+    'update_failed' => 'Aktualizacja nie powiodła się! Sprawdź logi dla szczegółów.',
+    'update_log' => 'Log Aktualizacji',
+    
+    // Messages
+    'success' => 'Sukces',
+    'error' => 'Błąd',
+    'warning' => 'Ostrzeżenie',
+    
+    // Frontend - Game Display
+    'game_name' => 'Nazwa Gry',
+    'play_time' => 'Czas Gry',
+    'players' => 'Gracze',
+    'difficulty' => 'Trudność',
+    'language' => 'Język',
+    'host' => 'Gospodarz',
+    'rules_explanation' => 'Wyjaśnienie Zasad',
+    'rules_will_be_explained' => 'Zasady zostaną wyjaśnione',
+    'rules_knowledge_required' => 'Wszyscy gracze powinni znać zasady',
+    'minutes' => 'minut',
+    'min_max_players' => '{min}-{max} graczy',
+    
+    // Frontend - Player List
+    'join_game' => 'Dołącz do Gry',
+    'join_reserve' => 'Dołącz do Listy Rezerwowej',
+    'reserve_list' => 'Lista Rezerwowa',
+    'player_name' => 'Imię Gracza',
+    'player_email' => 'Email',
+    'knows_rules' => 'Czy znasz zasady?',
+    'knows_rules_yes' => 'Tak',
+    'knows_rules_no' => 'Nie',
+    'knows_rules_somewhat' => 'Trochę',
+    'comment' => 'Komentarz',
+    'additional_comment' => 'Dodatkowy Komentarz',
+    'sign_up' => 'Zapisz Się',
+    
+    // Frontend - Game Actions
+    'add_new_table' => 'Dodaj Nowy Stół',
+    'add_game_to_table' => 'Dodaj Grę do Tego Stołu',
+    'edit' => 'Edytuj',
+    'delete' => 'Usuń',
+    'restore' => 'Przywróć',
+    'fully_delete' => 'Usuń Całkowicie',
+    
+    // Frontend - Add Game
+    'search_bgg' => 'Szukaj na BoardGameGeek',
+    'add_game_manual' => 'Dodaj Grę Ręcznie',
+    'search_game' => 'Wyszukaj grę',
+    'add_game' => 'Dodaj Grę',
+    'game_details' => 'Szczegóły Gry',
+    'select_thumbnail' => 'Wybierz Miniaturę',
+    'host_name' => 'Twoje Imię',
+    'host_email' => 'Twój Email',
+    'join_as_first_player' => 'Czy chcesz również dołączyć do tej gry jako pierwszy gracz?',
+    'language_independent' => 'Niezależny od Języka',
+    
+    // Frontend - Comments
+    'comments' => 'Komentarze',
+    'add_comment' => 'Dodaj Komentarz',
+    'post_comment' => 'Opublikuj Komentarz',
+    'author_name' => 'Twoje Imię',
+    
+    // Frontend - Timeline
+    'timeline' => 'Oś Czasu',
+    'table' => 'Stół',
+    
+    // Frontend - Messages
+    'no_active_event' => 'Brak aktywnego wydarzenia w tym momencie.',
+    'loading' => 'Ładowanie...',
+    
+    // Validation Messages
+    'field_required' => 'To pole jest wymagane',
+    'invalid_email' => 'Podaj prawidłowy adres email',
+    'passwords_dont_match' => 'Hasła nie pasują do siebie',
+    'password_too_short' => 'Hasło musi mieć co najmniej 6 znaków',
+    'all_fields_required' => 'Wszystkie pola są wymagane',
+    'email_already_exists' => 'Ten adres email jest już zarejestrowany',
+    'registration_failed' => 'Rejestracja nie powiodła się. Spróbuj ponownie.',
+    'user_not_found' => 'Użytkownik nie znaleziony',
+    'incorrect_current_password' => 'Obecne hasło jest nieprawidłowe',
+    'update_failed' => 'Aktualizacja nie powiodła się. Spróbuj ponownie.',
+    
+    // Login/Register
+    'register' => 'Zarejestruj się',
+    'email' => 'Email',
+    'password' => 'Hasło',
+    'name' => 'Imię',
+    'confirm_password' => 'Potwierdź Hasło',
+    'password_min_6_chars' => 'Co najmniej 6 znaków',
+    'dont_have_account' => 'Nie masz konta?',
+    'register_now' => 'Zarejestruj się teraz',
+    'already_have_account' => 'Masz już konto?',
+    'login_here' => 'Zaloguj się tutaj',
+    'back_to_homepage' => 'Powrót do strony głównej',
+    
+    // User Profile
+    'user_profile' => 'Profil Użytkownika',
+    'your_activity' => 'Twoja Aktywność',
+    'games_created' => 'Utworzonych Gier',
+    'games_joined' => 'Dołączonych do Gier',
+    'comments_made' => 'Napisanych Komentarzy',
+    'update_profile' => 'Aktualizuj Profil',
+    'profile_update_info' => 'Musisz podać swoje obecne hasło aby potwierdzić zmiany w profilu.',
+    'basic_information' => 'Podstawowe Informacje',
+    'display_name' => 'Wyświetlana Nazwa',
+    'name_visible_to_others' => 'Ta nazwa będzie widoczna dla innych użytkowników',
+    'email_used_for_login' => 'Używany do logowania i powiadomień',
+    'change_password' => 'Zmień Hasło',
+    'new_password' => 'Nowe Hasło',
+    'leave_blank_keep_current' => 'Zostaw puste aby zachować obecne hasło',
+    'confirm_changes' => 'Potwierdź Zmiany',
+    'current_password' => 'Obecne Hasło',
+    'required_to_confirm_changes' => 'Wymagane do potwierdzenia zmian',
+    'save_changes' => 'Zapisz Zmiany',
+    'profile_updated_successfully' => 'Profil zaktualizowany pomyślnie!',
+];
+?>
