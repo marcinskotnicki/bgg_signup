@@ -474,3 +474,237 @@ a:hover {
         height: 150px;
     }
 }
+
+/* Event Page Styles */
+.event-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.no-event-message {
+    text-align: center;
+    padding: 60px 20px;
+    background: white;
+    border-radius: 8px;
+}
+
+.no-event-message h2 {
+    color: #7f8c8d;
+    margin-bottom: 10px;
+}
+
+/* Event Header */
+.event-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.event-title {
+    font-size: 36px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.homepage-message {
+    background: #e3f2fd;
+    padding: 15px 20px;
+    border-radius: 8px;
+    border-left: 4px solid #2196f3;
+    margin: 20px 0;
+}
+
+/* Day Tabs */
+.day-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.day-tab {
+    padding: 12px 24px;
+    background: #f8f9fa;
+    border: none;
+    border-radius: 8px 8px 0 0;
+    cursor: pointer;
+    text-decoration: none;
+    color: #555;
+    transition: all 0.3s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.day-tab:hover {
+    background: #e9ecef;
+    text-decoration: none;
+}
+
+.day-tab.active {
+    background: #3498db;
+    color: white;
+    font-weight: bold;
+}
+
+.day-date {
+    font-size: 12px;
+    opacity: 0.8;
+    margin-top: 3px;
+}
+
+.single-day-info {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.day-time {
+    margin-left: 15px;
+    color: #7f8c8d;
+}
+
+/* Tables Container */
+.tables-container {
+    margin-bottom: 40px;
+}
+
+.table-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.table-header {
+    font-size: 24px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ecf0f1;
+}
+
+.games-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.no-games {
+    text-align: center;
+    padding: 40px;
+    color: #7f8c8d;
+    font-style: italic;
+}
+
+/* Add Game/Table Buttons */
+.add-game-section {
+    text-align: center;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid #ecf0f1;
+}
+
+.btn-add-game, .btn-add-table {
+    padding: 12px 30px;
+    background: #27ae60;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-add-game:hover, .btn-add-table:hover {
+    background: #229954;
+}
+
+.add-table-section {
+    text-align: center;
+    padding: 30px;
+}
+
+/* Timeline */
+.timeline-container {
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 40px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.timeline-container h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.timeline {
+    min-height: 200px;
+}
+
+.timeline-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.timeline-row {
+    display: flex;
+    align-items: stretch;
+    min-height: 50px;
+}
+
+.timeline-table-label {
+    width: 100px;
+    padding: 10px;
+    background: #34495e;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px 0 0 4px;
+    font-weight: bold;
+}
+
+.timeline-games {
+    flex: 1;
+    position: relative;
+    background: #f8f9fa;
+    border: 1px solid #ecf0f1;
+    border-radius: 0 4px 4px 0;
+}
+
+.timeline-game {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    background: #3498db;
+    color: white;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.timeline-game:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.timeline-game-name {
+    font-size: 13px;
+    font-weight: bold;
+}

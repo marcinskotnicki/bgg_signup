@@ -222,5 +222,16 @@ return [
     // Additional UI
     'player' => 'Gracz',
     'resign' => 'Rezygnuj',
+    'day' => 'Dzień',
+    'no_games_yet' => 'Nie dodano jeszcze gier do tego stołu.',
+    'no_event_description' => 'Sprawdź później lub skontaktuj się z organizatorem.',
+    'login_required_to_add_game' => 'Musisz być zalogowany aby dodać grę.',
+    'login_required_to_add_table' => 'Musisz być zalogowany aby dodać stół.',
+    'login_required_to_join' => 'Musisz być zalogowany aby dołączyć do gry.',
+    'error_adding_table' => 'Błąd dodawania stołu.',
+    'confirm_resign' => 'Czy na pewno chcesz zrezygnować z tej gry?',
+    'confirm_delete_game' => 'Czy na pewno chcesz usunąć tę grę?',
+    'confirm_fully_delete' => 'Czy na pewno chcesz trwale usunąć tę grę? To nie może być cofnięte!',
+    'error_occurred' => 'Wystąpił błąd. Spróbuj ponownie.',
 ];
 ?>

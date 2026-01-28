@@ -222,5 +222,16 @@ return [
     // Additional UI
     'player' => 'Player',
     'resign' => 'Resign',
+    'day' => 'Day',
+    'no_games_yet' => 'No games added to this table yet.',
+    'no_event_description' => 'Check back later or contact the organizer.',
+    'login_required_to_add_game' => 'You must be logged in to add a game.',
+    'login_required_to_add_table' => 'You must be logged in to add a table.',
+    'login_required_to_join' => 'You must be logged in to join a game.',
+    'error_adding_table' => 'Error adding table.',
+    'confirm_resign' => 'Are you sure you want to resign from this game?',
+    'confirm_delete_game' => 'Are you sure you want to delete this game?',
+    'confirm_fully_delete' => 'Are you sure you want to permanently delete this game? This cannot be undone!',
+    'error_occurred' => 'An error occurred. Please try again.',
 ];
 ?>
