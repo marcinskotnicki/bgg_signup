@@ -218,5 +218,9 @@ return [
     'required_to_confirm_changes' => 'Wymagane do potwierdzenia zmian',
     'save_changes' => 'Zapisz Zmiany',
     'profile_updated_successfully' => 'Profil zaktualizowany pomyślnie!',
+    
+    // Additional UI
+    'player' => 'Gracz',
+    'resign' => 'Rezygnuj',
 ];
 ?>

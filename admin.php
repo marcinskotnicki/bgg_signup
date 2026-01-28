@@ -253,6 +253,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
             $config_content = preg_replace($pattern, $replacement, $config_content);
         }
         
+        // Handle default_language
+        if (isset($_POST['default_language'])) {
+            $value = $_POST['default_language'];
+            $pattern = "/'default_language'\s*=>\s*'[^']*'/";
+            $replacement = "'default_language' => '$value'";
+            $config_content = preg_replace($pattern, $replacement, $config_content);
+        }
+        
         // Write back to config file
         file_put_contents($config_file, $config_content);
         

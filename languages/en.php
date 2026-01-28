@@ -218,5 +218,9 @@ return [
     'required_to_confirm_changes' => 'Required to confirm any changes',
     'save_changes' => 'Save Changes',
     'profile_updated_successfully' => 'Profile updated successfully!',
+    
+    // Additional UI
+    'player' => 'Player',
+    'resign' => 'Resign',
 ];
 ?>
