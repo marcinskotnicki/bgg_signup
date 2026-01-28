@@ -267,5 +267,15 @@ return [
     'back' => 'Powrót',
     'min_players' => 'Minimalna liczba graczy',
     'max_players' => 'Maksymalna liczba graczy',
+    'cancel' => 'Anuluj',
+    'select_option' => 'Wybierz opcję',
+    'restore_game' => 'Przywróć Grę',
+    'players_signed_up' => 'zapisanych graczy',
+    'restore_game_info' => 'Przywracając tę grę, zostaniesz nowym gospodarzem. Wszyscy wcześniej zapisani gracze pozostaną.',
+    'your_name' => 'Twoje Imię',
+    'your_email' => 'Twój Email',
+    'login_required_to_comment' => 'Musisz być zalogowany aby dodawać komentarze.',
+    'existing_comments' => 'Istniejące Komentarze',
+    'captcha_question' => 'Ile to jest {num1} + {num2}?',
 ];
 ?>

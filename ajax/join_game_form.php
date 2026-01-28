@@ -1,0 +1,248 @@
+<?php
+/**
+ * AJAX Handler: Join Game Form
+ */
+
+// Load configuration
+$config = require_once '../config.php';
+
+// Load translation system
+require_once '../includes/translations.php';
+
+// Load auth helper
+require_once '../includes/auth.php';
+
+// Database connection
+try {
+    $db = new PDO('sqlite:../' . DB_FILE);
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die('Database connection failed');
+}
+
+// Get current user
+$current_user = get_current_user($db);
+
+// Get game ID and reserve flag
+$game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 0;
+$is_reserve = isset($_GET['is_reserve']) && $_GET['is_reserve'] == '1';
+
+if (!$game_id) {
+    die('Invalid game ID');
+}
+
+// Get game details
+$stmt = $db->prepare("SELECT g.*, e.name as event_name 
+                      FROM games g 
+                      JOIN tables t ON g.table_id = t.id 
+                      JOIN event_days ed ON t.event_day_id = ed.id 
+                      JOIN events e ON ed.event_id = e.id 
+                      WHERE g.id = ?");
+$stmt->execute([$game_id]);
+$game = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$game) {
+    die('Game not found');
+}
+
+// Pre-fill user data if logged in
+$default_name = $current_user ? $current_user['name'] : '';
+$default_email = $current_user ? $current_user['email'] : '';
+?>
+
+<div class="join-game-form">
+    <h2><?php echo $is_reserve ? t('join_reserve') : t('join_game'); ?></h2>
+    
+    <div class="game-info">
+        <h3><?php echo htmlspecialchars($game['name']); ?></h3>
+        <p><?php echo htmlspecialchars($game['event_name']); ?> - <?php echo $game['start_time']; ?></p>
+    </div>
+    
+    <?php if ($config['add_player_message']): ?>
+        <div class="form-message">
+            <?php echo nl2br(htmlspecialchars($config['add_player_message'])); ?>
+        </div>
+    <?php endif; ?>
+    
+    <form id="join-game-form">
+        <input type="hidden" name="game_id" value="<?php echo $game_id; ?>">
+        <input type="hidden" name="is_reserve" value="<?php echo $is_reserve ? '1' : '0'; ?>">
+        
+        <!-- Player Name -->
+        <div class="form-group">
+            <label><?php echo t('player_name'); ?>: <span class="required">*</span></label>
+            <input type="text" name="player_name" class="form-control" value="<?php echo htmlspecialchars($default_name); ?>" required>
+        </div>
+        
+        <!-- Player Email -->
+        <div class="form-group">
+            <label><?php echo t('player_email'); ?>:<?php if ($config['require_emails']): ?> <span class="required">*</span><?php endif; ?></label>
+            <input type="email" name="player_email" class="form-control" value="<?php echo htmlspecialchars($default_email); ?>" <?php echo $config['require_emails'] ? 'required' : ''; ?>>
+        </div>
+        
+        <!-- Knows Rules -->
+        <div class="form-group">
+            <label><?php echo t('knows_rules'); ?>: <span class="required">*</span></label>
+            <select name="knows_rules" class="form-control" required>
+                <option value=""><?php echo t('select_option'); ?></option>
+                <option value="yes"><?php echo t('knows_rules_yes'); ?></option>
+                <option value="somewhat"><?php echo t('knows_rules_somewhat'); ?></option>
+                <option value="no"><?php echo t('knows_rules_no'); ?></option>
+            </select>
+        </div>
+        
+        <!-- Comment -->
+        <div class="form-group">
+            <label><?php echo t('additional_comment'); ?>:</label>
+            <textarea name="comment" class="form-control" rows="3"></textarea>
+        </div>
+        
+        <div class="form-actions">
+            <button type="button" onclick="closeModal()" class="btn btn-secondary"><?php echo t('cancel'); ?></button>
+            <button type="submit" id="submit-join" class="btn btn-primary" disabled><?php echo t('sign_up'); ?></button>
+        </div>
+    </form>
+</div>
+
+<style>
+.join-game-form {
+    max-width: 500px;
+}
+
+.game-info {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border-left: 4px solid #3498db;
+}
+
+.game-info h3 {
+    margin: 0 0 5px 0;
+    color: #2c3e50;
+}
+
+.game-info p {
+    margin: 0;
+    color: #7f8c8d;
+}
+
+.form-message {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border-left: 4px solid #2196f3;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.required {
+    color: #e74c3c;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #2980b9;
+}
+
+.btn-primary:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+}
+</style>
+
+<script>
+$(document).ready(function() {
+    // Validate form and enable/disable submit button
+    function validateForm() {
+        const requiredFields = $('#join-game-form').find('[required]');
+        let allFilled = true;
+        
+        requiredFields.each(function() {
+            if (!$(this).val()) {
+                allFilled = false;
+                return false;
+            }
+        });
+        
+        $('#submit-join').prop('disabled', !allFilled);
+    }
+    
+    // Monitor all form inputs
+    $('#join-game-form').on('input change', 'input, select, textarea', validateForm);
+    
+    // Initial validation
+    validateForm();
+    
+    // Form submission
+    $('#join-game-form').submit(function(e) {
+        e.preventDefault();
+        
+        const formData = $(this).serialize();
+        
+        $('#submit-join').prop('disabled', true).text('<?php echo t('saving'); ?>...');
+        
+        $.post('../ajax/join_game_submit.php', formData, function(response) {
+            if (response.success) {
+                closeModal();
+                location.reload();
+            } else {
+                alert(response.error || '<?php echo t('error_occurred'); ?>');
+                $('#submit-join').prop('disabled', false).text('<?php echo t('sign_up'); ?>');
+            }
+        });
+    });
+});
+</script>

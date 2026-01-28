@@ -267,5 +267,15 @@ return [
     'back' => 'Back',
     'min_players' => 'Minimum Players',
     'max_players' => 'Maximum Players',
+    'cancel' => 'Cancel',
+    'select_option' => 'Select an option',
+    'restore_game' => 'Restore Game',
+    'players_signed_up' => 'players signed up',
+    'restore_game_info' => 'By restoring this game, you will become the new host. All previously signed-up players will remain.',
+    'your_name' => 'Your Name',
+    'your_email' => 'Your Email',
+    'login_required_to_comment' => 'You must be logged in to add comments.',
+    'existing_comments' => 'Existing Comments',
+    'captcha_question' => 'What is {num1} + {num2}?',
 ];
 ?>
