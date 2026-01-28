@@ -233,5 +233,39 @@ return [
     'confirm_delete_game' => 'Are you sure you want to delete this game?',
     'confirm_fully_delete' => 'Are you sure you want to permanently delete this game? This cannot be undone!',
     'error_occurred' => 'An error occurred. Please try again.',
+    
+    // Email subjects
+    'email_subject_player_joined' => 'New player joined: {game}',
+    'email_subject_player_joined_reserve' => 'New player joined reserve list: {game}',
+    'email_subject_player_resigned' => 'Player resigned: {game}',
+    'email_subject_promoted_from_reserve' => 'You have been promoted from reserve: {game}',
+    'email_subject_game_changed' => 'Game details changed: {game}',
+    'email_subject_game_deleted' => 'Game cancelled: {game}',
+    'email_subject_comment_added' => 'New comment on: {game}',
+    
+    // Email bodies
+    'email_body_player_joined' => '<strong>{player}</strong> has joined your game <strong>{game}</strong>.<br><br>Event: {event}<br>Date: {date}<br>Time: {time}',
+    'email_body_player_joined_reserve' => '<strong>{player}</strong> has joined the reserve list for your game <strong>{game}</strong>.<br><br>Event: {event}<br>Date: {date}<br>Time: {time}',
+    'email_body_player_resigned' => '<strong>{player}</strong> has resigned from your game <strong>{game}</strong>.<br><br>Event: {event}<br>Date: {date}<br>Time: {time}',
+    'email_body_promoted_from_reserve' => 'Good news! A spot has opened up in <strong>{game}</strong> and you have been promoted from the reserve list.<br><br>Event: {event}<br>Date: {date}<br>Time: {time}',
+    'email_body_game_changed' => 'The details for <strong>{game}</strong> have been updated.<br><br>Event: {event}<br>Date: {date}<br>Time: {time}',
+    'email_body_game_deleted' => 'Unfortunately, <strong>{game}</strong> has been cancelled.<br><br>Event: {event}<br>Date: {date}<br>Time: {time}',
+    'email_body_comment_added' => '<strong>{author}</strong> added a comment to <strong>{game}</strong>:<br><br>{comment}',
+    
+    // Email footers
+    'email_footer_view_game' => 'View Game',
+    'email_footer_view_event' => 'View Event',
+    'email_automated_message' => 'This is an automated message. Please do not reply.',
+    'changes' => 'Changes',
+    
+    // Form labels
+    'search_or_add_manually' => 'Search BoardGameGeek or add manually',
+    'enter_game_name' => 'Please enter a game name',
+    'no_results_found' => 'No results found',
+    'loading_game_details' => 'Loading game details',
+    'saving' => 'Saving',
+    'back' => 'Back',
+    'min_players' => 'Minimum Players',
+    'max_players' => 'Maximum Players',
 ];
 ?>

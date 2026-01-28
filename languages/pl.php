@@ -233,5 +233,39 @@ return [
     'confirm_delete_game' => 'Czy na pewno chcesz usunąć tę grę?',
     'confirm_fully_delete' => 'Czy na pewno chcesz trwale usunąć tę grę? To nie może być cofnięte!',
     'error_occurred' => 'Wystąpił błąd. Spróbuj ponownie.',
+    
+    // Email subjects
+    'email_subject_player_joined' => 'Nowy gracz dołączył: {game}',
+    'email_subject_player_joined_reserve' => 'Nowy gracz dołączył do listy rezerwowej: {game}',
+    'email_subject_player_resigned' => 'Gracz zrezygnował: {game}',
+    'email_subject_promoted_from_reserve' => 'Zostałeś awansowany z listy rezerwowej: {game}',
+    'email_subject_game_changed' => 'Zmieniono szczegóły gry: {game}',
+    'email_subject_game_deleted' => 'Gra odwołana: {game}',
+    'email_subject_comment_added' => 'Nowy komentarz do: {game}',
+    
+    // Email bodies
+    'email_body_player_joined' => '<strong>{player}</strong> dołączył do Twojej gry <strong>{game}</strong>.<br><br>Wydarzenie: {event}<br>Data: {date}<br>Godzina: {time}',
+    'email_body_player_joined_reserve' => '<strong>{player}</strong> dołączył do listy rezerwowej dla Twojej gry <strong>{game}</strong>.<br><br>Wydarzenie: {event}<br>Data: {date}<br>Godzina: {time}',
+    'email_body_player_resigned' => '<strong>{player}</strong> zrezygnował z Twojej gry <strong>{game}</strong>.<br><br>Wydarzenie: {event}<br>Data: {date}<br>Godzina: {time}',
+    'email_body_promoted_from_reserve' => 'Dobre wieści! Zwolniło się miejsce w <strong>{game}</strong> i zostałeś awansowany z listy rezerwowej.<br><br>Wydarzenie: {event}<br>Data: {date}<br>Godzina: {time}',
+    'email_body_game_changed' => 'Szczegóły gry <strong>{game}</strong> zostały zaktualizowane.<br><br>Wydarzenie: {event}<br>Data: {date}<br>Godzina: {time}',
+    'email_body_game_deleted' => 'Niestety, gra <strong>{game}</strong> została odwołana.<br><br>Wydarzenie: {event}<br>Data: {date}<br>Godzina: {time}',
+    'email_body_comment_added' => '<strong>{author}</strong> dodał komentarz do <strong>{game}</strong>:<br><br>{comment}',
+    
+    // Email footers
+    'email_footer_view_game' => 'Zobacz Grę',
+    'email_footer_view_event' => 'Zobacz Wydarzenie',
+    'email_automated_message' => 'To jest automatyczna wiadomość. Prosimy nie odpowiadać.',
+    'changes' => 'Zmiany',
+    
+    // Form labels
+    'search_or_add_manually' => 'Szukaj na BoardGameGeek lub dodaj ręcznie',
+    'enter_game_name' => 'Proszę wpisać nazwę gry',
+    'no_results_found' => 'Nie znaleziono wyników',
+    'loading_game_details' => 'Ładowanie szczegółów gry',
+    'saving' => 'Zapisywanie',
+    'back' => 'Powrót',
+    'min_players' => 'Minimalna liczba graczy',
+    'max_players' => 'Maksymalna liczba graczy',
 ];
 ?>
