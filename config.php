@@ -79,6 +79,9 @@ $config = [
     'restrict_comments' => false, // Require login to post comments
     'use_captcha' => false, // Use CAPTCHA for comments
     
+    // Poll Settings
+    'closed_poll_action' => 'grey', // What to do with closed polls: 'grey' (grey out) or 'delete' (remove)
+    
     // Custom Messages (can contain HTML)
     'homepage_message' => '', // Displayed under event title
     'add_game_message' => '', // Displayed above game form

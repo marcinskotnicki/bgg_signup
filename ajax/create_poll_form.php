@@ -1,0 +1,523 @@
+<?php
+/**
+ * AJAX Handler: Create Poll Form
+ */
+
+// Load configuration
+$config = require_once '../config.php';
+
+// Load translation system
+require_once '../includes/translations.php';
+
+// Load auth helper
+require_once '../includes/auth.php';
+
+// Load BGG API helper
+require_once '../includes/bgg_api.php';
+
+// Database connection
+try {
+    $db = new PDO('sqlite:../' . DB_FILE);
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die('Database connection failed');
+}
+
+// Get current user
+$current_user = get_current_user($db);
+
+// Get table ID
+$table_id = isset($_GET['table_id']) ? intval($_GET['table_id']) : 0;
+
+if (!$table_id) {
+    die('Invalid table ID');
+}
+
+// Pre-fill user data if logged in
+$default_name = $current_user ? $current_user['name'] : '';
+$default_email = $current_user ? $current_user['email'] : '';
+?>
+
+<div class="create-poll-form">
+    <h2><?php echo t('create_game_poll'); ?></h2>
+    
+    <div class="poll-info">
+        <?php echo t('poll_info_text'); ?>
+    </div>
+    
+    <!-- Step 1: Creator Info -->
+    <div id="poll-creator-step" class="form-step">
+        <h3><?php echo t('your_information'); ?></h3>
+        
+        <div class="form-group">
+            <label><?php echo t('your_name'); ?>: <span class="required">*</span></label>
+            <input type="text" id="creator_name" class="form-control" value="<?php echo htmlspecialchars($default_name); ?>" required>
+        </div>
+        
+        <div class="form-group">
+            <label><?php echo t('your_email'); ?>:<?php if ($config['require_emails']): ?> <span class="required">*</span><?php endif; ?></label>
+            <input type="email" id="creator_email" class="form-control" value="<?php echo htmlspecialchars($default_email); ?>" <?php echo $config['require_emails'] ? 'required' : ''; ?>>
+        </div>
+        
+        <button type="button" id="add-poll-option-btn" class="btn btn-primary"><?php echo t('add_game_option'); ?></button>
+    </div>
+    
+    <!-- Step 2: Poll Options -->
+    <div id="poll-options-container" style="margin-top: 20px;">
+        <!-- Poll options will be added here -->
+    </div>
+    
+    <div id="poll-actions" style="display: none; margin-top: 20px;">
+        <div class="form-actions">
+            <button type="button" onclick="closeModal()" class="btn btn-secondary"><?php echo t('cancel'); ?></button>
+            <button type="button" id="submit-poll" class="btn btn-primary" disabled><?php echo t('create_poll'); ?></button>
+        </div>
+    </div>
+    
+    <input type="hidden" id="table_id" value="<?php echo $table_id; ?>">
+</div>
+
+<!-- Modal for adding game option -->
+<div id="add-option-modal" style="display: none;">
+    <h3><?php echo t('add_game_to_poll'); ?></h3>
+    
+    <div class="search-section">
+        <input type="text" id="option-search-input" placeholder="<?php echo t('search_game'); ?>" class="form-control">
+        <button type="button" id="option-search-btn" class="btn btn-primary"><?php echo t('search_bgg'); ?></button>
+        <button type="button" id="option-manual-btn" class="btn btn-secondary"><?php echo t('add_game_manual'); ?></button>
+    </div>
+    
+    <div id="option-search-results" class="search-results" style="display: none;"></div>
+    
+    <div id="option-details-form" style="display: none;">
+        <input type="hidden" id="option_bgg_id">
+        <input type="hidden" id="option_bgg_url">
+        <input type="hidden" id="option_thumbnail">
+        
+        <div class="form-group">
+            <label><?php echo t('game_name'); ?>: <span class="required">*</span></label>
+            <input type="text" id="option_game_name" class="form-control" required>
+        </div>
+        
+        <div class="form-group">
+            <label><?php echo t('vote_threshold'); ?>: <span class="required">*</span></label>
+            <input type="number" id="option_threshold" class="form-control" min="1" value="3" required>
+            <small><?php echo t('vote_threshold_help'); ?></small>
+        </div>
+        
+        <div class="form-actions">
+            <button type="button" id="cancel-option" class="btn btn-secondary"><?php echo t('cancel'); ?></button>
+            <button type="button" id="save-option" class="btn btn-primary"><?php echo t('add_to_poll'); ?></button>
+        </div>
+    </div>
+</div>
+
+<style>
+.create-poll-form {
+    max-width: 700px;
+}
+
+.poll-info {
+    background: #e3f2fd;
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border-left: 4px solid #2196f3;
+}
+
+.form-step {
+    margin-bottom: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+.required {
+    color: #e74c3c;
+}
+
+.poll-option-item {
+    background: #f8f9fa;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+    border-left: 4px solid #3498db;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.poll-option-info {
+    flex: 1;
+}
+
+.poll-option-name {
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.poll-option-threshold {
+    color: #7f8c8d;
+    font-size: 13px;
+}
+
+.poll-option-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.btn-remove {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-remove:hover {
+    background: #c0392b;
+}
+
+.btn-move {
+    background: #95a5a6;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-move:hover {
+    background: #7f8c8d;
+}
+
+.search-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+#option-search-input {
+    flex: 1;
+}
+
+.search-results {
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #f8f9fa;
+    margin-bottom: 20px;
+}
+
+.search-result-item {
+    padding: 15px;
+    border-bottom: 1px solid #ddd;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-result-item:hover {
+    background: #e9ecef;
+}
+
+.result-name {
+    font-weight: bold;
+    font-size: 16px;
+    color: #2c3e50;
+}
+
+.result-year {
+    color: #7f8c8d;
+    font-size: 14px;
+}
+
+.form-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: background 0.3s;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+    background: #2980b9;
+}
+
+.btn-primary:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #7f8c8d;
+}
+
+#add-option-modal {
+    margin-top: 20px;
+    padding: 20px;
+    background: white;
+    border: 2px solid #3498db;
+    border-radius: 8px;
+}
+</style>
+
+<script>
+let pollOptions = [];
+let currentOptionIndex = 0;
+
+$(document).ready(function() {
+    // Add poll option button
+    $('#add-poll-option-btn').click(function() {
+        $('#add-option-modal').show();
+        $('#option-search-input').val('');
+        $('#option-search-results').hide();
+        $('#option-details-form').hide();
+    });
+    
+    // Search BGG for option
+    $('#option-search-btn').click(function() {
+        const query = $('#option-search-input').val().trim();
+        
+        if (!query) {
+            alert('<?php echo t('enter_game_name'); ?>');
+            return;
+        }
+        
+        $('#option-search-results').html('<div class="loading"><?php echo t('loading'); ?>...</div>').show();
+        
+        $.get('../ajax/search_bgg.php', { query: query }, function(response) {
+            if (response.success) {
+                displayOptionSearchResults(response.results);
+            } else {
+                $('#option-search-results').html('<div class="loading">' + response.error + '</div>');
+            }
+        });
+    });
+    
+    // Manual option
+    $('#option-manual-btn').click(function() {
+        $('#option_bgg_id').val('');
+        $('#option_bgg_url').val('');
+        $('#option_thumbnail').val('');
+        $('#option_game_name').val('').prop('readonly', false);
+        $('#option-search-results').hide();
+        $('#option-details-form').show();
+    });
+    
+    // Display search results
+    function displayOptionSearchResults(results) {
+        if (results.length === 0) {
+            $('#option-search-results').html('<div class="loading"><?php echo t('no_results_found'); ?></div>');
+            return;
+        }
+        
+        let html = '';
+        results.forEach(function(game) {
+            html += '<div class="search-result-item" data-game-id="' + game.id + '">';
+            html += '<div class="result-name">' + game.name + '</div>';
+            if (game.year) {
+                html += '<div class="result-year">(' + game.year + ')</div>';
+            }
+            html += '</div>';
+        });
+        
+        $('#option-search-results').html(html);
+    }
+    
+    // Select game from search
+    $(document).on('click', '.search-result-item', function() {
+        const gameId = $(this).data('game-id');
+        
+        $.get('../ajax/get_bgg_game.php', { game_id: gameId }, function(response) {
+            if (response.success) {
+                const game = response.game;
+                $('#option_bgg_id').val(game.id);
+                $('#option_bgg_url').val(game.url);
+                $('#option_thumbnail').val(game.thumbnail);
+                $('#option_game_name').val(game.name).prop('readonly', true);
+                $('#option-search-results').hide();
+                $('#option-details-form').show();
+            }
+        });
+    });
+    
+    // Save option
+    $('#save-option').click(function() {
+        const gameName = $('#option_game_name').val().trim();
+        const threshold = parseInt($('#option_threshold').val());
+        
+        if (!gameName || !threshold || threshold < 1) {
+            alert('<?php echo t('fill_all_required_fields'); ?>');
+            return;
+        }
+        
+        const option = {
+            bgg_id: $('#option_bgg_id').val(),
+            bgg_url: $('#option_bgg_url').val(),
+            game_name: gameName,
+            thumbnail: $('#option_thumbnail').val(),
+            vote_threshold: threshold,
+            display_order: pollOptions.length
+        };
+        
+        pollOptions.push(option);
+        renderPollOptions();
+        
+        // Reset and hide modal
+        $('#add-option-modal').hide();
+        $('#option_bgg_id').val('');
+        $('#option_bgg_url').val('');
+        $('#option_thumbnail').val('');
+        $('#option_game_name').val('');
+        $('#option_threshold').val('3');
+        
+        validatePoll();
+    });
+    
+    // Cancel option
+    $('#cancel-option').click(function() {
+        $('#add-option-modal').hide();
+    });
+    
+    // Render poll options
+    function renderPollOptions() {
+        let html = '';
+        
+        if (pollOptions.length > 0) {
+            html += '<h3><?php echo t('poll_options'); ?>:</h3>';
+            pollOptions.forEach(function(option, index) {
+                html += '<div class="poll-option-item">';
+                html += '<div class="poll-option-info">';
+                html += '<div class="poll-option-name">' + (index + 1) + '. ' + option.game_name + '</div>';
+                html += '<div class="poll-option-threshold"><?php echo t('needs'); ?> ' + option.vote_threshold + ' <?php echo t('votes'); ?></div>';
+                html += '</div>';
+                html += '<div class="poll-option-actions">';
+                if (index > 0) {
+                    html += '<button class="btn-move" onclick="moveOption(' + index + ', -1)">↑</button>';
+                }
+                if (index < pollOptions.length - 1) {
+                    html += '<button class="btn-move" onclick="moveOption(' + index + ', 1)">↓</button>';
+                }
+                html += '<button class="btn-remove" onclick="removeOption(' + index + ')"><?php echo t('remove'); ?></button>';
+                html += '</div>';
+                html += '</div>';
+            });
+            
+            $('#poll-actions').show();
+        } else {
+            $('#poll-actions').hide();
+        }
+        
+        $('#poll-options-container').html(html);
+    }
+    
+    // Remove option
+    window.removeOption = function(index) {
+        pollOptions.splice(index, 1);
+        // Update display_order
+        pollOptions.forEach(function(opt, idx) {
+            opt.display_order = idx;
+        });
+        renderPollOptions();
+        validatePoll();
+    };
+    
+    // Move option
+    window.moveOption = function(index, direction) {
+        const newIndex = index + direction;
+        if (newIndex < 0 || newIndex >= pollOptions.length) return;
+        
+        [pollOptions[index], pollOptions[newIndex]] = [pollOptions[newIndex], pollOptions[index]];
+        
+        // Update display_order
+        pollOptions.forEach(function(opt, idx) {
+            opt.display_order = idx;
+        });
+        
+        renderPollOptions();
+    };
+    
+    // Validate poll
+    function validatePoll() {
+        const creatorName = $('#creator_name').val().trim();
+        const creatorEmail = $('#creator_email').val().trim();
+        const requireEmail = <?php echo $config['require_emails'] ? 'true' : 'false'; ?>;
+        
+        let isValid = creatorName && pollOptions.length >= 2;
+        
+        if (requireEmail) {
+            isValid = isValid && creatorEmail;
+        }
+        
+        $('#submit-poll').prop('disabled', !isValid);
+    }
+    
+    // Monitor creator fields
+    $('#creator_name, #creator_email').on('input', validatePoll);
+    
+    // Submit poll
+    $('#submit-poll').click(function() {
+        const data = {
+            table_id: $('#table_id').val(),
+            creator_name: $('#creator_name').val().trim(),
+            creator_email: $('#creator_email').val().trim(),
+            options: pollOptions
+        };
+        
+        $('#submit-poll').prop('disabled', true).text('<?php echo t('saving'); ?>...');
+        
+        $.post('../ajax/create_poll_submit.php', { poll_data: JSON.stringify(data) }, function(response) {
+            if (response.success) {
+                closeModal();
+                location.reload();
+            } else {
+                alert(response.error || '<?php echo t('error_occurred'); ?>');
+                $('#submit-poll').prop('disabled', false).text('<?php echo t('create_poll'); ?>');
+            }
+        });
+    });
+});
+</script>

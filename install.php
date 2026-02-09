@@ -134,6 +134,48 @@ function create_database($admin_name, $admin_email, $admin_password) {
             cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )");
         
+        // Polls (game selection polls)
+        $db->exec("CREATE TABLE IF NOT EXISTS polls (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            table_id INTEGER NOT NULL,
+            creator_name TEXT NOT NULL,
+            creator_email TEXT,
+            created_by_user_id INTEGER,
+            is_active INTEGER DEFAULT 1,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            closed_at DATETIME,
+            FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE
+        )");
+        
+        // Poll options (game choices in a poll)
+        $db->exec("CREATE TABLE IF NOT EXISTS poll_options (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            poll_id INTEGER NOT NULL,
+            bgg_id INTEGER,
+            bgg_url TEXT,
+            game_name TEXT NOT NULL,
+            thumbnail TEXT,
+            play_time INTEGER,
+            min_players INTEGER,
+            max_players INTEGER,
+            difficulty REAL,
+            vote_threshold INTEGER NOT NULL,
+            display_order INTEGER NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE CASCADE
+        )");
+        
+        // Poll votes
+        $db->exec("CREATE TABLE IF NOT EXISTS poll_votes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            poll_option_id INTEGER NOT NULL,
+            voter_name TEXT NOT NULL,
+            voter_email TEXT NOT NULL,
+            user_id INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (poll_option_id) REFERENCES poll_options(id) ON DELETE CASCADE
+        )");
+        
         // Create admin user
         $password_hash = password_hash($admin_password, PASSWORD_DEFAULT);
         $stmt = $db->prepare("INSERT INTO users (name, email, password_hash, is_admin) VALUES (?, ?, ?, 1)");
