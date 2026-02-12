@@ -8,6 +8,11 @@
  * - $page_title: (optional) Page title
  */
 
+// Ensure config is available
+if (!isset($config)) {
+    $config = require __DIR__ . '/../config.php';
+}
+
 // Get current user if logged in
 $current_user = isset($db) ? get_current_user($db) : null;
 $is_user_logged_in = $current_user !== null;
@@ -16,13 +21,16 @@ $is_user_admin = $current_user && $current_user['is_admin'] == 1;
 // Get available languages
 $available_languages = get_available_languages();
 $current_lang = get_current_language();
+
+// Safe access to config values
+$venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup';
 ?>
 <!DOCTYPE html>
-<html lang="<?php echo $current_lang; ?>">
+<html lang="<?php echo htmlspecialchars($current_lang); ?>">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' - ' : ''; ?><?php echo htmlspecialchars($config['venue_name']); ?></title>
+    <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' - ' : ''; ?><?php echo htmlspecialchars($venue_name); ?></title>
     <link rel="stylesheet" href="css/style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
@@ -31,7 +39,7 @@ $current_lang = get_current_language();
         <div class="header-container">
             <div class="header-left">
                 <h1 class="site-title">
-                    <a href="index.php"><?php echo htmlspecialchars($config['venue_name']); ?></a>
+                    <a href="index.php"><?php echo htmlspecialchars($venue_name); ?></a>
                 </h1>
             </div>
             
@@ -41,7 +49,7 @@ $current_lang = get_current_language();
                 <div class="language-selector">
                     <select id="language-select" onchange="changeLanguage(this.value)">
                         <?php foreach ($available_languages as $code => $name): ?>
-                            <option value="<?php echo $code; ?>" <?php echo $current_lang === $code ? 'selected' : ''; ?>>
+                            <option value="<?php echo htmlspecialchars($code); ?>" <?php echo $current_lang === $code ? 'selected' : ''; ?>>
                                 <?php echo htmlspecialchars($name); ?>
                             </option>
                         <?php endforeach; ?>
@@ -62,7 +70,10 @@ $current_lang = get_current_language();
                         </div>
                     </div>
                 <?php else: ?>
-                    <?php if ($config['allow_logged_in'] !== 'no'): ?>
+                    <?php
+                    $allow_logged_in = isset($config['allow_logged_in']) ? $config['allow_logged_in'] : 'no';
+                    if ($allow_logged_in !== 'no'): 
+                    ?>
                         <div class="auth-buttons">
                             <a href="login.php" class="btn-login"><?php echo t('login'); ?></a>
                             <a href="login.php?register" class="btn-register"><?php echo t('register'); ?></a>

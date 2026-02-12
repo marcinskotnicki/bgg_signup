@@ -6,10 +6,12 @@
  */
 
 // Load configuration
-$config = require_once __DIR__ . '/../config.php';
+if (!isset($config)) {
+    $config = require __DIR__ . '/../config.php';
+}
 
 // Current language (can be overridden by user preference or cookie)
-$current_language = $config['default_language'];
+$current_language = isset($config['default_language']) ? $config['default_language'] : 'en';
 
 // Check if user has set a language preference
 if (isset($_COOKIE['bgg_language'])) {
