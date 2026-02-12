@@ -3,9 +3,9 @@
  * Admin Panel for BGG Signup System
  * 
  * Tabs:
- * 1. Add New Event
+ * 1. Logs
  * 2. Options
- * 3. Logs
+ * 3. Add New Event
  * 4. Update System
  */
 
@@ -130,12 +130,21 @@ if (!$is_admin) {
 
 // Define constants for update script
 define('ADMIN_PANEL', true);
+if (!defined('UPDATE_LOG')) {
+    define('UPDATE_LOG', LOGS_DIR . '/update.log');
+}
 
 // Helper function for update messages
 function log_update_message($message) {
     global $update_messages;
     $timestamp = date('Y-m-d H:i:s');
     $log_entry = "[$timestamp] $message\n";
+    
+    // Create logs directory if it doesn't exist
+    if (!is_dir(LOGS_DIR)) {
+        mkdir(LOGS_DIR, 0755, true);
+    }
+    
     file_put_contents(UPDATE_LOG, $log_entry, FILE_APPEND);
     $update_messages[] = $message;
 }
@@ -378,9 +387,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
     </div>
     
     <div class="tabs">
-        <button class="tab-button active" onclick="openTab(event, 'add-event')"><?php echo t('tab_add_event'); ?></button>
+        <button class="tab-button active" onclick="openTab(event, 'logs')"><?php echo t('tab_logs'); ?></button>
         <button class="tab-button" onclick="openTab(event, 'options')"><?php echo t('tab_options'); ?></button>
-        <button class="tab-button" onclick="openTab(event, 'logs')"><?php echo t('tab_logs'); ?></button>
+        <button class="tab-button" onclick="openTab(event, 'add-event')"><?php echo t('tab_add_event'); ?></button>
         <button class="tab-button" onclick="openTab(event, 'update')"><?php echo t('tab_update'); ?></button>
     </div>
     
@@ -391,27 +400,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         <div class="message error"><?php echo htmlspecialchars($error); ?></div>
     <?php endif; ?>
     
-    <!-- Tab 1: Add New Event -->
-    <div id="add-event" class="tab-content active">
-        <h2><?php echo t('add_new_event'); ?></h2>
-        <form method="POST" id="event-form">
-            <div class="form-group">
-                <label><?php echo t('event_name'); ?>:</label>
-                <input type="text" name="event_name" value="<?php echo htmlspecialchars($config['default_event_name']); ?>" required>
-            </div>
-            
-            <div class="form-group">
-                <label><?php echo t('number_of_days'); ?>:</label>
-                <input type="number" id="num_days" name="num_days" value="1" min="1" max="30" onchange="generateDayFields()">
-            </div>
-            
-            <div id="days-container">
-                <!-- Day fields will be generated here by JavaScript -->
-            </div>
-            
-            <button type="submit" name="add_event"><?php echo t('create_event'); ?></button>
-        </form>
+    <!-- Tab 1: Logs -->
+    <div id="logs" class="tab-content active">
+        <h2><?php echo t('activity_logs'); ?></h2>
+        <div class="log-viewer">
+            <?php
+            $log_dir = LOGS_DIR;
+            if (is_dir($log_dir)) {
+                $log_files = array_diff(scandir($log_dir), ['.', '..']);
+                // Sort by date (newest first)
+                rsort($log_files);
+                
+                if (count($log_files) > 0) {
+                    foreach ($log_files as $log_file) {
+                        echo "<h3>" . htmlspecialchars($log_file) . "</h3>";
+                        $log_content = file_get_contents($log_dir . '/' . $log_file);
+                        $lines = explode("
+", $log_content);
+                        // Reverse to show newest first
+                        $lines = array_reverse($lines);
+                        foreach ($lines as $line) {
+                            if (trim($line) !== '') {
+                                echo "<div class='log-entry'>" . htmlspecialchars($line) . "</div>";
+                            }
+                        }
+                    }
+                } else {
+                    echo "<p>" . t('no_logs_found') . "</p>";
+                }
+            } else {
+                echo "<p>" . t('logs_directory_not_found') . "</p>";
+            }
+            ?>
+        </div>
     </div>
+    
     
     <!-- Tab 2: Options -->
     <div id="options" class="tab-content">
@@ -588,39 +611,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         </form>
     </div>
     
-    <!-- Tab 3: Logs -->
-    <div id="logs" class="tab-content">
-        <h2><?php echo t('activity_logs'); ?></h2>
-        <div class="log-viewer">
-            <?php
-            $log_dir = LOGS_DIR;
-            if (is_dir($log_dir)) {
-                $log_files = array_diff(scandir($log_dir), ['.', '..']);
-                // Sort by date (newest first)
-                rsort($log_files);
-                
-                if (count($log_files) > 0) {
-                    foreach ($log_files as $log_file) {
-                        echo "<h3>" . htmlspecialchars($log_file) . "</h3>";
-                        $log_content = file_get_contents($log_dir . '/' . $log_file);
-                        $lines = explode("\n", $log_content);
-                        // Reverse to show newest first
-                        $lines = array_reverse($lines);
-                        foreach ($lines as $line) {
-                            if (trim($line) !== '') {
-                                echo "<div class='log-entry'>" . htmlspecialchars($line) . "</div>";
-                            }
-                        }
-                    }
-                } else {
-                    echo "<p>" . t('no_logs_found') . "</p>";
-                }
-            } else {
-                echo "<p>" . t('logs_directory_not_found') . "</p>";
-            }
-            ?>
-        </div>
+    
+    <!-- Tab 3: Add New Event -->
+    <div id="add-event" class="tab-content">
+        <h2><?php echo t('add_new_event'); ?></h2>
+        <form method="POST" id="event-form">
+            <div class="form-group">
+                <label><?php echo t('event_name'); ?>:</label>
+                <input type="text" name="event_name" value="<?php echo htmlspecialchars($config['default_event_name']); ?>" required>
+            </div>
+            
+            <div class="form-group">
+                <label><?php echo t('number_of_days'); ?>:</label>
+                <input type="number" id="num_days" name="num_days" value="1" min="1" max="30" onchange="generateDayFields()">
+            </div>
+            
+            <div id="days-container">
+                <!-- Day fields will be generated here by JavaScript -->
+            </div>
+            
+            <button type="submit" name="add_event"><?php echo t('create_event'); ?></button>
+        </form>
     </div>
+    
     
     <!-- Tab 4: Update System -->
     <div id="update" class="tab-content">
