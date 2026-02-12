@@ -222,7 +222,7 @@ function update_database_schema() {
             )",
             'users' => "CREATE TABLE IF NOT EXISTS users (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                username TEXT UNIQUE NOT NULL,
+                name TEXT NOT NULL,
                 email TEXT UNIQUE NOT NULL,
                 password_hash TEXT NOT NULL,
                 is_admin INTEGER DEFAULT 0,
@@ -236,6 +236,42 @@ function update_database_schema() {
                 cache_key TEXT PRIMARY KEY,
                 cache_data TEXT NOT NULL,
                 cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )",
+            'polls' => "CREATE TABLE IF NOT EXISTS polls (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                table_id INTEGER NOT NULL,
+                creator_name TEXT NOT NULL,
+                creator_email TEXT,
+                created_by_user_id INTEGER,
+                is_active INTEGER DEFAULT 1,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                closed_at DATETIME,
+                FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE
+            )",
+            'poll_options' => "CREATE TABLE IF NOT EXISTS poll_options (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                poll_id INTEGER NOT NULL,
+                bgg_id INTEGER,
+                bgg_url TEXT,
+                game_name TEXT NOT NULL,
+                thumbnail TEXT,
+                play_time INTEGER,
+                min_players INTEGER,
+                max_players INTEGER,
+                difficulty REAL,
+                vote_threshold INTEGER NOT NULL,
+                display_order INTEGER NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE CASCADE
+            )",
+            'poll_votes' => "CREATE TABLE IF NOT EXISTS poll_votes (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                poll_option_id INTEGER NOT NULL,
+                voter_name TEXT NOT NULL,
+                voter_email TEXT NOT NULL,
+                user_id INTEGER,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (poll_option_id) REFERENCES poll_options(id) ON DELETE CASCADE
             )"
         ];
         
@@ -301,20 +337,90 @@ function update_database_schema() {
 }
 
 /**
+ * Fetch URL content - tries cURL first, then file_get_contents
+ */
+function fetch_url($url) {
+    // Try cURL first
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'BGG-Signup-Updater');
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        
+        // Add GitHub token if available
+        if (defined('GITHUB_TOKEN') && GITHUB_TOKEN) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: token ' . GITHUB_TOKEN,
+                'User-Agent: BGG-Signup-Updater'
+            ]);
+        }
+        
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+        
+        if ($response !== false && $http_code === 200) {
+            return $response;
+        }
+        
+        log_update_message("cURL failed: HTTP $http_code - $error");
+        
+        // Check for rate limit
+        if ($http_code === 403) {
+            log_update_message("GitHub API rate limit exceeded. Wait an hour or add a GitHub token to config.php");
+        }
+    }
+    
+    // Fall back to file_get_contents
+    if (ini_get('allow_url_fopen')) {
+        $headers = ['User-Agent: BGG-Signup-Updater'];
+        
+        // Add GitHub token if available
+        if (defined('GITHUB_TOKEN') && GITHUB_TOKEN) {
+            $headers[] = 'Authorization: token ' . GITHUB_TOKEN;
+        }
+        
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => implode("\r\n", $headers),
+                'timeout' => 30
+            ],
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true
+            ]
+        ]);
+        
+        $response = @file_get_contents($url, false, $context);
+        
+        if ($response !== false) {
+            return $response;
+        }
+        
+        $error = error_get_last();
+        log_update_message("file_get_contents failed: " . ($error['message'] ?? 'Unknown error'));
+    } else {
+        log_update_message("allow_url_fopen is disabled in php.ini");
+    }
+    
+    return false;
+}
+
+/**
  * Download and update files from GitHub
  */
 function update_files_from_github($path = '') {
     $api_url = GITHUB_API . $path;
     
-    // Set up context for GitHub API
-    $context = stream_context_create([
-        'http' => [
-            'method' => 'GET',
-            'header' => 'User-Agent: BGG-Signup-Updater'
-        ]
-    ]);
+    log_update_message("Checking GitHub for updates in: " . ($path ? $path : 'root directory'));
     
-    $response = @file_get_contents($api_url, false, $context);
+    // Use fetch_url instead of file_get_contents
+    $response = fetch_url($api_url);
     
     if ($response === false) {
         log_update_message("ERROR: Could not connect to GitHub API");
@@ -325,6 +431,7 @@ function update_files_from_github($path = '') {
     
     if (!is_array($files)) {
         log_update_message("ERROR: Invalid response from GitHub API");
+        log_update_message("Response: " . substr($response, 0, 500));
         return false;
     }
     
@@ -341,7 +448,7 @@ function update_files_from_github($path = '') {
         
         if ($file['type'] === 'file') {
             // Download file
-            $file_content = @file_get_contents($file['download_url'], false, $context);
+            $file_content = fetch_url($file['download_url']);
             
             if ($file_content !== false) {
                 // Create directory if needed

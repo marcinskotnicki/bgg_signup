@@ -16,6 +16,10 @@ define('GITHUB_API', 'https://api.github.com/repos/marcinskotnicki/bgg_signup/co
 define('DB_FILE', 'boardgame_events.db');
 define('INSTALL_LOG', 'install_log.txt');
 
+// Optional: GitHub Personal Access Token (to avoid rate limits)
+// Get one at: https://github.com/settings/tokens (no permissions needed for public repos)
+define('GITHUB_TOKEN', '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'); // Leave empty if you don't have one
+
 // Start output buffering for better error handling
 ob_start();
 
@@ -199,15 +203,8 @@ function download_from_github($path = '') {
     
     $api_url = GITHUB_API . $path;
     
-    // Set up context for GitHub API (requires user agent)
-    $context = stream_context_create([
-        'http' => [
-            'method' => 'GET',
-            'header' => 'User-Agent: BGG-Signup-Installer'
-        ]
-    ]);
-    
-    $response = @file_get_contents($api_url, false, $context);
+    // Try cURL first, then fall back to file_get_contents
+    $response = fetch_url($api_url);
     
     if ($response === false) {
         log_message("Failed to connect to GitHub API");
@@ -218,6 +215,7 @@ function download_from_github($path = '') {
     
     if (!is_array($files)) {
         log_message("Invalid response from GitHub API");
+        log_message("Response: " . substr($response, 0, 500));
         return false;
     }
     
@@ -229,7 +227,7 @@ function download_from_github($path = '') {
         
         if ($file['type'] === 'file') {
             // Download file
-            $file_content = @file_get_contents($file['download_url'], false, $context);
+            $file_content = fetch_url($file['download_url']);
             
             if ($file_content !== false) {
                 // Create directory if needed
@@ -254,6 +252,81 @@ function download_from_github($path = '') {
     }
     
     return true;
+}
+
+/**
+ * Fetch URL content - tries cURL first, then file_get_contents
+ */
+function fetch_url($url) {
+    // Try cURL first
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'BGG-Signup-Installer');
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        
+        // Add GitHub token if available
+        if (defined('GITHUB_TOKEN') && GITHUB_TOKEN) {
+            curl_setopt($ch, CURLOPT_HTTPHEADER, [
+                'Authorization: token ' . GITHUB_TOKEN,
+                'User-Agent: BGG-Signup-Installer'
+            ]);
+        }
+        
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+        
+        if ($response !== false && $http_code === 200) {
+            return $response;
+        }
+        
+        log_message("cURL failed: HTTP $http_code - $error");
+        
+        // Check for rate limit
+        if ($http_code === 403) {
+            log_message("GitHub API rate limit exceeded. Wait an hour or use a GitHub token.");
+        }
+    }
+    
+    // Fall back to file_get_contents
+    if (ini_get('allow_url_fopen')) {
+        $headers = ['User-Agent: BGG-Signup-Installer'];
+        
+        // Add GitHub token if available
+        if (defined('GITHUB_TOKEN') && GITHUB_TOKEN) {
+            $headers[] = 'Authorization: token ' . GITHUB_TOKEN;
+        }
+        
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => implode("\r\n", $headers),
+                'timeout' => 30
+            ],
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true
+            ]
+        ]);
+        
+        $response = @file_get_contents($url, false, $context);
+        
+        if ($response !== false) {
+            return $response;
+        }
+        
+        $error = error_get_last();
+        log_message("file_get_contents failed: " . ($error['message'] ?? 'Unknown error'));
+    } else {
+        log_message("allow_url_fopen is disabled in php.ini");
+    }
+    
+    return false;
 }
 
 /**

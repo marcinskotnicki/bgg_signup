@@ -7,21 +7,45 @@
  */
 
 // Database Configuration
-define('DB_FILE', 'boardgame_events.db');
+if (!defined('DB_FILE')) {
+    define('DB_FILE', 'boardgame_events.db');
+}
 
 // GitHub Repository (for updates)
-define('GITHUB_REPO', 'https://github.com/marcinskotnicki/bgg_signup');
-define('GITHUB_API', 'https://api.github.com/repos/marcinskotnicki/bgg_signup/contents/');
+if (!defined('GITHUB_REPO')) {
+    define('GITHUB_REPO', 'https://github.com/marcinskotnicki/bgg_signup');
+}
+if (!defined('GITHUB_API')) {
+    define('GITHUB_API', 'https://api.github.com/repos/marcinskotnicki/bgg_signup/contents/');
+}
+
+// Optional: GitHub Personal Access Token (to avoid rate limits)
+// Get one at: https://github.com/settings/tokens (no permissions needed for public repos)
+if (!defined('GITHUB_TOKEN')) {
+    define('GITHUB_TOKEN', ''); // Add your token here if you have rate limit issues
+}
 
 // System Paths
-define('BACKUP_DIR', 'backup');
-define('LOGS_DIR', 'logs');
-define('THUMBNAILS_DIR', 'thumbnails');
-define('LANGUAGES_DIR', 'languages');
+if (!defined('BACKUP_DIR')) {
+    define('BACKUP_DIR', 'backup');
+}
+if (!defined('LOGS_DIR')) {
+    define('LOGS_DIR', 'logs');
+}
+if (!defined('THUMBNAILS_DIR')) {
+    define('THUMBNAILS_DIR', 'thumbnails');
+}
+if (!defined('LANGUAGES_DIR')) {
+    define('LANGUAGES_DIR', 'languages');
+}
 
 // Cookie Settings (authentication - 1 year)
-define('COOKIE_LIFETIME', 365 * 24 * 60 * 60); // 1 year in seconds
-define('AUTH_SALT', 'bgg_secret_salt_change_this'); // Change this to a random string!
+if (!defined('COOKIE_LIFETIME')) {
+    define('COOKIE_LIFETIME', 365 * 24 * 60 * 60); // 1 year in seconds
+}
+if (!defined('AUTH_SALT')) {
+    define('AUTH_SALT', 'bgg_secret_salt_change_this'); // Change this to a random string!
+}
 
 // General Settings
 $config = [
