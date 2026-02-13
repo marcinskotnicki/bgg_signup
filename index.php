@@ -468,11 +468,22 @@ function initTimeline() {
         html += '<div class="timeline-games">';
         
         <?php foreach ($table_data['games'] as $game): ?>
+            <?php
+            // Calculate end time for this game
+            $start_timestamp = strtotime($game['start_time']);
+            $end_timestamp = $start_timestamp + ($game['play_time'] * 60);
+            $end_time_formatted = date('H:i', $end_timestamp);
+            
+            // Count active players (non-reserve)
+            $active_players = count(array_filter($game['players'], function($p) { return $p['is_reserve'] == 0; }));
+            ?>
             html += '<div class="timeline-game" data-game-id="<?php echo $game['id']; ?>" style="' + 
                 'left: ' + (((parseTime('<?php echo $game['start_time']; ?>') - start) / (endWithExtension - start)) * 100) + '%; ' +
                 'width: ' + ((<?php echo $game['play_time']; ?> / (endWithExtension - start)) * 100) + '%;' +
                 '">';
             html += '<span class="timeline-game-name"><?php echo htmlspecialchars($game['name']); ?></span>';
+            html += '<span class="timeline-game-players">(<?php echo t('players'); ?>: <?php echo $active_players; ?>/<?php echo $game['max_players']; ?>)</span>';
+            html += '<span class="timeline-game-time"><?php echo $game['start_time']; ?> - <?php echo $end_time_formatted; ?></span>';
             html += '</div>';
         <?php endforeach; ?>
         
