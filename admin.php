@@ -216,7 +216,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
             'venue_name', 'default_event_name', 'default_start_time', 'default_end_time',
             'timeline_extension', 'default_tables', 'smtp_email', 'smtp_login',
             'smtp_password', 'smtp_server', 'smtp_port', 'bgg_api_token',
-            'default_language', 'homepage_message', 'add_game_message', 'add_player_message'
+            'default_language', 'active_template', 'homepage_message', 'add_game_message', 'add_player_message'
         ];
         
         foreach ($config_updates as $key) {
@@ -626,6 +626,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                             <?php echo htmlspecialchars($name); ?>
                         </option>
                     <?php endforeach; ?>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label><?php echo t('active_template'); ?>:</label>
+                <select name="active_template">
+                    <?php 
+                    // Get available templates
+                    $templates_path = TEMPLATES_DIR;
+                    if (is_dir($templates_path)) {
+                        $template_folders = array_diff(scandir($templates_path), ['.', '..']);
+                        foreach ($template_folders as $template_folder) {
+                            if (is_dir($templates_path . '/' . $template_folder)) {
+                                $selected = $config['active_template'] === $template_folder ? 'selected' : '';
+                                echo "<option value=\"" . htmlspecialchars($template_folder) . "\" $selected>" . htmlspecialchars(ucfirst($template_folder)) . "</option>";
+                            }
+                        }
+                    }
+                    ?>
                 </select>
             </div>
             

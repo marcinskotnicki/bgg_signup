@@ -31,7 +31,7 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' - ' : ''; ?><?php echo htmlspecialchars($venue_name); ?></title>
-    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="<?php echo TEMPLATES_DIR . '/' . $config['active_template']; ?>/css/style.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>

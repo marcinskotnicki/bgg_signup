@@ -35,6 +35,9 @@ if (!defined('THUMBNAILS_DIR')) {
 if (!defined('LANGUAGES_DIR')) {
     define('LANGUAGES_DIR', 'languages');
 }
+if (!defined('TEMPLATES_DIR')) {
+    define('TEMPLATES_DIR', 'templates');
+}
 
 // Cookie Settings (authentication - 1 year)
 if (!defined('COOKIE_LIFETIME')) {
@@ -102,6 +105,9 @@ $config = [
     
     // Poll Settings
     'closed_poll_action' => 'grey', // What to do with closed polls: 'grey' (grey out) or 'delete' (remove)
+    
+    // Template Settings
+    'active_template' => 'default', // Active template folder name
     
     // Custom Messages (can contain HTML)
     'homepage_message' => '', // Displayed under event title

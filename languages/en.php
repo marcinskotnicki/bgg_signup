@@ -49,6 +49,7 @@ return [
     'default_tables' => 'Default Number of Tables',
     'bgg_api_token' => 'BoardGameGeek API Token',
     'default_language' => 'Default Language',
+    'active_template' => 'Active Template',
     
     'smtp_settings' => 'SMTP Settings (for email notifications)',
     'smtp_email' => 'SMTP Email',

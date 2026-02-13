@@ -49,6 +49,7 @@ return [
     'default_tables' => 'Domyślna Liczba Stołów',
     'bgg_api_token' => 'Token API BoardGameGeek',
     'default_language' => 'Domyślny Język',
+    'active_template' => 'Aktywny Szablon',
     
     'smtp_settings' => 'Ustawienia SMTP (do powiadomień email)',
     'smtp_email' => 'Email SMTP',

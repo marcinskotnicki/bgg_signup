@@ -282,4 +282,40 @@ $is_inactive = $game['is_active'] == 0;
         <?php endif; ?>
     </div>
     <?php endif; ?>
+    
+    <!-- Comments Section -->
+    <?php if (!empty($game['comments']) || !$is_inactive): ?>
+    <div class="game-comments-section">
+        <h4 class="comments-header">
+            <?php echo t('comments'); ?> 
+            <?php if (!empty($game['comments'])): ?>
+                <span class="comment-count">(<?php echo count($game['comments']); ?>)</span>
+            <?php endif; ?>
+        </h4>
+        
+        <?php if (!empty($game['comments'])): ?>
+            <div class="comments-list">
+                <?php foreach ($game['comments'] as $comment): ?>
+                    <div class="comment-item">
+                        <div class="comment-header">
+                            <span class="comment-author"><?php echo htmlspecialchars($comment['author_name']); ?></span>
+                            <span class="comment-time"><?php echo date('Y-m-d H:i', strtotime($comment['created_at'])); ?></span>
+                        </div>
+                        <div class="comment-text">
+                            <?php echo nl2br(htmlspecialchars($comment['comment'])); ?>
+                        </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        <?php endif; ?>
+        
+        <?php if (!$is_inactive): ?>
+            <div class="add-comment-btn-container">
+                <button class="btn-add-comment" data-game-id="<?php echo $game['id']; ?>">
+                    <?php echo t('add_comment'); ?>
+                </button>
+            </div>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 </li>

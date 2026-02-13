@@ -96,6 +96,11 @@ foreach ($tables as $table) {
         $stmt = $db->prepare("SELECT * FROM players WHERE game_id = ? ORDER BY is_reserve ASC, position ASC");
         $stmt->execute([$game['id']]);
         $game['players'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get comments for each game
+        $stmt = $db->prepare("SELECT * FROM comments WHERE game_id = ? ORDER BY created_at ASC");
+        $stmt->execute([$game['id']]);
+        $game['comments'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
     unset($game); // CRITICAL: Break reference to prevent variable pollution across tables
     
@@ -108,8 +113,11 @@ foreach ($tables as $table) {
 // Page title
 $page_title = $active_event ? $active_event['name'] : t('no_active_event');
 
+// Template directory
+$template_dir = TEMPLATES_DIR . '/' . $config['active_template'];
+
 // Include header
-include 'templates/header.php';
+include $template_dir . '/header.php';
 ?>
 
 <div class="event-container">
@@ -170,7 +178,7 @@ include 'templates/header.php';
                                     <?php
                                     // Include game template
                                     $players = $game['players'];
-                                    include 'templates/game.php';
+                                    include $template_dir . '/game.php';
                                     ?>
                                 <?php endforeach; ?>
                             <?php endif; ?>
@@ -344,7 +352,7 @@ $(document).ready(function() {
     });
     
     // Add Comment Button
-    $(document).on('click', '.add-comment-btn', function(e) {
+    $(document).on('click', '.add-comment-btn, .btn-add-comment', function(e) {
         e.preventDefault();
         const gameId = $(this).data('game-id');
         loadAddCommentForm(gameId);
@@ -474,7 +482,8 @@ function initTimeline() {
         const position = ((hourMinutes - start) / (endWithExtension - start)) * 100;
         
         if (position >= 0 && position <= 100) {
-            const hourStr = hour.toString().padStart(2, '0') + ':00';
+            const displayHour = hour % 24;
+            const hourStr = displayHour.toString().padStart(2, '0') + ':00';
             html += '<div class="timeline-hour-marker" style="left: ' + position + '%;">' + hourStr + '</div>';
         }
     }
@@ -544,5 +553,5 @@ function parseTime(timeStr) {
 
 <?php
 // Include footer
-include 'templates/footer.php';
+include $template_dir . '/footer.php';
 ?>

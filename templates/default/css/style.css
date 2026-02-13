@@ -789,3 +789,81 @@ a:hover {
     opacity: 0.85;
     white-space: nowrap;
 }
+/* Comments Section */
+.game-comments-section {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 2px solid #ecf0f1;
+}
+
+.comments-header {
+    font-size: 16px;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.comment-count {
+    font-size: 14px;
+    color: #7f8c8d;
+    font-weight: normal;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+.comment-item {
+    background: #f8f9fa;
+    padding: 12px;
+    border-radius: 6px;
+    border-left: 3px solid #3498db;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.comment-author {
+    font-weight: bold;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.comment-time {
+    font-size: 12px;
+    color: #95a5a6;
+}
+
+.comment-text {
+    color: #34495e;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.add-comment-btn-container {
+    margin-top: 10px;
+}
+
+.btn-add-comment {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.btn-add-comment:hover {
+    background: #2980b9;
+}
