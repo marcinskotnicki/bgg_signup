@@ -125,4 +125,3 @@ $admin_config = [
 ];
 
 return $config;
-// Note: Closing ?> tag omitted to prevent whitespace output issues

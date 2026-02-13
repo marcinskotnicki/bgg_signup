@@ -177,4 +177,3 @@ function format_date($date, $format = 'long') {
             return date($format, $timestamp);
     }
 }
-// Note: Closing ?> tag omitted to prevent whitespace output issues
