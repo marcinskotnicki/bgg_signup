@@ -7,6 +7,68 @@
  */
 
 /**
+ * Fetch URL from BGG API - tries cURL first, then file_get_contents
+ * 
+ * @param string $url URL to fetch
+ * @return string|false Content or false on failure
+ */
+function fetch_bgg_url($url) {
+    // Try cURL first (most reliable)
+    if (function_exists('curl_init')) {
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'BGG-Signup-System/1.0');
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+        
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $error = curl_error($ch);
+        curl_close($ch);
+        
+        if ($response !== false && $http_code === 200) {
+            return $response;
+        }
+        
+        // Log the error for debugging
+        error_log("BGG API cURL failed: HTTP $http_code - $error - URL: $url");
+        
+        // If cURL failed, try file_get_contents
+    }
+    
+    // Fall back to file_get_contents
+    if (ini_get('allow_url_fopen')) {
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'header' => 'User-Agent: BGG-Signup-System/1.0',
+                'timeout' => 30
+            ],
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true
+            ]
+        ]);
+        
+        $response = @file_get_contents($url, false, $context);
+        
+        if ($response !== false) {
+            return $response;
+        }
+        
+        $error = error_get_last();
+        error_log("BGG API file_get_contents failed: " . ($error['message'] ?? 'Unknown error') . " - URL: $url");
+    } else {
+        error_log("BGG API: allow_url_fopen is disabled in php.ini");
+    }
+    
+    return false;
+}
+
+/**
  * Clean expired cache entries (older than 1 week)
  * 
  * @param PDO $db Database connection
@@ -89,10 +151,11 @@ function search_bgg_games($db, $query) {
     $query_encoded = urlencode($query);
     $url = "https://boardgamegeek.com/xmlapi2/search?query={$query_encoded}&type=boardgame";
     
-    $xml = @file_get_contents($url);
+    $xml = fetch_bgg_url($url);
     
     if ($xml === false) {
-        return ['error' => 'Failed to connect to BoardGameGeek API'];
+        error_log("BGG API search failed for query: $query");
+        return ['error' => 'Failed to connect to BoardGameGeek API. Please try again later.'];
     }
     
     // Parse XML
@@ -145,9 +208,10 @@ function get_bgg_game_details($db, $game_id) {
     // Make API request
     $url = "https://boardgamegeek.com/xmlapi2/thing?id={$game_id}&stats=1";
     
-    $xml = @file_get_contents($url);
+    $xml = fetch_bgg_url($url);
     
     if ($xml === false) {
+        error_log("BGG API details failed for game ID: $game_id");
         return null;
     }
     

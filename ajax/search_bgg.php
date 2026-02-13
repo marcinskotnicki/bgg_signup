@@ -28,13 +28,7 @@ if (empty($query)) {
     exit;
 }
 
-// Check if BGG API token is configured
-if (empty($config['bgg_api_token'])) {
-    echo json_encode(['success' => false, 'error' => 'BGG API not configured']);
-    exit;
-}
-
-// Search BGG
+// Search BGG (no token required for XML API2)
 $results = search_bgg_games($db, $query);
 
 if (isset($results['error'])) {
