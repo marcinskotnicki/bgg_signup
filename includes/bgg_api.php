@@ -7,64 +7,99 @@
  */
 
 /**
- * Fetch URL from BGG API - tries cURL first, then file_get_contents
+ * Fetch URL from BGG API - uses working cURL configuration
  * 
  * @param string $url URL to fetch
+ * @param string $api_token Optional BGG API token
  * @return string|false Content or false on failure
  */
-function fetch_bgg_url($url) {
-    // Try cURL first (most reliable)
+function fetch_bgg_url($url, $api_token = '') {
+    error_log("BGG API: Attempting to fetch URL: $url");
+    
+    // Try cURL (most reliable)
     if (function_exists('curl_init')) {
+        error_log("BGG API: Using cURL");
+        
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'BGG-Signup-System/1.0');
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
         curl_setopt($ch, CURLOPT_TIMEOUT, 30);
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
         
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        curl_close($ch);
-        
-        if ($response !== false && $http_code === 200) {
-            return $response;
+        // Add Authorization header if token provided
+        if (!empty($api_token)) {
+            $headers = ["Authorization: Bearer $api_token"];
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            error_log("BGG API: Using API token");
         }
         
-        // Log the error for debugging
-        error_log("BGG API cURL failed: HTTP $http_code - $error - URL: $url");
+        $response = curl_exec($ch);
+        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_error = curl_error($ch);
+        $curl_errno = curl_errno($ch);
+        curl_close($ch);
         
-        // If cURL failed, try file_get_contents
+        error_log("BGG API: cURL response - HTTP Code: $http_code, cURL Error: $curl_error, Errno: $curl_errno");
+        
+        // Check if request failed
+        if ($response === false) {
+            error_log("BGG API: cURL exec failed - Error: $curl_error (Errno: $curl_errno)");
+            return false;
+        }
+        
+        // Check HTTP response code
+        if ($http_code != 200) {
+            error_log("BGG API: HTTP code $http_code (expected 200)");
+            error_log("BGG API: Response preview: " . substr($response, 0, 200));
+            return false;
+        }
+        
+        // Check if data is not empty
+        if (empty($response)) {
+            error_log("BGG API: Empty response received");
+            return false;
+        }
+        
+        error_log("BGG API: Success! Response length: " . strlen($response));
+        return $response;
     }
+    
+    error_log("BGG API: cURL not available");
     
     // Fall back to file_get_contents
     if (ini_get('allow_url_fopen')) {
-        $context = stream_context_create([
+        error_log("BGG API: Trying file_get_contents");
+        
+        $context_options = [
             'http' => [
                 'method' => 'GET',
                 'header' => 'User-Agent: BGG-Signup-System/1.0',
                 'timeout' => 30
-            ],
-            'ssl' => [
-                'verify_peer' => true,
-                'verify_peer_name' => true
             ]
-        ]);
+        ];
         
+        // Add Authorization header if token provided
+        if (!empty($api_token)) {
+            $context_options['http']['header'] .= "\r\nAuthorization: Bearer $api_token";
+        }
+        
+        $context = stream_context_create($context_options);
         $response = @file_get_contents($url, false, $context);
         
-        if ($response !== false) {
+        if ($response !== false && !empty($response)) {
+            error_log("BGG API: file_get_contents success! Response length: " . strlen($response));
             return $response;
         }
         
         $error = error_get_last();
-        error_log("BGG API file_get_contents failed: " . ($error['message'] ?? 'Unknown error') . " - URL: $url");
+        error_log("BGG API file_get_contents failed: " . ($error['message'] ?? 'Unknown error'));
     } else {
-        error_log("BGG API: allow_url_fopen is disabled in php.ini");
+        error_log("BGG API: allow_url_fopen is DISABLED");
     }
     
+    error_log("BGG API: ALL methods failed");
     return false;
 }
 
@@ -144,24 +179,38 @@ function search_bgg_games($db, $query) {
     $cached = get_from_cache($db, $cache_key);
     
     if ($cached !== null) {
+        error_log("BGG API: Using cached search results for: $query");
         return $cached;
     }
     
-    // Make API request
-    $query_encoded = urlencode($query);
-    $url = "https://boardgamegeek.com/xmlapi2/search?query={$query_encoded}&type=boardgame";
+    // Get API token from config
+    $config = require __DIR__ . '/../config.php';
+    $api_token = isset($config['bgg_api_token']) ? $config['bgg_api_token'] : '';
     
-    $xml = fetch_bgg_url($url);
+    // Make API request (exclude expansions)
+    $query_encoded = urlencode($query);
+    $url = "https://boardgamegeek.com/xmlapi2/search?type=boardgame&excludesubtype=boardgameexpansion&query={$query_encoded}";
+    
+    error_log("BGG API: Searching for: $query");
+    $xml = fetch_bgg_url($url, $api_token);
     
     if ($xml === false) {
         error_log("BGG API search failed for query: $query");
         return ['error' => 'Failed to connect to BoardGameGeek API. Please try again later.'];
     }
     
-    // Parse XML
-    $xml_obj = @simplexml_load_string($xml);
+    // Validate and parse XML
+    libxml_use_internal_errors(true);
+    $xml_obj = simplexml_load_string($xml);
     
     if ($xml_obj === false) {
+        $errors = libxml_get_errors();
+        $error_messages = [];
+        foreach ($errors as $error) {
+            $error_messages[] = trim($error->message);
+        }
+        libxml_clear_errors();
+        error_log("BGG API: XML parsing errors: " . implode(', ', $error_messages));
         return ['error' => 'Failed to parse BGG response'];
     }
     
@@ -170,13 +219,18 @@ function search_bgg_games($db, $query) {
     // Check if there are any items
     if (isset($xml_obj->item)) {
         foreach ($xml_obj->item as $item) {
-            $results[] = [
-                'id' => (int)$item['id'],
-                'name' => (string)$item->name['value'],
-                'year' => isset($item->yearpublished) ? (int)$item->yearpublished['value'] : null
-            ];
+            // Only include board games (should already be filtered by API, but double-check)
+            if ((string)$item['type'] === 'boardgame') {
+                $results[] = [
+                    'id' => (int)$item['id'],
+                    'name' => (string)$item->name['value'],
+                    'year' => isset($item->yearpublished) ? (int)$item->yearpublished['value'] : null
+                ];
+            }
         }
     }
+    
+    error_log("BGG API: Found " . count($results) . " results for: $query");
     
     // Cache the results
     save_to_cache($db, $cache_key, $results);
@@ -202,23 +256,39 @@ function get_bgg_game_details($db, $game_id) {
     $cached = get_from_cache($db, $cache_key);
     
     if ($cached !== null) {
+        error_log("BGG API: Using cached game details for ID: $game_id");
         return $cached;
     }
+    
+    // Get API token from config
+    $config = require __DIR__ . '/../config.php';
+    $api_token = isset($config['bgg_api_token']) ? $config['bgg_api_token'] : '';
     
     // Make API request
     $url = "https://boardgamegeek.com/xmlapi2/thing?id={$game_id}&stats=1";
     
-    $xml = fetch_bgg_url($url);
+    error_log("BGG API: Fetching details for game ID: $game_id");
+    $xml = fetch_bgg_url($url, $api_token);
     
     if ($xml === false) {
         error_log("BGG API details failed for game ID: $game_id");
         return null;
     }
     
-    // Parse XML
-    $xml_obj = @simplexml_load_string($xml);
+    // Validate and parse XML
+    libxml_use_internal_errors(true);
+    $xml_obj = simplexml_load_string($xml);
     
     if ($xml_obj === false || !isset($xml_obj->item)) {
+        $errors = libxml_get_errors();
+        if ($errors) {
+            $error_messages = [];
+            foreach ($errors as $error) {
+                $error_messages[] = trim($error->message);
+            }
+            libxml_clear_errors();
+            error_log("BGG API: XML parsing errors for game $game_id: " . implode(', ', $error_messages));
+        }
         return null;
     }
     
@@ -296,6 +366,8 @@ function get_bgg_game_details($db, $game_id) {
     if (isset($item->statistics->ratings->averageweight)) {
         $game_details['difficulty'] = (float)$item->statistics->ratings->averageweight['value'];
     }
+    
+    error_log("BGG API: Successfully fetched details for: " . $game_details['name'] . " (ID: $game_id)");
     
     // Cache the results
     save_to_cache($db, $cache_key, $game_details);
