@@ -3,11 +3,12 @@
  * Installation Script for BGG Signup System
  * 
  * This script:
- * 1. Collects admin credentials
+ * 1. Collects admin credentials and system settings
  * 2. Creates the SQLite database with all necessary tables
  * 3. Downloads all files from GitHub repository
- * 4. Creates the admin user
- * 5. Deletes itself after successful installation
+ * 4. Updates configuration with user preferences
+ * 5. Creates the admin user
+ * 6. Deletes itself after successful installation
  */
 
 // Configuration
@@ -332,6 +333,37 @@ function delete_directory($dir) {
 }
 
 /**
+ * Update config.php with installation settings
+ */
+function update_config_file($default_language, $bgg_api_token) {
+    log_message("Updating configuration file...");
+    
+    $config_file = 'config.php';
+    
+    if (!file_exists($config_file)) {
+        log_message("WARNING: config.php not found, skipping configuration update");
+        return false;
+    }
+    
+    $config_content = file_get_contents($config_file);
+    
+    // Update default_language
+    $pattern = "/'default_language'\s*=>\s*'[^']*'/";
+    $replacement = "'default_language' => '$default_language'";
+    $config_content = preg_replace($pattern, $replacement, $config_content);
+    
+    // Update bgg_api_token
+    $pattern = "/'bgg_api_token'\s*=>\s*'[^']*'/";
+    $replacement = "'bgg_api_token' => '" . addslashes($bgg_api_token) . "'";
+    $config_content = preg_replace($pattern, $replacement, $config_content);
+    
+    file_put_contents($config_file, $config_content);
+    
+    log_message("Configuration updated: Language=$default_language, BGG Token=" . ($bgg_api_token ? 'SET' : 'NOT SET'));
+    return true;
+}
+
+/**
  * Fetch URL content - tries cURL first, then file_get_contents
  */
 function fetch_url($url) {
@@ -401,8 +433,9 @@ function show_install_form($error = '') {
         .install-form { background: #f5f5f5; padding: 30px; border-radius: 8px; }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
-        .form-group small { color: #666; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
+        .form-group small { color: #666; display: block; margin-top: 5px; }
+        .form-group small a { color: #4CAF50; }
         button { width: 100%; padding: 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
         button:hover { background: #45a049; }
         .error { color: red; background: #ffebee; padding: 10px; border-radius: 4px; margin-bottom: 20px; }
@@ -444,6 +477,21 @@ function show_install_form($error = '') {
             <div class='form-group'>
                 <label>Confirm Password:</label>
                 <input type='password' name='admin_password_confirm' required minlength='6'>
+            </div>
+            
+            <div class='form-group'>
+                <label>Default Language:</label>
+                <select name='default_language'>
+                    <option value='en' " . (($_POST['default_language'] ?? 'en') === 'en' ? 'selected' : '') . ">English</option>
+                    <option value='pl' " . (($_POST['default_language'] ?? '') === 'pl' ? 'selected' : '') . ">Polski (Polish)</option>
+                </select>
+                <small>The default language for the system</small>
+            </div>
+            
+            <div class='form-group'>
+                <label>BoardGameGeek API Token (Optional):</label>
+                <input type='text' name='bgg_api_token' value='" . htmlspecialchars($_POST['bgg_api_token'] ?? '') . "'>
+                <small>Optional - improves BGG integration. <a href='https://boardgamegeek.com/wiki/page/BGG_XML_API2#toc17' target='_blank'>Get token here</a></small>
             </div>
             
             <button type='submit' name='install'>Install System</button>
@@ -490,9 +538,16 @@ function install() {
     $admin_email = trim($_POST['admin_email'] ?? '');
     $admin_password = $_POST['admin_password'] ?? '';
     $admin_password_confirm = $_POST['admin_password_confirm'] ?? '';
+    $default_language = trim($_POST['default_language'] ?? 'en');
+    $bgg_api_token = trim($_POST['bgg_api_token'] ?? '');
+    
+    // Validate language
+    if (!in_array($default_language, ['en', 'pl'])) {
+        $default_language = 'en';
+    }
     
     if (empty($admin_name) || empty($admin_email) || empty($admin_password)) {
-        show_install_form("All fields are required!");
+        show_install_form("All required fields must be filled!");
         return;
     }
     
@@ -563,7 +618,18 @@ function install() {
     flush();
     ob_flush();
     
-    // Step 3: Create necessary directories
+    // Step 3: Update configuration file
+    echo "<p>Updating configuration...</p>";
+    flush();
+    ob_flush();
+    
+    update_config_file($default_language, $bgg_api_token);
+    echo "<p class='success'>Configuration updated!</p>";
+    
+    flush();
+    ob_flush();
+    
+    // Step 4: Create necessary directories
     $directories = ['logs', 'thumbnails', 'languages', 'backup'];
     foreach ($directories as $dir) {
         if (!is_dir($dir)) {
@@ -572,7 +638,7 @@ function install() {
         }
     }
     
-    // Step 4: Self-destruct
+    // Step 5: Self-destruct
     log_message("Installation complete! Deleting installer...");
     
     echo "<p class='success'>Installation completed successfully!</p>";
