@@ -458,8 +458,46 @@ function initTimeline() {
     const end = parseTime(endTime);
     const endWithExtension = end + (extension * 60);
     
+    // Build hour markers
+    const startHour = Math.floor(start / 60);
+    const endHour = Math.ceil(endWithExtension / 60);
+    
     // Build timeline HTML
-    let html = '<div class="timeline-grid">';
+    let html = '<div class="timeline-container-inner">';
+    
+    // Add hour markers header
+    html += '<div class="timeline-hours">';
+    html += '<div class="timeline-table-label-spacer"></div>'; // Spacer for table labels
+    html += '<div class="timeline-hours-bar">';
+    for (let hour = startHour; hour <= endHour; hour++) {
+        const hourMinutes = hour * 60;
+        const position = ((hourMinutes - start) / (endWithExtension - start)) * 100;
+        
+        if (position >= 0 && position <= 100) {
+            const hourStr = hour.toString().padStart(2, '0') + ':00';
+            html += '<div class="timeline-hour-marker" style="left: ' + position + '%;">' + hourStr + '</div>';
+        }
+    }
+    html += '</div>';
+    html += '</div>';
+    
+    html += '<div class="timeline-grid">';
+    
+    // Add hour background stripes
+    html += '<div class="timeline-hour-stripes">';
+    for (let hour = startHour; hour < endHour; hour++) {
+        const hourStart = hour * 60;
+        const hourEnd = (hour + 1) * 60;
+        const leftPos = Math.max(0, ((hourStart - start) / (endWithExtension - start)) * 100);
+        const rightPos = Math.min(100, ((hourEnd - start) / (endWithExtension - start)) * 100);
+        const width = rightPos - leftPos;
+        
+        const isEven = (hour - startHour) % 2 === 0;
+        const className = isEven ? 'timeline-hour-stripe-even' : 'timeline-hour-stripe-odd';
+        
+        html += '<div class="' + className + '" style="left: ' + leftPos + '%; width: ' + width + '%;"></div>';
+    }
+    html += '</div>';
     
     // Add table rows
     <?php foreach ($tables_with_games as $index => $table_data): ?>
@@ -491,6 +529,7 @@ function initTimeline() {
         html += '</div>';
     <?php endforeach; ?>
     
+    html += '</div>';
     html += '</div>';
     
     timeline.html(html);
