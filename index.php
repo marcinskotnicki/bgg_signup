@@ -433,12 +433,10 @@ function initTimeline() {
         html += '<div class="timeline-games">';
         
         <?php foreach ($table_data['games'] as $game): ?>
-            const game<?php echo $game['id']; ?>Start = parseTime('<?php echo $game['start_time']; ?>');
-            const game<?php echo $game['id']; ?>Duration = <?php echo $game['play_time']; ?>;
-            const game<?php echo $game['id']; ?>Left = ((game<?php echo $game['id']; ?>Start - start) / (endWithExtension - start)) * 100;
-            const game<?php echo $game['id']; ?>Width = (game<?php echo $game['id']; ?>Duration / (endWithExtension - start)) * 100;
-            
-            html += '<div class="timeline-game" data-game-id="<?php echo $game['id']; ?>" style="left: ' + game<?php echo $game['id']; ?>Left + '%; width: ' + game<?php echo $game['id']; ?>Width + '%;">';
+            html += '<div class="timeline-game" data-game-id="<?php echo $game['id']; ?>" style="' + 
+                'left: ' + (((parseTime('<?php echo $game['start_time']; ?>') - start) / (endWithExtension - start)) * 100) + '%; ' +
+                'width: ' + ((<?php echo $game['play_time']; ?> / (endWithExtension - start)) * 100) + '%;' +
+                '">';
             html += '<span class="timeline-game-name"><?php echo htmlspecialchars($game['name']); ?></span>';
             html += '</div>';
         <?php endforeach; ?>
