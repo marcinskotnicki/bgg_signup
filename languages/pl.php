@@ -277,5 +277,23 @@ return [
     'login_required_to_comment' => 'Musisz być zalogowany aby dodawać komentarze.',
     'existing_comments' => 'Istniejące Komentarze',
     'captcha_question' => 'Ile to jest {num1} + {num2}?',
+    
+    // Date formatting - Month names (short - genitive case for Polish)
+    '_months_short' => [
+        1 => 'sty', 2 => 'lut', 3 => 'mar', 4 => 'kwi', 5 => 'maj', 6 => 'cze',
+        7 => 'lip', 8 => 'sie', 9 => 'wrz', 10 => 'paź', 11 => 'lis', 12 => 'gru'
+    ],
+    
+    // Date formatting - Month names (full - genitive case for Polish dates)
+    '_months_full' => [
+        1 => 'stycznia', 2 => 'lutego', 3 => 'marca', 4 => 'kwietnia', 5 => 'maja', 6 => 'czerwca',
+        7 => 'lipca', 8 => 'sierpnia', 9 => 'września', 10 => 'października', 11 => 'listopada', 12 => 'grudnia'
+    ],
+    
+    // Date formatting - Day names (full)
+    '_days_full' => [
+        0 => 'niedziela', 1 => 'poniedziałek', 2 => 'wtorek', 3 => 'środa',
+        4 => 'czwartek', 5 => 'piątek', 6 => 'sobota'
+    ],
 ];
 ?>

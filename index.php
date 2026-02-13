@@ -132,13 +132,13 @@ include 'templates/header.php';
                     <a href="?day=<?php echo $day['day_number']; ?>" 
                        class="day-tab <?php echo $day['id'] == $selected_day_id ? 'active' : ''; ?>">
                         <?php echo t('day'); ?> <?php echo $day['day_number']; ?>
-                        <span class="day-date"><?php echo date('M d', strtotime($day['date'])); ?></span>
+                        <span class="day-date"><?php echo format_date($day['date'], 'short'); ?></span>
                     </a>
                 <?php endforeach; ?>
             </div>
         <?php elseif (count($event_days) == 1): ?>
             <div class="single-day-info">
-                <strong><?php echo date('l, F d, Y', strtotime($event_days[0]['date'])); ?></strong>
+                <strong><?php echo format_date($event_days[0]['date'], 'full'); ?></strong>
                 <span class="day-time">
                     <?php echo $event_days[0]['start_time']; ?> - <?php echo $event_days[0]['end_time']; ?>
                 </span>

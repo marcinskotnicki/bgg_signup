@@ -91,14 +91,14 @@ function email_player_joined($db, $game_id, $player_name, $is_reserve = false) {
                 'player' => $player_name,
                 'game' => $game['name'],
                 'event' => $game['event_name'],
-                'date' => date('l, F d, Y', strtotime($game['event_date'])),
+                'date' => format_date($game['event_date'], 'full'),
                 'time' => $game['start_time']
             ])
             : t('email_body_player_joined', [
                 'player' => $player_name,
                 'game' => $game['name'],
                 'event' => $game['event_name'],
-                'date' => date('l, F d, Y', strtotime($game['event_date'])),
+                'date' => format_date($game['event_date'], 'full'),
                 'time' => $game['start_time']
             ]),
         'footer' => t('email_footer_view_game'),
@@ -145,7 +145,7 @@ function email_player_resigned($db, $game_id, $player_name) {
             'player' => $player_name,
             'game' => $game['name'],
             'event' => $game['event_name'],
-            'date' => date('l, F d, Y', strtotime($game['event_date'])),
+            'date' => format_date($game['event_date'], 'full'),
             'time' => $game['start_time']
         ]),
         'footer' => t('email_footer_view_game'),
@@ -192,7 +192,7 @@ function email_player_promoted($db, $player_id, $game_id) {
         'content' => t('email_body_promoted_from_reserve', [
             'game' => $data['name'],
             'event' => $data['event_name'],
-            'date' => date('l, F d, Y', strtotime($data['event_date'])),
+            'date' => format_date($data['event_date'], 'full'),
             'time' => $data['start_time']
         ]),
         'footer' => t('email_footer_view_game'),
@@ -245,7 +245,7 @@ function email_game_changed($db, $game_id, $change_description = '') {
     $content = t('email_body_game_changed', [
         'game' => $game['name'],
         'event' => $game['event_name'],
-        'date' => date('l, F d, Y', strtotime($game['event_date'])),
+        'date' => format_date($game['event_date'], 'full'),
         'time' => $game['start_time']
     ]);
     
@@ -310,7 +310,7 @@ function email_game_deleted($db, $game_id) {
         'content' => t('email_body_game_deleted', [
             'game' => $game['name'],
             'event' => $game['event_name'],
-            'date' => date('l, F d, Y', strtotime($game['event_date'])),
+            'date' => format_date($game['event_date'], 'full'),
             'time' => $game['start_time']
         ]),
         'footer' => t('email_footer_view_event'),

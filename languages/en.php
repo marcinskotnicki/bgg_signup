@@ -277,5 +277,23 @@ return [
     'login_required_to_comment' => 'You must be logged in to add comments.',
     'existing_comments' => 'Existing Comments',
     'captcha_question' => 'What is {num1} + {num2}?',
+    
+    // Date formatting - Month names (short)
+    '_months_short' => [
+        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun',
+        7 => 'Jul', 8 => 'Aug', 9 => 'Sep', 10 => 'Oct', 11 => 'Nov', 12 => 'Dec'
+    ],
+    
+    // Date formatting - Month names (full)
+    '_months_full' => [
+        1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June',
+        7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'
+    ],
+    
+    // Date formatting - Day names (full)
+    '_days_full' => [
+        0 => 'Sunday', 1 => 'Monday', 2 => 'Tuesday', 3 => 'Wednesday',
+        4 => 'Thursday', 5 => 'Friday', 6 => 'Saturday'
+    ],
 ];
 ?>
