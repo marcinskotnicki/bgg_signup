@@ -95,6 +95,17 @@ return [
     // Logs
     'activity_logs' => 'Activity Logs',
     'no_logs_found' => 'No logs found yet.',
+    'show_logs_from' => 'Show logs from',
+    'today' => 'Today',
+    'last_100_entries' => 'Last 100 entries',
+    'all_logs' => 'All logs',
+    'filter' => 'Filter',
+    'log_entries_shown' => 'log entries shown',
+    'timestamp' => 'Timestamp',
+    'user' => 'User',
+    'ip_address' => 'IP Address',
+    'action' => 'Action',
+    'details' => 'Details',
     'logs_directory_not_found' => 'Logs directory not found. Logs will be created automatically when actions are performed.',
     
     // Update System
@@ -231,6 +242,8 @@ return [
     'error_adding_table' => 'Error adding table.',
     'confirm_resign' => 'Are you sure you want to resign from this game?',
     'confirm_delete_game' => 'Are you sure you want to delete this game?',
+    'confirm_soft_delete' => 'Soft delete (can be restored)?',
+    'confirm_hard_delete' => 'PERMANENTLY delete? This cannot be undone!',
     'confirm_fully_delete' => 'Are you sure you want to permanently delete this game? This cannot be undone!',
     'error_occurred' => 'An error occurred. Please try again.',
     

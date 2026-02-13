@@ -95,6 +95,17 @@ return [
     // Logs
     'activity_logs' => 'Logi Aktywności',
     'no_logs_found' => 'Nie znaleziono jeszcze logów.',
+    'show_logs_from' => 'Pokaż logi z',
+    'today' => 'Dzisiaj',
+    'last_100_entries' => 'Ostatnie 100 wpisów',
+    'all_logs' => 'Wszystkie logi',
+    'filter' => 'Filtruj',
+    'log_entries_shown' => 'wpisów logów wyświetlonych',
+    'timestamp' => 'Znacznik czasu',
+    'user' => 'Użytkownik',
+    'ip_address' => 'Adres IP',
+    'action' => 'Akcja',
+    'details' => 'Szczegóły',
     'logs_directory_not_found' => 'Katalog logów nie został znaleziony. Logi będą tworzone automatycznie przy wykonywaniu akcji.',
     
     // Update System
@@ -231,6 +242,8 @@ return [
     'error_adding_table' => 'Błąd dodawania stołu.',
     'confirm_resign' => 'Czy na pewno chcesz zrezygnować z tej gry?',
     'confirm_delete_game' => 'Czy na pewno chcesz usunąć tę grę?',
+    'confirm_soft_delete' => 'Miękkie usunięcie (możliwe przywrócenie)?',
+    'confirm_hard_delete' => 'TRWALE usunąć? To nie może być cofnięte!',
     'confirm_fully_delete' => 'Czy na pewno chcesz trwale usunąć tę grę? To nie może być cofnięte!',
     'error_occurred' => 'Wystąpił błąd. Spróbuj ponownie.',
     

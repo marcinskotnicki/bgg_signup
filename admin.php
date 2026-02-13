@@ -368,8 +368,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         button[type="submit"]:hover { background: #45a049; }
         .day-config { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 4px; }
         .day-config h4 { margin-top: 0; }
-        .log-viewer { background: #f5f5f5; padding: 20px; border-radius: 4px; max-height: 600px; overflow-y: auto; font-family: monospace; font-size: 14px; }
+        .log-viewer { background: #f5f5f5; padding: 20px; border-radius: 4px; max-height: 700px; overflow-y: auto; }
         .log-entry { padding: 5px 0; border-bottom: 1px solid #ddd; }
+        .log-controls { background: #fff; padding: 20px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ddd; }
+        .log-filter-form { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .log-filter-form label { font-weight: bold; margin: 0; }
+        .log-filter-form select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 200px; }
+        .log-stats { background: #e3f2fd; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+        .log-stats p { margin: 0; color: #1976d2; }
+        .log-table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
+        .log-table thead { background: #34495e; color: white; position: sticky; top: 0; }
+        .log-table th { padding: 12px 8px; text-align: left; font-weight: bold; border-bottom: 2px solid #2c3e50; }
+        .log-table td { padding: 10px 8px; border-bottom: 1px solid #ecf0f1; vertical-align: top; }
+        .log-row:hover { background: #f8f9fa; }
+        .log-timestamp { white-space: nowrap; color: #7f8c8d; font-family: monospace; min-width: 150px; }
+        .log-user { color: #2c3e50; font-weight: 500; min-width: 120px; }
+        .log-ip { font-family: monospace; color: #e74c3c; min-width: 120px; }
+        .log-action { color: #27ae60; font-weight: 500; min-width: 100px; }
+        .log-details { color: #34495e; max-width: 400px; word-wrap: break-word; }
         .update-info { background: #fff3cd; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffc107; }
         #num_days { max-width: 100px; }
         h2 { color: #2c3e50; margin-top: 0; }
@@ -403,28 +419,152 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
     <!-- Tab 1: Logs -->
     <div id="logs" class="tab-content active">
         <h2><?php echo t('activity_logs'); ?></h2>
+        
+        <div class="log-controls">
+            <form method="GET" class="log-filter-form">
+                <input type="hidden" name="active_tab" value="logs">
+                
+                <label for="log-filter"><?php echo t('show_logs_from'); ?>:</label>
+                <select name="log_filter" id="log-filter" onchange="this.form.submit()">
+                    <option value="today" <?php echo (!isset($_GET['log_filter']) || $_GET['log_filter'] === 'today') ? 'selected' : ''; ?>>
+                        <?php echo t('today'); ?>
+                    </option>
+                    <option value="last_100" <?php echo (isset($_GET['log_filter']) && $_GET['log_filter'] === 'last_100') ? 'selected' : ''; ?>>
+                        <?php echo t('last_100_entries'); ?>
+                    </option>
+                    <?php
+                    // Get available months from log files
+                    $log_dir_check = LOGS_DIR;
+                    if (is_dir($log_dir_check)) {
+                        $log_files_check = array_diff(scandir($log_dir_check), ['.', '..']);
+                        rsort($log_files_check);
+                        
+                        $months = [];
+                        foreach ($log_files_check as $log_file_check) {
+                            if (preg_match('/^(\d{4}-\d{2})/', $log_file_check, $matches)) {
+                                $months[$matches[1]] = $matches[1];
+                            }
+                        }
+                        
+                        foreach ($months as $month) {
+                            $selected = (isset($_GET['log_filter']) && $_GET['log_filter'] === $month) ? 'selected' : '';
+                            $month_name = date('F Y', strtotime($month . '-01'));
+                            echo "<option value='" . htmlspecialchars($month) . "' $selected>" . htmlspecialchars($month_name) . "</option>";
+                        }
+                    }
+                    ?>
+                    <option value="all" <?php echo (isset($_GET['log_filter']) && $_GET['log_filter'] === 'all') ? 'selected' : ''; ?>>
+                        <?php echo t('all_logs'); ?>
+                    </option>
+                </select>
+                
+                <button type="submit" class="btn-secondary"><?php echo t('filter'); ?></button>
+            </form>
+        </div>
+        
         <div class="log-viewer">
             <?php
+            $log_filter = $_GET['log_filter'] ?? 'today';
+            $all_entries = [];
             $log_dir = LOGS_DIR;
+            
             if (is_dir($log_dir)) {
                 $log_files = array_diff(scandir($log_dir), ['.', '..']);
-                // Sort by date (newest first)
                 rsort($log_files);
                 
-                if (count($log_files) > 0) {
-                    foreach ($log_files as $log_file) {
-                        echo "<h3>" . htmlspecialchars($log_file) . "</h3>";
+                // Collect log entries based on filter
+                foreach ($log_files as $log_file) {
+                    $should_include = false;
+                    
+                    switch ($log_filter) {
+                        case 'today':
+                            $should_include = ($log_file === date('Y-m-d') . '.log');
+                            break;
+                        case 'all':
+                            $should_include = true;
+                            break;
+                        default:
+                            // Check if it's a month filter (YYYY-MM format)
+                            if (preg_match('/^\d{4}-\d{2}$/', $log_filter)) {
+                                $should_include = (strpos($log_file, $log_filter) === 0);
+                            } elseif ($log_filter === 'last_100') {
+                                $should_include = true; // Will limit after collecting
+                            }
+                    }
+                    
+                    if ($should_include) {
                         $log_content = file_get_contents($log_dir . '/' . $log_file);
-                        $lines = explode("
-", $log_content);
-                        // Reverse to show newest first
-                        $lines = array_reverse($lines);
+                        $lines = explode("\n", $log_content);
+                        
                         foreach ($lines as $line) {
                             if (trim($line) !== '') {
-                                echo "<div class='log-entry'>" . htmlspecialchars($line) . "</div>";
+                                // Parse log entry to extract components
+                                // Format: YYYY-MM-DD HH:MM:SS - User ID: X (IP: xxx.xxx.xxx.xxx) - action - details
+                                if (preg_match('/^(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}) - (.+?) \(IP: (.+?)\) - (.+?) - (.+)$/', $line, $matches)) {
+                                    $all_entries[] = [
+                                        'timestamp' => $matches[1],
+                                        'user' => $matches[2],
+                                        'ip' => $matches[3],
+                                        'action' => $matches[4],
+                                        'details' => $matches[5],
+                                        'raw' => $line
+                                    ];
+                                } else {
+                                    // Fallback for entries that don't match expected format
+                                    $all_entries[] = [
+                                        'timestamp' => '',
+                                        'user' => '',
+                                        'ip' => '',
+                                        'action' => '',
+                                        'details' => $line,
+                                        'raw' => $line
+                                    ];
+                                }
                             }
                         }
                     }
+                }
+                
+                // Sort by timestamp (newest first)
+                usort($all_entries, function($a, $b) {
+                    return strcmp($b['timestamp'], $a['timestamp']);
+                });
+                
+                // Limit to last 100 if that filter is selected
+                if ($log_filter === 'last_100') {
+                    $all_entries = array_slice($all_entries, 0, 100);
+                }
+                
+                // Display entries
+                if (count($all_entries) > 0) {
+                    echo "<div class='log-stats'>";
+                    echo "<p><strong>" . count($all_entries) . "</strong> " . t('log_entries_shown') . "</p>";
+                    echo "</div>";
+                    
+                    echo "<table class='log-table'>";
+                    echo "<thead>";
+                    echo "<tr>";
+                    echo "<th>" . t('timestamp') . "</th>";
+                    echo "<th>" . t('user') . "</th>";
+                    echo "<th>" . t('ip_address') . "</th>";
+                    echo "<th>" . t('action') . "</th>";
+                    echo "<th>" . t('details') . "</th>";
+                    echo "</tr>";
+                    echo "</thead>";
+                    echo "<tbody>";
+                    
+                    foreach ($all_entries as $entry) {
+                        echo "<tr class='log-row'>";
+                        echo "<td class='log-timestamp'>" . htmlspecialchars($entry['timestamp']) . "</td>";
+                        echo "<td class='log-user'>" . htmlspecialchars($entry['user']) . "</td>";
+                        echo "<td class='log-ip'>" . htmlspecialchars($entry['ip']) . "</td>";
+                        echo "<td class='log-action'>" . htmlspecialchars($entry['action']) . "</td>";
+                        echo "<td class='log-details'>" . htmlspecialchars($entry['details']) . "</td>";
+                        echo "</tr>";
+                    }
+                    
+                    echo "</tbody>";
+                    echo "</table>";
                 } else {
                     echo "<p>" . t('no_logs_found') . "</p>";
                 }
@@ -434,6 +574,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             ?>
         </div>
     </div>
+    
     
     
     <!-- Tab 2: Options -->
