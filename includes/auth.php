@@ -270,4 +270,4 @@ function require_admin($db) {
         exit;
     }
 }
-?>
+// Note: Closing ?> tag omitted to prevent whitespace output issues

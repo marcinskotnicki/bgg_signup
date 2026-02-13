@@ -50,6 +50,10 @@ $host_email = isset($_POST['host_email']) ? trim($_POST['host_email']) : '';
 $initial_comment = isset($_POST['initial_comment']) ? trim($_POST['initial_comment']) : '';
 $join_as_player = isset($_POST['join_as_player']) && $_POST['join_as_player'] == '1';
 
+// DEBUG: Log the table_id being received
+error_log("ADD_GAME_SUBMIT: Received table_id = $table_id for game '$name'");
+error_log("ADD_GAME_SUBMIT: POST data = " . print_r($_POST, true));
+
 // Validate required fields
 if (!$table_id || !$name || !$play_time || !$min_players || !$max_players || !$start_time || !$language || !$rules_explanation || !$host_name) {
     echo json_encode(['success' => false, 'error' => 'Missing required fields']);

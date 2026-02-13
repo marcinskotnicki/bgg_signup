@@ -29,6 +29,9 @@ $current_user = get_current_user($db);
 // Get table ID
 $table_id = isset($_GET['table_id']) ? intval($_GET['table_id']) : 0;
 
+// DEBUG: Log the table_id being loaded
+error_log("ADD_GAME_FORM: Loaded with table_id = $table_id");
+
 if (!$table_id) {
     die('Invalid table ID');
 }
@@ -513,9 +516,16 @@ $(document).ready(function() {
         
         const formData = $(this).serialize();
         
+        // DEBUG: Log the form data being submitted
+        console.log('Submitting add game form');
+        console.log('Serialized form data:', formData);
+        console.log('Form element:', this);
+        console.log('Table ID input value:', $('input[name="table_id"]', this).val());
+        
         $('#submit-game').prop('disabled', true).text('<?php echo t('saving'); ?>...');
         
         $.post('../ajax/add_game_submit.php', formData, function(response) {
+            console.log('Received response:', response);
             if (response.success) {
                 closeModal();
                 // Force page reload with cache busting

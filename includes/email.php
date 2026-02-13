@@ -497,4 +497,4 @@ function email_template($data) {
     
     return $html;
 }
-?>
+// Note: Closing ?> tag omitted to prevent whitespace output issues

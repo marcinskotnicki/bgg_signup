@@ -234,12 +234,71 @@ $(document).ready(function() {
         
         $('#submit-join').prop('disabled', true).text('<?php echo t('saving'); ?>...');
         
-        $.post('../ajax/join_game_submit.php', formData, function(response) {
-            if (response.success) {
-                closeModal();
-                location.reload();
-            } else {
-                alert(response.error || '<?php echo t('error_occurred'); ?>');
+        $.ajax({
+            url: '../ajax/join_game_submit.php',
+            method: 'POST',
+            data: formData,
+            dataType: 'json',
+            timeout: 30000, // 30 second timeout
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    // Force page reload with cache busting
+                    window.location.href = window.location.href.split('?')[0] + '?' + new Date().getTime();
+                } else {
+                    alert(response.error || '<?php echo t('error_occurred'); ?>');
+                    $('#submit-join').prop('disabled', false).text('<?php echo t('sign_up'); ?>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('=== JOIN GAME ERROR DEBUG ===');
+                console.error('Status:', status);
+                console.error('Error:', error);
+                console.error('HTTP Status Code:', xhr.status);
+                console.error('Response Text Length:', xhr.responseText.length);
+                console.error('Response Text:', xhr.responseText);
+                console.error('First 200 chars:', xhr.responseText.substring(0, 200));
+                console.error('Last 200 chars:', xhr.responseText.substring(xhr.responseText.length - 200));
+                
+                let errorMsg = '<?php echo t('error_occurred'); ?>';
+                
+                if (status === 'timeout') {
+                    errorMsg = 'Request timed out. Please try again.';
+                } else if (xhr.responseText) {
+                    // Try to parse as JSON
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        console.log('Parsed JSON successfully:', response);
+                        errorMsg = response.error || errorMsg;
+                    } catch (e) {
+                        console.error('JSON parse failed:', e);
+                        
+                        // Try to extract JSON from response (in case there are PHP warnings before it)
+                        const jsonMatch = xhr.responseText.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            console.log('Found JSON in response:', jsonMatch[0]);
+                            try {
+                                const response = JSON.parse(jsonMatch[0]);
+                                console.log('Extracted JSON:', response);
+                                
+                                if (response.success) {
+                                    // Actually succeeded! There were just warnings/notices before JSON
+                                    console.warn('SUCCESS despite PHP warnings!');
+                                    closeModal();
+                                    window.location.href = window.location.href.split('?')[0] + '?' + new Date().getTime();
+                                    return;
+                                }
+                                errorMsg = response.error || errorMsg;
+                            } catch (e2) {
+                                console.error('Could not parse extracted JSON:', e2);
+                            }
+                        }
+                        
+                        errorMsg = 'Server error. Check browser console (F12) for details.';
+                    }
+                }
+                
+                alert(errorMsg);
                 $('#submit-join').prop('disabled', false).text('<?php echo t('sign_up'); ?>');
             }
         });

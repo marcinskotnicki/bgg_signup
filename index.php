@@ -97,6 +97,7 @@ foreach ($tables as $table) {
         $stmt->execute([$game['id']]);
         $game['players'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+    unset($game); // CRITICAL: Break reference to prevent variable pollution across tables
     
     $tables_with_games[] = [
         'table' => $table,

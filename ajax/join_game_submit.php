@@ -74,6 +74,29 @@ try {
         exit;
     }
     
+    // Check if player already joined this game (by email or user_id)
+    if ($current_user) {
+        // Check by user_id for logged-in users
+        $stmt = $db->prepare("SELECT COUNT(*) FROM players WHERE game_id = ? AND user_id = ?");
+        $stmt->execute([$game_id, $current_user['id']]);
+        $existing = $stmt->fetchColumn();
+        
+        if ($existing > 0) {
+            echo json_encode(['success' => false, 'error' => 'You have already signed up for this game']);
+            exit;
+        }
+    } elseif ($player_email) {
+        // Check by email for non-logged-in users
+        $stmt = $db->prepare("SELECT COUNT(*) FROM players WHERE game_id = ? AND player_email = ?");
+        $stmt->execute([$game_id, $player_email]);
+        $existing = $stmt->fetchColumn();
+        
+        if ($existing > 0) {
+            echo json_encode(['success' => false, 'error' => 'This email address has already signed up for this game']);
+            exit;
+        }
+    }
+    
     // Count active players
     $stmt = $db->prepare("SELECT COUNT(*) FROM players WHERE game_id = ? AND is_reserve = 0");
     $stmt->execute([$game_id]);
@@ -109,8 +132,13 @@ try {
     log_activity($db, $current_user ? $current_user['id'] : null, 'player_joined', 
         "Player $player_name joined game: {$game['name']} (ID: $game_id)" . ($join_as_reserve ? " as reserve" : ""));
     
-    // Send email notification
-    email_player_joined($db, $game_id, $player_name, $join_as_reserve);
+    // Send email notification (wrapped in try-catch so email failures don't break the response)
+    try {
+        email_player_joined($db, $game_id, $player_name, $join_as_reserve);
+    } catch (Exception $e) {
+        // Log email error but don't fail the request
+        error_log("Email sending failed in join_game_submit: " . $e->getMessage());
+    }
     
     echo json_encode([
         'success' => true,
@@ -122,6 +150,10 @@ try {
     if (isset($db) && $db->inTransaction()) {
         $db->rollBack();
     }
+    error_log("join_game_submit error: " . $e->getMessage());
     echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+} catch (Exception $e) {
+    error_log("join_game_submit unexpected error: " . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => 'An unexpected error occurred']);
 }
 ?>
