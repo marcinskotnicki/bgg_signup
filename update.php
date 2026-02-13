@@ -348,15 +348,7 @@ function fetch_url($url) {
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'BGG-Signup-Updater');
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        
-        // Add GitHub token if available
-        if (defined('GITHUB_TOKEN') && GITHUB_TOKEN) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Authorization: token ' . GITHUB_TOKEN,
-                'User-Agent: BGG-Signup-Updater'
-            ]);
-        }
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60); // Increased timeout for ZIP download
         
         $response = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -368,27 +360,15 @@ function fetch_url($url) {
         }
         
         log_update_message("cURL failed: HTTP $http_code - $error");
-        
-        // Check for rate limit
-        if ($http_code === 403) {
-            log_update_message("GitHub API rate limit exceeded. Wait an hour or add a GitHub token to config.php");
-        }
     }
     
     // Fall back to file_get_contents
     if (ini_get('allow_url_fopen')) {
-        $headers = ['User-Agent: BGG-Signup-Updater'];
-        
-        // Add GitHub token if available
-        if (defined('GITHUB_TOKEN') && GITHUB_TOKEN) {
-            $headers[] = 'Authorization: token ' . GITHUB_TOKEN;
-        }
-        
         $context = stream_context_create([
             'http' => [
                 'method' => 'GET',
-                'header' => implode("\r\n", $headers),
-                'timeout' => 30
+                'header' => 'User-Agent: BGG-Signup-Updater',
+                'timeout' => 60
             ],
             'ssl' => [
                 'verify_peer' => true,
@@ -412,81 +392,161 @@ function fetch_url($url) {
 }
 
 /**
- * Download and update files from GitHub
+ * Copy directory contents recursively, skipping certain files
  */
-function update_files_from_github($path = '') {
-    $api_url = GITHUB_API . $path;
+function copy_directory_contents($source, $dest) {
+    $files_copied = 0;
+    $files_skipped = 0;
     
-    log_update_message("Checking GitHub for updates in: " . ($path ? $path : 'root directory'));
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
     
-    // Use fetch_url instead of file_get_contents
-    $response = fetch_url($api_url);
-    
-    if ($response === false) {
-        log_update_message("ERROR: Could not connect to GitHub API");
-        return false;
-    }
-    
-    $files = json_decode($response, true);
-    
-    if (!is_array($files)) {
-        log_update_message("ERROR: Invalid response from GitHub API");
-        log_update_message("Response: " . substr($response, 0, 500));
-        return false;
-    }
-    
-    $updated = 0;
-    $skipped = 0;
-    
-    foreach ($files as $file) {
-        // Skip install.php, update.php, and database files
-        if (in_array($file['name'], ['install.php', 'update.php']) || 
-            strpos($file['name'], '.db') !== false) {
-            $skipped++;
+    foreach ($iterator as $item) {
+        // Get relative path
+        $relative_path = substr($item->getPathname(), strlen($source) + 1);
+        
+        // Skip install.php, update.php, config.php, and database files
+        $basename = basename($relative_path);
+        if (in_array($basename, ['install.php', 'update.php', 'config.php']) || 
+            strpos($relative_path, '.db') !== false ||
+            strpos($relative_path, '.git') !== false) {
+            $files_skipped++;
             continue;
         }
         
-        if ($file['type'] === 'file') {
-            // Download file
-            $file_content = fetch_url($file['download_url']);
+        $dest_path = $dest . '/' . $relative_path;
+        
+        if ($item->isDir()) {
+            // Create directory
+            if (!is_dir($dest_path)) {
+                mkdir($dest_path, 0755, true);
+            }
+        } else {
+            // Check if file needs updating
+            $needs_update = true;
+            if (file_exists($dest_path)) {
+                $current_content = file_get_contents($dest_path);
+                $new_content = file_get_contents($item->getPathname());
+                if ($current_content === $new_content) {
+                    $needs_update = false;
+                    $files_skipped++;
+                }
+            }
             
-            if ($file_content !== false) {
-                // Create directory if needed
-                $dir = dirname($file['path']);
-                if ($dir !== '.' && !is_dir($dir)) {
-                    mkdir($dir, 0755, true);
+            if ($needs_update) {
+                // Copy file
+                $dest_dir = dirname($dest_path);
+                if (!is_dir($dest_dir)) {
+                    mkdir($dest_dir, 0755, true);
                 }
                 
-                // Check if file needs updating
-                $needs_update = true;
-                if (file_exists($file['path'])) {
-                    $current_content = file_get_contents($file['path']);
-                    if ($current_content === $file_content) {
-                        $needs_update = false;
-                    }
-                }
-                
-                if ($needs_update) {
-                    file_put_contents($file['path'], $file_content);
-                    log_update_message("Updated: " . $file['path']);
-                    $updated++;
+                if (copy($item->getPathname(), $dest_path)) {
+                    log_update_message("Updated: $relative_path");
+                    $files_copied++;
                 } else {
-                    $skipped++;
+                    log_update_message("WARNING: Could not copy: $relative_path");
                 }
-            } else {
-                log_update_message("WARNING: Could not download: " . $file['path']);
             }
-            
-        } elseif ($file['type'] === 'dir') {
-            // Recursively update directory contents
-            if (!is_dir($file['path'])) {
-                mkdir($file['path'], 0755, true);
-            }
-            update_files_from_github($file['path']);
         }
     }
     
-    log_update_message("Files checked: $updated updated, $skipped skipped/unchanged");
+    log_update_message("Files: $files_copied updated, $files_skipped skipped/unchanged");
+    return $files_copied;
+}
+
+/**
+ * Delete directory recursively
+ */
+function delete_directory($dir) {
+    if (!is_dir($dir)) {
+        return;
+    }
+    
+    $files = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::CHILD_FIRST
+    );
+    
+    foreach ($files as $fileinfo) {
+        $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
+        @$todo($fileinfo->getRealPath());
+    }
+    
+    @rmdir($dir);
+}
+
+/**
+ * Download and extract files from GitHub repository ZIP
+ */
+function update_files_from_github() {
+    log_update_message("Downloading files from GitHub...");
+    
+    // GitHub ZIP URL - no API needed, no rate limits!
+    $zip_url = GITHUB_REPO . '/archive/refs/heads/main.zip';
+    $zip_file = 'github_update.zip';
+    $extract_dir = 'github_update_extract';
+    
+    // Download ZIP file
+    log_update_message("Downloading ZIP from: $zip_url");
+    $zip_content = fetch_url($zip_url);
+    
+    if ($zip_content === false) {
+        log_update_message("ERROR: Failed to download ZIP file from GitHub");
+        return false;
+    }
+    
+    // Save ZIP file
+    file_put_contents($zip_file, $zip_content);
+    log_update_message("ZIP file downloaded (" . number_format(strlen($zip_content)) . " bytes)");
+    
+    // Extract ZIP file
+    if (!class_exists('ZipArchive')) {
+        log_update_message("ERROR: ZipArchive extension not available. Trying PharData...");
+        
+        // Try using PharData as fallback
+        try {
+            $phar = new PharData($zip_file);
+            $phar->extractTo($extract_dir, null, true);
+            log_update_message("ZIP extracted using PharData");
+        } catch (Exception $e) {
+            log_update_message("ERROR: Could not extract ZIP: " . $e->getMessage());
+            @unlink($zip_file);
+            return false;
+        }
+    } else {
+        $zip = new ZipArchive;
+        if ($zip->open($zip_file) === TRUE) {
+            $zip->extractTo($extract_dir);
+            $zip->close();
+            log_update_message("ZIP file extracted");
+        } else {
+            log_update_message("ERROR: Could not open ZIP file");
+            @unlink($zip_file);
+            return false;
+        }
+    }
+    
+    // Find the extracted folder (it will be something like 'bgg_signup-main')
+    $extracted_folders = glob($extract_dir . '/*', GLOB_ONLYDIR);
+    if (empty($extracted_folders)) {
+        log_update_message("ERROR: Could not find extracted folder");
+        @unlink($zip_file);
+        return false;
+    }
+    
+    $source_dir = $extracted_folders[0];
+    log_update_message("Found extracted folder: $source_dir");
+    
+    // Copy files from extracted folder to current directory
+    $files_copied = copy_directory_contents($source_dir, '.');
+    
+    // Clean up
+    @unlink($zip_file);
+    delete_directory($extract_dir);
+    
+    log_update_message("Update completed! ($files_copied files updated)");
     return true;
 }
 

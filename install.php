@@ -12,13 +12,8 @@
 
 // Configuration
 define('GITHUB_REPO', 'https://github.com/marcinskotnicki/bgg_signup');
-define('GITHUB_API', 'https://api.github.com/repos/marcinskotnicki/bgg_signup/contents/');
 define('DB_FILE', 'boardgame_events.db');
 define('INSTALL_LOG', 'install_log.txt');
-
-// Optional: GitHub Personal Access Token (to avoid rate limits)
-// Get one at: https://github.com/settings/tokens (no permissions needed for public repos)
-define('GITHUB_TOKEN', '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'); // Leave empty if you don't have one
 
 // Start output buffering for better error handling
 ob_start();
@@ -196,62 +191,144 @@ function create_database($admin_name, $admin_email, $admin_password) {
 }
 
 /**
- * Download files from GitHub repository
+ * Download and extract files from GitHub repository ZIP
  */
-function download_from_github($path = '') {
+function download_from_github() {
     log_message("Downloading files from GitHub...");
     
-    $api_url = GITHUB_API . $path;
+    // GitHub ZIP URL - no API needed, no rate limits!
+    $zip_url = GITHUB_REPO . '/archive/refs/heads/main.zip';
+    $zip_file = 'github_download.zip';
+    $extract_dir = 'github_extract';
     
-    // Try cURL first, then fall back to file_get_contents
-    $response = fetch_url($api_url);
+    // Download ZIP file
+    log_message("Downloading ZIP from: $zip_url");
+    $zip_content = fetch_url($zip_url);
     
-    if ($response === false) {
-        log_message("Failed to connect to GitHub API");
+    if ($zip_content === false) {
+        log_message("Failed to download ZIP file from GitHub");
         return false;
     }
     
-    $files = json_decode($response, true);
+    // Save ZIP file
+    file_put_contents($zip_file, $zip_content);
+    log_message("ZIP file downloaded (" . number_format(strlen($zip_content)) . " bytes)");
     
-    if (!is_array($files)) {
-        log_message("Invalid response from GitHub API");
-        log_message("Response: " . substr($response, 0, 500));
+    // Extract ZIP file
+    if (!class_exists('ZipArchive')) {
+        log_message("ERROR: ZipArchive extension not available. Trying PharData...");
+        
+        // Try using PharData as fallback
+        try {
+            $phar = new PharData($zip_file);
+            $phar->extractTo($extract_dir, null, true);
+            log_message("ZIP extracted using PharData");
+        } catch (Exception $e) {
+            log_message("ERROR: Could not extract ZIP: " . $e->getMessage());
+            @unlink($zip_file);
+            return false;
+        }
+    } else {
+        $zip = new ZipArchive;
+        if ($zip->open($zip_file) === TRUE) {
+            $zip->extractTo($extract_dir);
+            $zip->close();
+            log_message("ZIP file extracted");
+        } else {
+            log_message("ERROR: Could not open ZIP file");
+            @unlink($zip_file);
+            return false;
+        }
+    }
+    
+    // Find the extracted folder (it will be something like 'bgg_signup-main')
+    $extracted_folders = glob($extract_dir . '/*', GLOB_ONLYDIR);
+    if (empty($extracted_folders)) {
+        log_message("ERROR: Could not find extracted folder");
+        @unlink($zip_file);
         return false;
     }
     
-    foreach ($files as $file) {
+    $source_dir = $extracted_folders[0];
+    log_message("Found extracted folder: $source_dir");
+    
+    // Copy files from extracted folder to current directory
+    $files_copied = copy_directory_contents($source_dir, '.');
+    
+    // Clean up
+    @unlink($zip_file);
+    delete_directory($extract_dir);
+    
+    log_message("Files copied successfully! ($files_copied files)");
+    return true;
+}
+
+/**
+ * Copy directory contents recursively, skipping install.php and .db files
+ */
+function copy_directory_contents($source, $dest) {
+    $files_copied = 0;
+    
+    $iterator = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::SELF_FIRST
+    );
+    
+    foreach ($iterator as $item) {
+        // Get relative path
+        $relative_path = substr($item->getPathname(), strlen($source) + 1);
+        
         // Skip install.php and database files
-        if ($file['name'] === 'install.php' || strpos($file['name'], '.db') !== false) {
+        if (basename($relative_path) === 'install.php' || 
+            strpos($relative_path, '.db') !== false ||
+            strpos($relative_path, '.git') !== false) {
             continue;
         }
         
-        if ($file['type'] === 'file') {
-            // Download file
-            $file_content = fetch_url($file['download_url']);
+        $dest_path = $dest . '/' . $relative_path;
+        
+        if ($item->isDir()) {
+            // Create directory
+            if (!is_dir($dest_path)) {
+                mkdir($dest_path, 0755, true);
+            }
+        } else {
+            // Copy file
+            $dest_dir = dirname($dest_path);
+            if (!is_dir($dest_dir)) {
+                mkdir($dest_dir, 0755, true);
+            }
             
-            if ($file_content !== false) {
-                // Create directory if needed
-                $dir = dirname($file['path']);
-                if ($dir !== '.' && !is_dir($dir)) {
-                    mkdir($dir, 0755, true);
-                }
-                
-                file_put_contents($file['path'], $file_content);
-                log_message("Downloaded: " . $file['path']);
+            if (copy($item->getPathname(), $dest_path)) {
+                $files_copied++;
             } else {
-                log_message("Failed to download: " . $file['path']);
+                log_message("WARNING: Could not copy: $relative_path");
             }
-            
-        } elseif ($file['type'] === 'dir') {
-            // Recursively download directory contents
-            if (!is_dir($file['path'])) {
-                mkdir($file['path'], 0755, true);
-            }
-            download_from_github($file['path']);
         }
     }
     
-    return true;
+    return $files_copied;
+}
+
+/**
+ * Delete directory recursively
+ */
+function delete_directory($dir) {
+    if (!is_dir($dir)) {
+        return;
+    }
+    
+    $files = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::CHILD_FIRST
+    );
+    
+    foreach ($files as $fileinfo) {
+        $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
+        @$todo($fileinfo->getRealPath());
+    }
+    
+    @rmdir($dir);
 }
 
 /**
@@ -266,15 +343,7 @@ function fetch_url($url) {
         curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_USERAGENT, 'BGG-Signup-Installer');
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        
-        // Add GitHub token if available
-        if (defined('GITHUB_TOKEN') && GITHUB_TOKEN) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, [
-                'Authorization: token ' . GITHUB_TOKEN,
-                'User-Agent: BGG-Signup-Installer'
-            ]);
-        }
+        curl_setopt($ch, CURLOPT_TIMEOUT, 60); // Increased timeout for ZIP download
         
         $response = curl_exec($ch);
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -286,27 +355,15 @@ function fetch_url($url) {
         }
         
         log_message("cURL failed: HTTP $http_code - $error");
-        
-        // Check for rate limit
-        if ($http_code === 403) {
-            log_message("GitHub API rate limit exceeded. Wait an hour or use a GitHub token.");
-        }
     }
     
     // Fall back to file_get_contents
     if (ini_get('allow_url_fopen')) {
-        $headers = ['User-Agent: BGG-Signup-Installer'];
-        
-        // Add GitHub token if available
-        if (defined('GITHUB_TOKEN') && GITHUB_TOKEN) {
-            $headers[] = 'Authorization: token ' . GITHUB_TOKEN;
-        }
-        
         $context = stream_context_create([
             'http' => [
                 'method' => 'GET',
-                'header' => implode("\r\n", $headers),
-                'timeout' => 30
+                'header' => 'User-Agent: BGG-Signup-Installer',
+                'timeout' => 60
             ],
             'ssl' => [
                 'verify_peer' => true,
