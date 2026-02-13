@@ -518,7 +518,8 @@ $(document).ready(function() {
         $.post('../ajax/add_game_submit.php', formData, function(response) {
             if (response.success) {
                 closeModal();
-                location.reload();
+                // Force page reload with cache busting
+                window.location.href = window.location.href.split('?')[0] + '?' + new Date().getTime();
             } else {
                 alert(response.error || '<?php echo t('error_occurred'); ?>');
                 $('#submit-game').prop('disabled', false).text('<?php echo t('add_game'); ?>');

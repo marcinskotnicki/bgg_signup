@@ -12,6 +12,11 @@
 // Load configuration
 $config = require_once 'config.php';
 
+// Prevent browser caching to ensure fresh data is always displayed
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Cache-Control: post-check=0, pre-check=0", false);
+header("Pragma: no-cache");
+
 // Load translation system
 require_once 'includes/translations.php';
 
@@ -297,9 +302,27 @@ $(document).ready(function() {
         e.preventDefault();
         const gameId = $(this).data('game-id');
         
-        if (confirm('<?php echo t('confirm_delete_game'); ?>')) {
-            deleteGame(gameId);
+        // Check if hard deletion is allowed
+        <?php if ($config['allow_full_deletion']): ?>
+        // Ask user if they want soft or hard delete
+        const deleteChoice = confirm('<?php echo t('confirm_delete_game'); ?>\n\nClick OK for soft delete (game can be restored).\nClick Cancel, then you\'ll be asked about permanent deletion.');
+        
+        if (deleteChoice) {
+            // Soft delete
+            deleteGame(gameId, 'soft');
+        } else {
+            // Ask about hard delete
+            const hardDelete = confirm('Do you want to PERMANENTLY delete this game?\n\nThis cannot be undone!');
+            if (hardDelete) {
+                fullyDeleteGame(gameId);
+            }
         }
+        <?php else: ?>
+        // Only soft delete allowed
+        if (confirm('<?php echo t('confirm_delete_game'); ?>')) {
+            deleteGame(gameId, 'soft');
+        }
+        <?php endif; ?>
     });
     
     // Restore Game Button
@@ -376,13 +399,21 @@ function loadEditGameForm(gameId) {
 }
 
 // Delete Game
-function deleteGame(gameId) {
-    $.post('ajax/delete_game.php', { game_id: gameId }, function(response) {
+function deleteGame(gameId, deletionType) {
+    deletionType = deletionType || 'soft'; // Default to soft delete
+    
+    $.post('ajax/delete_game.php', { 
+        game_id: gameId,
+        deletion_type: deletionType
+    }, function(response) {
         if (response.success) {
-            location.reload();
+            // Force page reload with cache busting
+            window.location.href = window.location.href.split('?')[0] + '?' + new Date().getTime();
         } else {
             alert(response.error || '<?php echo t('error_occurred'); ?>');
         }
+    }, 'json').fail(function() {
+        alert('<?php echo t('error_occurred'); ?>');
     });
 }
 
@@ -397,10 +428,13 @@ function loadRestoreGameForm(gameId) {
 function fullyDeleteGame(gameId) {
     $.post('ajax/fully_delete_game.php', { game_id: gameId }, function(response) {
         if (response.success) {
-            location.reload();
+            // Force page reload with cache busting
+            window.location.href = window.location.href.split('?')[0] + '?' + new Date().getTime();
         } else {
             alert(response.error || '<?php echo t('error_occurred'); ?>');
         }
+    }, 'json').fail(function() {
+        alert('<?php echo t('error_occurred'); ?>');
     });
 }
 

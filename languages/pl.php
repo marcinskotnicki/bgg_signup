@@ -17,7 +17,7 @@ return [
     'invalid_credentials' => 'Nieprawidłowy email lub hasło!',
     'not_admin_user' => 'To konto nie ma uprawnień administratora!',
     'admin_email' => 'Email Administratora',
-    'view_site' => 'Zobacz stronę',
+    'view_site' => 'Zobacz Stronę',
     
     // Admin Tabs
     'tab_add_event' => 'Dodaj Nowe Wydarzenie',
@@ -99,10 +99,10 @@ return [
     
     // Update System
     'update_system' => 'Aktualizuj System',
-    'update_warning' => 'Uwaga: Ta opcja sprawdzi aktualizacje na GitHub i zastosuje je w systemie. Kopia zapasowa zostanie automatycznie utworzona przed jakimikolwiek zmianami.',
+    'update_warning' => 'Uwaga: To sprawdzi aktualizacje na GitHub i zastosuje je w systemie. Kopia zapasowa zostanie utworzona automatycznie przed jakimikolwiek zmianami.',
     'github_repository' => 'Repozytorium GitHub',
     'run_update' => 'Uruchom Aktualizację',
-    'update_confirm' => 'Czy na pewno chcesz uruchomić aktualizację? Kopia zapasowa zostanie utworzona.',
+    'update_confirm' => 'Czy na pewno chcesz uruchomić aktualizację? Kopia zapasowa zostanie utworzona najpierw.',
     'update_completed_success' => 'Aktualizacja zakończona pomyślnie!',
     'update_failed' => 'Aktualizacja nie powiodła się! Sprawdź logi dla szczegółów.',
     'update_log' => 'Log Aktualizacji',
@@ -119,9 +119,9 @@ return [
     'difficulty' => 'Trudność',
     'language' => 'Język',
     'host' => 'Gospodarz',
-    'rules_explanation' => 'Tłumaczenie Zasad',
-    'rules_will_be_explained' => 'Tłumaczę zasady',
-    'rules_knowledge_required' => 'Gracze powinni znać zasady',
+    'rules_explanation' => 'Wyjaśnienie Zasad',
+    'rules_will_be_explained' => 'Zasady zostaną wyjaśnione',
+    'rules_knowledge_required' => 'Wszyscy gracze powinni znać zasady',
     'minutes' => 'minut',
     'min_max_players' => '{min}-{max} graczy',
     
@@ -157,7 +157,7 @@ return [
     'host_name' => 'Twoje Imię',
     'host_email' => 'Twój Email',
     'join_as_first_player' => 'Czy chcesz również dołączyć do tej gry jako pierwszy gracz?',
-    'language_independent' => 'Niezależna językowo',
+    'language_independent' => 'Niezależny od Języka',
     
     // Frontend - Comments
     'comments' => 'Komentarze',

@@ -293,7 +293,8 @@ $('#edit-game-submit-form').submit(function(e) {
         success: function(response) {
             if (response.success) {
                 closeModal();
-                location.reload();
+                // Force page reload with cache busting
+                window.location.href = window.location.href.split('?')[0] + '?' + new Date().getTime();
             } else {
                 alert(response.error || '<?php echo t('error_occurred'); ?>');
             }
