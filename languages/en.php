@@ -292,6 +292,23 @@ return [
     'existing_comments' => 'Existing Comments',
     'captcha_question' => 'What is {num1} + {num2}?',
     
+    // Poll System
+    'create_poll' => 'Create Poll',
+    'game_poll' => 'Game Selection Poll',
+    'vote_for_game' => 'Vote for Game',
+    'vote_threshold' => 'Votes needed',
+    'votes' => 'votes',
+    'vote_for_this' => 'Vote for this',
+    'submit_vote' => 'Submit Vote',
+    'your_name' => 'Your Name',
+    'your_email' => 'Your Email',
+    'email_notification_on_poll_close' => 'You will receive an email when the poll closes',
+    'winner' => 'Winner',
+    'created_by' => 'Created by',
+    'closed' => 'Closed',
+    'email_subject_poll_closed' => 'Poll closed: {game} was selected',
+    'email_body_poll_closed' => 'The poll has closed and <strong>{game}</strong> was selected for the event <strong>{event}</strong>!',
+    
     // Date formatting - Month names (short)
     '_months_short' => [
         1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun',

@@ -497,3 +497,42 @@ function email_template($data) {
     
     return $html;
 }
+
+/**
+ * Send email when poll closes
+ */
+function email_poll_closed($db, $poll_id, $winning_game_name, $voter_email) {
+    $config = require __DIR__ . '/../config.php';
+    
+    if (!$config['send_emails'] || !$voter_email) {
+        return;
+    }
+    
+    // Get poll details
+    $stmt = $db->prepare("SELECT p.*, e.name as event_name 
+                          FROM polls p 
+                          JOIN tables t ON p.table_id = t.id 
+                          JOIN event_days ed ON t.event_day_id = ed.id 
+                          JOIN events e ON ed.event_id = e.id 
+                          WHERE p.id = ?");
+    $stmt->execute([$poll_id]);
+    $poll = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$poll) {
+        return;
+    }
+    
+    $subject = t('email_subject_poll_closed', ['game' => $winning_game_name]);
+    
+    $message = email_template([
+        'title' => $subject,
+        'content' => t('email_body_poll_closed', [
+            'game' => $winning_game_name,
+            'event' => $poll['event_name']
+        ]),
+        'footer' => t('email_footer_view_event'),
+        'link' => get_site_url() . 'index.php'
+    ]);
+    
+    send_email($voter_email, $subject, $message, $config);
+}

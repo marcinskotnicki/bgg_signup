@@ -292,6 +292,21 @@ return [
     'existing_comments' => 'Istniejące Komentarze',
     'captcha_question' => 'Ile to jest {num1} + {num2}?',
     
+    // System głosowania
+    'create_poll' => 'Utwórz Głosowanie',
+    'game_poll' => 'Głosowanie na Grę',
+    'vote_for_game' => 'Głosuj na Grę',
+    'vote_threshold' => 'Wymagana liczba głosów',
+    'votes' => 'głosów',
+    'vote_for_this' => 'Głosuj',
+    'submit_vote' => 'Oddaj Głos',
+    'email_notification_on_poll_close' => 'Otrzymasz email gdy głosowanie się zakończy',
+    'winner' => 'Zwycięzca',
+    'created_by' => 'Utworzono przez',
+    'closed' => 'Zamknięte',
+    'email_subject_poll_closed' => 'Głosowanie zakończone: wybrano {game}',
+    'email_body_poll_closed' => 'Głosowanie zostało zakończone i wybrano <strong>{game}</strong> na wydarzenie <strong>{event}</strong>!',
+    
     // Date formatting - Month names (short - genitive case for Polish)
     '_months_short' => [
         1 => 'sty', 2 => 'lut', 3 => 'mar', 4 => 'kwi', 5 => 'maj', 6 => 'cze',

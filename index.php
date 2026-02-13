@@ -104,9 +104,30 @@ foreach ($tables as $table) {
     }
     unset($game); // CRITICAL: Break reference to prevent variable pollution across tables
     
+    // Get active polls for this table
+    $stmt = $db->prepare("SELECT * FROM polls WHERE table_id = ? AND is_active = 1 ORDER BY created_at ASC");
+    $stmt->execute([$table['id']]);
+    $polls = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Get poll options with vote counts for each poll
+    foreach ($polls as &$poll) {
+        $stmt = $db->prepare("
+            SELECT po.*, COUNT(pv.id) as vote_count 
+            FROM poll_options po 
+            LEFT JOIN poll_votes pv ON po.id = pv.poll_option_id 
+            WHERE po.poll_id = ? 
+            GROUP BY po.id 
+            ORDER BY po.display_order ASC
+        ");
+        $stmt->execute([$poll['id']]);
+        $poll['options'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+    unset($poll); // CRITICAL: Break reference
+    
     $tables_with_games[] = [
         'table' => $table,
-        'games' => $games
+        'games' => $games,
+        'polls' => $polls
     ];
 }
 
@@ -182,12 +203,25 @@ include $template_dir . '/header.php';
                                     ?>
                                 <?php endforeach; ?>
                             <?php endif; ?>
+                            
+                            <!-- Display Polls -->
+                            <?php if (!empty($table_data['polls'])): ?>
+                                <?php foreach ($table_data['polls'] as $poll): ?>
+                                    <?php
+                                    $poll_options = $poll['options'];
+                                    include $template_dir . '/poll.php';
+                                    ?>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
                         </ul>
                         
                         <!-- Add Game Button -->
                         <div class="add-game-section">
                             <button class="btn-add-game" data-table-id="<?php echo $table_data['table']['id']; ?>">
                                 <?php echo t('add_game_to_table'); ?>
+                            </button>
+                            <button class="btn-create-poll" data-table-id="<?php echo $table_data['table']['id']; ?>">
+                                <?php echo t('create_poll'); ?>
                             </button>
                         </div>
                     </div>
@@ -236,6 +270,20 @@ $(document).ready(function() {
         }
         
         loadAddGameForm(tableId);
+    });
+    
+    // Create Poll Button
+    $('.btn-create-poll').click(function() {
+        const tableId = $(this).data('table-id');
+        
+        // Check login requirement
+        if ((CONFIG.allowLoggedIn === 'required_games' || CONFIG.allowLoggedIn === 'required_all') && !CONFIG.isLoggedIn) {
+            alert('<?php echo t('login_required_to_add_game'); ?>');
+            window.location.href = 'login.php?redirect=' + encodeURIComponent(window.location.href);
+            return;
+        }
+        
+        loadCreatePollForm(tableId);
     });
     
     // Add Table Button
@@ -450,6 +498,20 @@ function fullyDeleteGame(gameId) {
 // Load Add Comment Form
 function loadAddCommentForm(gameId) {
     $.get('ajax/add_comment_form.php', { game_id: gameId }, function(html) {
+        openModal(html);
+    });
+}
+
+// Load Create Poll Form
+function loadCreatePollForm(tableId) {
+    $.get('ajax/create_poll_form.php', { table_id: tableId }, function(html) {
+        openModal(html);
+    });
+}
+
+// Load Vote Form
+function loadVoteForm(optionId, pollId) {
+    $.get('ajax/vote_form.php', { option_id: optionId, poll_id: pollId }, function(html) {
         openModal(html);
     });
 }
