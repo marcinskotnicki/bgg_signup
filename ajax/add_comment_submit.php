@@ -100,8 +100,12 @@ try {
     log_activity($db, $current_user ? $current_user['id'] : null, 'comment_added', 
         "Comment added to game: {$game['name']} (ID: $game_id) by $author_name");
     
-    // Send email notification to all players
-    email_comment_added($db, $game_id, $author_name, $comment);
+    // Send email notification to all players (wrapped in try-catch so email failures don't break response)
+    try {
+        email_comment_added($db, $game_id, $author_name, $comment);
+    } catch (Exception $e) {
+        error_log("Email sending failed in add_comment_submit: " . $e->getMessage());
+    }
     
     echo json_encode([
         'success' => true,
@@ -112,6 +116,10 @@ try {
     if (isset($db) && $db->inTransaction()) {
         $db->rollBack();
     }
+    error_log("add_comment_submit error: " . $e->getMessage());
     echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+} catch (Exception $e) {
+    error_log("add_comment_submit unexpected error: " . $e->getMessage());
+    echo json_encode(['success' => false, 'error' => 'An unexpected error occurred']);
 }
-?>
+// Note: Closing ?> tag omitted to prevent whitespace output issues

@@ -285,12 +285,58 @@ $(document).ready(function() {
         
         $('#submit-comment').prop('disabled', true).text('<?php echo t('saving'); ?>...');
         
-        $.post('../ajax/add_comment_submit.php', formData, function(response) {
-            if (response.success) {
-                closeModal();
-                location.reload();
-            } else {
-                alert(response.error || '<?php echo t('error_occurred'); ?>');
+        $.ajax({
+            url: '../ajax/add_comment_submit.php',
+            method: 'POST',
+            data: formData,
+            dataType: 'json',
+            timeout: 30000,
+            success: function(response) {
+                if (response.success) {
+                    closeModal();
+                    // Force page reload with cache busting
+                    window.location.href = window.location.href.split('?')[0] + '?' + new Date().getTime();
+                } else {
+                    alert(response.error || '<?php echo t('error_occurred'); ?>');
+                    $('#submit-comment').prop('disabled', false).text('<?php echo t('post_comment'); ?>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('=== ADD COMMENT ERROR DEBUG ===');
+                console.error('Status:', status);
+                console.error('HTTP Status Code:', xhr.status);
+                console.error('Response Text:', xhr.responseText);
+                
+                let errorMsg = '<?php echo t('error_occurred'); ?>';
+                
+                if (status === 'timeout') {
+                    errorMsg = 'Request timed out. Please try again.';
+                } else if (xhr.responseText) {
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        errorMsg = response.error || errorMsg;
+                    } catch (e) {
+                        // Try to extract JSON from response
+                        const jsonMatch = xhr.responseText.match(/\{[\s\S]*\}/);
+                        if (jsonMatch) {
+                            try {
+                                const response = JSON.parse(jsonMatch[0]);
+                                if (response.success) {
+                                    console.warn('SUCCESS despite PHP warnings!');
+                                    closeModal();
+                                    window.location.href = window.location.href.split('?')[0] + '?' + new Date().getTime();
+                                    return;
+                                }
+                                errorMsg = response.error || errorMsg;
+                            } catch (e2) {
+                                console.error('Could not parse extracted JSON:', e2);
+                            }
+                        }
+                        errorMsg = 'Server error. Check browser console (F12) for details.';
+                    }
+                }
+                
+                alert(errorMsg);
                 $('#submit-comment').prop('disabled', false).text('<?php echo t('post_comment'); ?>');
             }
         });
