@@ -41,6 +41,7 @@ if (!$poll_data || !isset($poll_data['table_id']) || !isset($poll_data['creator_
 $table_id = intval($poll_data['table_id']);
 $creator_name = trim($poll_data['creator_name']);
 $creator_email = isset($poll_data['creator_email']) ? trim($poll_data['creator_email']) : '';
+$start_time = isset($poll_data['start_time']) ? trim($poll_data['start_time']) : '';
 $options = $poll_data['options'];
 
 // Validate
@@ -51,6 +52,11 @@ if (!$table_id || !$creator_name || count($options) < 2) {
 
 if ($config['require_emails'] && empty($creator_email)) {
     echo json_encode(['success' => false, 'error' => 'Email is required']);
+    exit;
+}
+
+if (empty($start_time)) {
+    echo json_encode(['success' => false, 'error' => 'Start time is required']);
     exit;
 }
 
@@ -69,14 +75,15 @@ try {
     
     // Create poll
     $stmt = $db->prepare("INSERT INTO polls (
-        table_id, creator_name, creator_email, created_by_user_id, is_active, created_at
-    ) VALUES (?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
+        table_id, creator_name, creator_email, created_by_user_id, start_time, is_active, created_at
+    ) VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
     
     $stmt->execute([
         $table_id,
         $creator_name,
         $creator_email,
-        $current_user ? $current_user['id'] : null
+        $current_user ? $current_user['id'] : null,
+        $start_time
     ]);
     
     $poll_id = $db->lastInsertId();

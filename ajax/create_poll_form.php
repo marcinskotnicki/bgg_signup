@@ -58,6 +58,12 @@ $default_email = $current_user ? $current_user['email'] : '';
             <label><?php echo t('your_email'); ?>:<?php if ($config['require_emails']): ?> <span class="required">*</span><?php endif; ?></label>
             <input type="email" id="creator_email" class="form-control" value="<?php echo htmlspecialchars($default_email); ?>" <?php echo $config['require_emails'] ? 'required' : ''; ?>>
         </div>
+        
+        <div class="form-group">
+            <label><?php echo t('poll_start_time'); ?>: <span class="required">*</span></label>
+            <input type="time" id="poll_start_time" class="form-control" required>
+            <small><?php echo t('poll_start_time_help'); ?></small>
+        </div>
     </div>
     
     <!-- Step 2: Poll Options -->
@@ -507,6 +513,7 @@ $(document).ready(function() {
             table_id: $('#table_id').val(),
             creator_name: $('#creator_name').val().trim(),
             creator_email: $('#creator_email').val().trim(),
+            start_time: $('#poll_start_time').val(),
             options: pollOptions
         };
         

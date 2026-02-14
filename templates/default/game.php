@@ -128,11 +128,6 @@ $is_inactive = $game['is_active'] == 0;
         
         <!-- Comments Section -->
         <div class="game_comment">
-            <div class="add_comment">
-                <a href="#" class="add-comment-btn" data-game-id="<?php echo $game['id']; ?>">
-                    <?php echo t('add_comment'); ?>
-                </a>
-            </div>
         </div>
     </div>
     
