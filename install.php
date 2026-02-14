@@ -141,6 +141,7 @@ function create_database($admin_name, $admin_email, $admin_password) {
             creator_name TEXT NOT NULL,
             creator_email TEXT,
             created_by_user_id INTEGER,
+            start_time TIME,
             is_active INTEGER DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             closed_at DATETIME,

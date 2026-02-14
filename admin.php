@@ -923,7 +923,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
     </div>
     
     
-    <!-- Tab 4: Update System -->
+    <!-- Tab 5: Update System -->
     <div id="update" class="tab-content">
         <h2><?php echo t('update_system'); ?></h2>
         
@@ -931,11 +931,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             <strong><?php echo t('warning'); ?>:</strong> <?php echo t('update_warning'); ?>
         </div>
         
-        <p><strong><?php echo t('github_repository'); ?>:</strong> <a href="<?php echo GITHUB_REPO; ?>" target="_blank"><?php echo GITHUB_REPO; ?></a></p>
+        <div class="update-section">
+            <h3>🔄 Update Files from GitHub</h3>
+            <p><strong><?php echo t('github_repository'); ?>:</strong> <a href="<?php echo GITHUB_REPO; ?>" target="_blank"><?php echo GITHUB_REPO; ?></a></p>
+            <p>Downloads and replaces all files from the GitHub repository.</p>
+            <form method="POST" onsubmit="return confirm('<?php echo t('update_confirm'); ?>');">
+                <button type="submit" name="run_update" class="btn-update">Update Files</button>
+            </form>
+        </div>
         
-        <form method="POST" onsubmit="return confirm('<?php echo t('update_confirm'); ?>');">
-            <button type="submit" name="run_update"><?php echo t('run_update'); ?></button>
-        </form>
+        <div class="update-section">
+            <h3>🚀 Update Database Schema</h3>
+            <p>Automatically detects and applies missing database columns by comparing with GitHub's install.php.</p>
+            <ul class="update-features">
+                <li>✓ Detects schema changes automatically</li>
+                <li>✓ Creates backup before updating</li>
+                <li>✓ Applies only missing columns</li>
+                <li>✓ Safe and reversible</li>
+            </ul>
+            <button type="button" id="update-schema-btn" class="btn-update-schema">Update Database Schema</button>
+            <div id="schema-update-log" style="display: none; margin-top: 15px;"></div>
+        </div>
         
         <?php if (!empty($update_messages)): ?>
             <h3><?php echo t('update_log'); ?>:</h3>
@@ -945,6 +961,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                 <?php endforeach; ?>
             </div>
         <?php endif; ?>
+        
+        <style>
+        .update-section { 
+            background: #f8f9fa; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-left: 4px solid #3498db; 
+            border-radius: 4px; 
+        }
+        .update-section h3 { 
+            margin-top: 0; 
+            color: #2c3e50; 
+        }
+        .update-features { 
+            margin: 10px 0; 
+        }
+        .update-features li { 
+            margin: 5px 0; 
+            color: #27ae60; 
+        }
+        .btn-update, .btn-update-schema { 
+            background: #27ae60; 
+            color: white; 
+            padding: 12px 24px; 
+            border: none;
+            border-radius: 4px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        .btn-update:hover, .btn-update-schema:hover { 
+            background: #229954; 
+        }
+        .btn-update { 
+            background: #3498db; 
+        }
+        .btn-update:hover { 
+            background: #2980b9; 
+        }
+        #schema-update-log {
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 4px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .schema-log-entry {
+            padding: 5px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .schema-log-entry:last-child {
+            border-bottom: none;
+        }
+        .schema-log-success { color: #27ae60; }
+        .schema-log-error { color: #e74c3c; }
+        .schema-log-info { color: #3498db; }
+        .schema-log-warning { color: #f39c12; }
+        </style>
     </div>
     
     <script>
@@ -1108,6 +1183,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                 alert('An error occurred');
             });
         }
+        
+        // Schema update function
+        document.getElementById('update-schema-btn')?.addEventListener('click', function() {
+            const btn = this;
+            const logDiv = document.getElementById('schema-update-log');
+            
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.textContent = 'Updating Database...';
+            
+            // Show log area
+            logDiv.style.display = 'block';
+            logDiv.innerHTML = '<div class="schema-log-entry schema-log-info">Starting database schema update...</div>';
+            
+            // Call update endpoint
+            fetch('ajax/update_schema.php', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display log messages
+                if (data.log && data.log.length > 0) {
+                    let logHtml = '';
+                    data.log.forEach(entry => {
+                        const levelClass = 'schema-log-' + entry.level.toLowerCase();
+                        logHtml += `<div class="schema-log-entry ${levelClass}">${entry.message}</div>`;
+                    });
+                    logDiv.innerHTML = logHtml;
+                }
+                
+                // Re-enable button
+                btn.disabled = false;
+                
+                if (data.success) {
+                    btn.textContent = '✓ Update Complete';
+                    btn.style.background = '#27ae60';
+                    
+                    if (data.changes && data.changes.length === 0) {
+                        alert('Database is already up to date!');
+                    } else {
+                        alert('Database schema updated successfully!\n\n' + data.changes.length + ' change(s) applied.');
+                    }
+                } else {
+                    btn.textContent = 'Update Failed - Try Again';
+                    btn.style.background = '#e74c3c';
+                    alert('Schema update failed: ' + (data.error || 'Unknown error'));
+                }
+                
+                // Reset button after 3 seconds
+                setTimeout(() => {
+                    btn.textContent = 'Update Database Schema';
+                    btn.style.background = '';
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                logDiv.innerHTML += '<div class="schema-log-entry schema-log-error">Error: ' + error.message + '</div>';
+                btn.disabled = false;
+                btn.textContent = 'Update Failed - Try Again';
+                alert('An error occurred during schema update');
+            });
+        });
     </script>
 </body>
 </html>
