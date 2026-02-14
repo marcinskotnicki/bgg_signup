@@ -66,6 +66,12 @@ $is_inactive = $game['is_active'] == 0;
             <?php else: ?>
                 <?php echo htmlspecialchars($game['name']); ?>
             <?php endif; ?>
+            
+            <?php if ($config['allow_private_messages'] && !$is_inactive): ?>
+                <span class="mail-icon" data-game-id="<?php echo $game['id']; ?>" title="<?php echo t('send_message_to_all_players'); ?>">
+                    ✉️
+                </span>
+            <?php endif; ?>
         </div>
         
         <!-- Game Difficulty/Weight -->
@@ -142,6 +148,12 @@ $is_inactive = $game['is_active'] == 0;
             <span class="numer"><?php echo t('player'); ?> <?php echo $player_num; ?>: </span>
             <span class="name"><?php echo htmlspecialchars($player['player_name']); ?></span>
             
+            <?php if ($config['allow_private_messages'] && $player['player_email'] && !$is_inactive): ?>
+                <span class="mail-icon" data-player-id="<?php echo $player['id']; ?>" title="<?php echo t('send_private_message'); ?>">
+                    ✉️
+                </span>
+            <?php endif; ?>
+            
             <?php if ($player['knows_rules']): ?>
                 <span class="rules rules_<?php echo $player['knows_rules']; ?>">
                     <?php 
@@ -217,6 +229,12 @@ $is_inactive = $game['is_active'] == 0;
                 <?php foreach ($reserve_players as $reserve_player): ?>
                 <li class="player-slot reserve">
                     <span class="name"><?php echo htmlspecialchars($reserve_player['player_name']); ?></span>
+                    
+                    <?php if ($config['allow_private_messages'] && $reserve_player['player_email']): ?>
+                        <span class="mail-icon" data-player-id="<?php echo $reserve_player['id']; ?>" title="<?php echo t('send_private_message'); ?>">
+                            ✉️
+                        </span>
+                    <?php endif; ?>
                     
                     <?php if ($reserve_player['comment']): ?>
                         <span class="player_comment"> - <?php echo htmlspecialchars($reserve_player['comment']); ?></span>

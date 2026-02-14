@@ -307,6 +307,31 @@ return [
     'email_subject_poll_closed' => 'Głosowanie zakończone: wybrano {game}',
     'email_body_poll_closed' => 'Głosowanie zostało zakończone i wybrano <strong>{game}</strong> na wydarzenie <strong>{event}</strong>!',
     
+    // Wiadomości prywatne
+    'allow_private_messages' => 'Pozwól na Wiadomości Prywatne',
+    'allow_private_messages_help' => 'Pozwól użytkownikom wysyłać prywatne wiadomości do graczy przez email',
+    'send_private_message' => 'Wyślij Wiadomość Prywatną',
+    'send_message_to_all_players' => 'Wyślij wiadomość do wszystkich graczy w tej grze',
+    'message_sent_successfully' => 'Wiadomość wysłana pomyślnie',
+    'to' => 'Do',
+    'regarding' => 'Dotyczy',
+    'message' => 'Wiadomość',
+    'send_message' => 'Wyślij Wiadomość',
+    'sending' => 'Wysyłanie',
+    'reply_to_address' => 'Odbiorcy mogą odpowiedzieć bezpośrednio na ten adres',
+    'all_players' => 'Wszyscy Gracze',
+    
+    // Zarządzanie użytkownikami
+    'tab_users' => 'Użytkownicy',
+    'user_management' => 'Zarządzanie Użytkownikami',
+    'role' => 'Rola',
+    'admin' => 'Administrator',
+    'user' => 'Użytkownik',
+    'actions' => 'Akcje',
+    'make_admin' => 'Nadaj Uprawnienia Admina',
+    'make_user' => 'Odbierz Uprawnienia Admina',
+    'reset_password' => 'Zresetuj Hasło',
+    
     // Date formatting - Month names (short - genitive case for Polish)
     '_months_short' => [
         1 => 'sty', 2 => 'lut', 3 => 'mar', 4 => 'kwi', 5 => 'maj', 6 => 'cze',

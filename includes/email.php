@@ -6,23 +6,18 @@
  */
 
 /**
- * Send email using SMTP
+ * Send email using SMTP or phpmail() fallback
  * 
  * @param string $to Recipient email
  * @param string $subject Email subject
  * @param string $message Email body (HTML)
  * @param array $config Configuration array
+ * @param string $reply_to Optional reply-to email address
  * @return bool Success status
  */
-function send_email($to, $subject, $message, $config) {
+function send_email($to, $subject, $message, $config, $reply_to = null) {
     // Check if emails are enabled
     if (!$config['send_emails']) {
-        return false;
-    }
-    
-    // Check if SMTP is configured
-    if (empty($config['smtp_server']) || empty($config['smtp_email'])) {
-        error_log("Email not sent: SMTP not configured");
         return false;
     }
     
@@ -32,19 +27,28 @@ function send_email($to, $subject, $message, $config) {
         return false;
     }
     
+    // Determine sender email
+    $from_email = !empty($config['smtp_email']) ? $config['smtp_email'] : 'noreply@' . $_SERVER['HTTP_HOST'];
+    
+    // Determine reply-to
+    if ($reply_to === null) {
+        $reply_to = $from_email;
+    }
+    
     // Prepare email headers
     $headers = "MIME-Version: 1.0\r\n";
     $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-    $headers .= "From: {$config['smtp_email']}\r\n";
-    $headers .= "Reply-To: {$config['smtp_email']}\r\n";
+    $headers .= "From: {$from_email}\r\n";
+    $headers .= "Reply-To: {$reply_to}\r\n";
     $headers .= "X-Mailer: PHP/" . phpversion();
     
-    // Try to send using PHP mail() function first (if available)
-    // In production, you might want to use PHPMailer or similar for better SMTP support
+    // Use PHP mail() function (works with or without SMTP configured)
+    // Note: Requires proper mail server configuration on the hosting server
     $result = @mail($to, $subject, $message, $headers);
     
     if (!$result) {
-        error_log("Email send failed: " . error_get_last()['message']);
+        $last_error = error_get_last();
+        error_log("Email send failed: " . ($last_error ? $last_error['message'] : 'Unknown error'));
     }
     
     return $result;

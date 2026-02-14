@@ -309,6 +309,31 @@ return [
     'email_subject_poll_closed' => 'Poll closed: {game} was selected',
     'email_body_poll_closed' => 'The poll has closed and <strong>{game}</strong> was selected for the event <strong>{event}</strong>!',
     
+    // Private Messages
+    'allow_private_messages' => 'Allow Private Messages',
+    'allow_private_messages_help' => 'Allow users to send private messages to players via email',
+    'send_private_message' => 'Send Private Message',
+    'send_message_to_all_players' => 'Send message to all players in this game',
+    'message_sent_successfully' => 'Message sent successfully',
+    'to' => 'To',
+    'regarding' => 'Regarding',
+    'message' => 'Message',
+    'send_message' => 'Send Message',
+    'sending' => 'Sending',
+    'reply_to_address' => 'Recipients can reply directly to this address',
+    'all_players' => 'All Players',
+    
+    // User Management
+    'tab_users' => 'Users',
+    'user_management' => 'User Management',
+    'role' => 'Role',
+    'admin' => 'Admin',
+    'user' => 'User',
+    'actions' => 'Actions',
+    'make_admin' => 'Make Admin',
+    'make_user' => 'Make User',
+    'reset_password' => 'Reset Password',
+    
     // Date formatting - Month names (short)
     '_months_short' => [
         1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr', 5 => 'May', 6 => 'Jun',

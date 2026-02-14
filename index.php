@@ -406,6 +406,22 @@ $(document).ready(function() {
         loadAddCommentForm(gameId);
     });
     
+    // Mail Icon - Player
+    $(document).on('click', '.mail-icon[data-player-id]', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const playerId = $(this).data('player-id');
+        loadPrivateMessageForm(playerId, null);
+    });
+    
+    // Mail Icon - Game (all players)
+    $(document).on('click', '.mail-icon[data-game-id]', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const gameId = $(this).data('game-id');
+        loadPrivateMessageForm(null, gameId);
+    });
+    
     // Timeline: scroll to game when clicked
     $(document).on('click', '.timeline-game', function() {
         const gameId = $(this).data('game-id');
@@ -512,6 +528,17 @@ function loadCreatePollForm(tableId) {
 // Load Vote Form
 function loadVoteForm(optionId, pollId) {
     $.get('ajax/vote_form.php', { option_id: optionId, poll_id: pollId }, function(html) {
+        openModal(html);
+    });
+}
+
+// Load Private Message Form
+function loadPrivateMessageForm(playerId, gameId) {
+    const params = {};
+    if (playerId) params.player_id = playerId;
+    if (gameId) params.game_id = gameId;
+    
+    $.get('ajax/private_message_form.php', params, function(html) {
         openModal(html);
     });
 }

@@ -103,6 +103,9 @@ $config = [
     'restrict_comments' => false, // Require login to post comments
     'use_captcha' => false, // Use CAPTCHA for comments
     
+    // Private Messages
+    'allow_private_messages' => false, // Allow users to send private messages to players/hosts
+    
     // Poll Settings
     'closed_poll_action' => 'grey', // What to do with closed polls: 'grey' (grey out) or 'delete' (remove)
     

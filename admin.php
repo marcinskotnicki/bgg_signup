@@ -234,7 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
         // Handle boolean and special values
         $bool_fields = [
             'allow_reserve_list', 'require_emails', 'send_emails', 
-            'allow_full_deletion', 'restrict_comments', 'use_captcha'
+            'allow_full_deletion', 'restrict_comments', 'use_captcha', 'allow_private_messages'
         ];
         
         foreach ($bool_fields as $key) {
@@ -405,6 +405,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
     <div class="tabs">
         <button class="tab-button active" onclick="openTab(event, 'logs')"><?php echo t('tab_logs'); ?></button>
         <button class="tab-button" onclick="openTab(event, 'options')"><?php echo t('tab_options'); ?></button>
+        <button class="tab-button" onclick="openTab(event, 'users')"><?php echo t('tab_users'); ?></button>
         <button class="tab-button" onclick="openTab(event, 'add-event')"><?php echo t('tab_add_event'); ?></button>
         <button class="tab-button" onclick="openTab(event, 'update')"><?php echo t('tab_update'); ?></button>
     </div>
@@ -743,6 +744,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                 </select>
             </div>
             
+            <div class="form-group">
+                <label><?php echo t('allow_private_messages'); ?>:</label>
+                <select name="allow_private_messages">
+                    <option value="yes" <?php echo $config['allow_private_messages'] ? 'selected' : ''; ?>><?php echo t('yes'); ?></option>
+                    <option value="no" <?php echo !$config['allow_private_messages'] ? 'selected' : ''; ?>><?php echo t('no'); ?></option>
+                </select>
+                <small><?php echo t('allow_private_messages_help'); ?></small>
+            </div>
+            
             <h3><?php echo t('custom_messages'); ?></h3>
             
             <div class="form-group">
@@ -771,8 +781,72 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         </form>
     </div>
     
+    <!-- Tab 3: Users -->
+    <div id="users" class="tab-content">
+        <h2><?php echo t('user_management'); ?></h2>
+        
+        <?php
+        // Get all users
+        $stmt = $db->query("SELECT * FROM users ORDER BY is_admin DESC, name ASC");
+        $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        ?>
+        
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th><?php echo t('name'); ?></th>
+                    <th><?php echo t('email'); ?></th>
+                    <th><?php echo t('role'); ?></th>
+                    <th><?php echo t('created_at'); ?></th>
+                    <th><?php echo t('actions'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($users as $user): ?>
+                <tr>
+                    <td><?php echo htmlspecialchars($user['name']); ?></td>
+                    <td><?php echo htmlspecialchars($user['email']); ?></td>
+                    <td>
+                        <?php if ($user['is_admin']): ?>
+                            <span class="badge-admin"><?php echo t('admin'); ?></span>
+                        <?php else: ?>
+                            <span class="badge-user"><?php echo t('user'); ?></span>
+                        <?php endif; ?>
+                    </td>
+                    <td><?php echo date('Y-m-d H:i', strtotime($user['created_at'])); ?></td>
+                    <td class="user-actions">
+                        <button onclick="toggleUserRole(<?php echo $user['id']; ?>, <?php echo $user['is_admin'] ? '0' : '1'; ?>)" class="btn-small">
+                            <?php echo $user['is_admin'] ? t('make_user') : t('make_admin'); ?>
+                        </button>
+                        <button onclick="resetUserPassword(<?php echo $user['id']; ?>)" class="btn-small">
+                            <?php echo t('reset_password'); ?>
+                        </button>
+                        <button onclick="deleteUser(<?php echo $user['id']; ?>)" class="btn-small btn-danger">
+                            <?php echo t('delete'); ?>
+                        </button>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+        
+        <style>
+        .users-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .users-table th, .users-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        .users-table th { background: #34495e; color: white; font-weight: bold; }
+        .users-table tr:hover { background: #f5f5f5; }
+        .badge-admin { background: #e74c3c; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px; }
+        .badge-user { background: #3498db; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px; }
+        .user-actions { white-space: nowrap; }
+        .btn-small { padding: 6px 12px; margin: 0 4px; font-size: 13px; cursor: pointer; border: none; border-radius: 3px; background: #3498db; color: white; }
+        .btn-small:hover { background: #2980b9; }
+        .btn-danger { background: #e74c3c; }
+        .btn-danger:hover { background: #c0392b; }
+        </style>
+    </div>
     
-    <!-- Tab 3: Add New Event -->
+    
+    <!-- Tab 4: Add New Event -->
     <div id="add-event" class="tab-content">
         <h2><?php echo t('add_new_event'); ?></h2>
         <form method="POST" id="event-form">
@@ -889,6 +963,97 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             generateDayFields();
+            updateEmailRequirement();
+        });
+        
+        // User management functions
+        function toggleUserRole(userId, makeAdmin) {
+            const action = makeAdmin ? 'make this user an admin' : 'remove admin privileges from this user';
+            if (!confirm(`Are you sure you want to ${action}?`)) {
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('is_admin', makeAdmin);
+            formData.append('action', 'toggle_role');
+            
+            fetch('ajax/user_management.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error || 'Operation failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+        }
+        
+        function resetUserPassword(userId) {
+            const newPassword = prompt('Enter new password for this user (min 6 characters):');
+            if (!newPassword) return;
+            
+            if (newPassword.length < 6) {
+                alert('Password must be at least 6 characters long');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('new_password', newPassword);
+            formData.append('action', 'reset_password');
+            
+            fetch('ajax/user_management.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Password reset successfully');
+                } else {
+                    alert(data.error || 'Operation failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+        }
+        
+        function deleteUser(userId) {
+            if (!confirm('Are you sure you want to delete this user? This action cannot be undone!')) {
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('user_id', userId);
+            formData.append('action', 'delete_user');
+            
+            fetch('ajax/user_management.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error || 'Operation failed');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred');
+            });
+        }
             updateEmailRequirement();
         });
     </script>
