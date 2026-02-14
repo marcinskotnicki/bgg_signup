@@ -90,8 +90,14 @@ return [
     'login_required_all' => 'Required Everywhere',
     'verification_email' => 'Require Email Match',
     'verification_link' => 'Send Confirmation Link',
-    'deletion_soft_only' => 'No (Soft Delete Only)',
-    'deletion_allowed' => 'Yes',
+    'deletion_soft_only' => 'Soft Delete Only',
+    'deletion_allow_choice' => 'Allow Choice (Soft or Hard)',
+    'deletion_hard_only' => 'Hard Delete Only',
+    'deletion_mode' => 'Game Deletion Mode',
+    'deletion_mode_help' => 'Soft delete allows restoring games. Hard delete is permanent.',
+    'delete_choice_prompt' => 'Click OK for soft delete (can be restored) or Cancel for permanent deletion.',
+    'confirm_hard_delete' => 'PERMANENTLY delete this game? This cannot be undone!',
+    'confirm_hard_delete_game' => 'PERMANENTLY delete this game? This cannot be undone!',
     
     // Logs
     'activity_logs' => 'Activity Logs',

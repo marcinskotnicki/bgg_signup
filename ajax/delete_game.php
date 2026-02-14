@@ -68,22 +68,32 @@ try {
     
     $db->beginTransaction();
     
-    // Check if full deletion is allowed
-    if ($config['allow_full_deletion']) {
-        // User can choose - for now, default to soft delete
-        // (Full delete option would be in a separate handler or with a parameter)
+    // Determine deletion type based on config
+    $deletion_mode = $config['deletion_mode'];
+    $deletion_type = 'soft'; // default
+    
+    if ($deletion_mode === 'hard_only') {
+        // Hard delete only - permanently delete
+        $deletion_type = 'hard';
         
+    } elseif ($deletion_mode === 'allow_choice') {
+        // User can choose - check parameter
+        $delete_type_param = isset($_POST['delete_type']) ? $_POST['delete_type'] : 'soft';
+        $deletion_type = ($delete_type_param === 'hard') ? 'hard' : 'soft';
+        
+    } else {
+        // soft_only - always soft delete
+        $deletion_type = 'soft';
+    }
+    
+    if ($deletion_type === 'hard') {
+        // Permanently delete game
+        $stmt = $db->prepare("DELETE FROM games WHERE id = ?");
+        $stmt->execute([$game_id]);
+    } else {
         // Soft delete - mark as inactive
         $stmt = $db->prepare("UPDATE games SET is_active = 0 WHERE id = ?");
         $stmt->execute([$game_id]);
-        
-        $deletion_type = 'soft';
-    } else {
-        // Only soft delete allowed
-        $stmt = $db->prepare("UPDATE games SET is_active = 0 WHERE id = ?");
-        $stmt->execute([$game_id]);
-        
-        $deletion_type = 'soft';
     }
     
     $db->commit();

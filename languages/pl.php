@@ -90,8 +90,14 @@ return [
     'login_required_all' => 'Wymagane Wszędzie',
     'verification_email' => 'Wymagaj Dopasowania Email',
     'verification_link' => 'Wyślij Link Potwierdzający',
-    'deletion_soft_only' => 'Nie (Tylko Miękkie Usuwanie)',
-    'deletion_allowed' => 'Tak',
+    'deletion_soft_only' => 'Tylko Miękkie Usuwanie',
+    'deletion_allow_choice' => 'Pozwól Wybrać (Miękkie lub Twarde)',
+    'deletion_hard_only' => 'Tylko Twarde Usuwanie',
+    'deletion_mode' => 'Tryb Usuwania Gier',
+    'deletion_mode_help' => 'Miękkie usuwanie pozwala przywrócić gry. Twarde usuwanie jest trwałe.',
+    'delete_choice_prompt' => 'Kliknij OK dla miękkiego usunięcia (można przywrócić) lub Anuluj dla trwałego usunięcia.',
+    'confirm_hard_delete' => 'TRWALE usunąć tę grę? Nie można tego cofnąć!',
+    'confirm_hard_delete_game' => 'TRWALE usunąć tę grę? Nie można tego cofnąć!',
     
     // Logs
     'activity_logs' => 'Logi Aktywności',
@@ -111,10 +117,10 @@ return [
     
     // Update System
     'update_system' => 'Aktualizuj System',
-    'update_warning' => 'Uwaga: To sprawdzi aktualizacje na GitHub i zastosuje je w systemie. Kopia zapasowa zostanie utworzona automatycznie przed jakimikolwiek zmianami.',
+    'update_warning' => 'Uwaga: Ta opcja srawdzi aktualizacje na GitHub i zastosuje je w systemie. Kopia zapasowa zostanie utworzona automatycznie przed jakimikolwiek zmianami.',
     'github_repository' => 'Repozytorium GitHub',
     'run_update' => 'Uruchom Aktualizację',
-    'update_confirm' => 'Czy na pewno chcesz uruchomić aktualizację? Kopia zapasowa zostanie utworzona najpierw.',
+    'update_confirm' => 'Czy na pewno chcesz uruchomić aktualizację? Kopia zapasowa zostanie utworzona.',
     'update_completed_success' => 'Aktualizacja zakończona pomyślnie!',
     'update_failed' => 'Aktualizacja nie powiodła się! Sprawdź logi dla szczegółów.',
     'update_log' => 'Log Aktualizacji',
@@ -132,8 +138,8 @@ return [
     'language' => 'Język',
     'host' => 'Gospodarz',
     'rules_explanation' => 'Wyjaśnienie Zasad',
-    'rules_will_be_explained' => 'Zasady zostaną wyjaśnione',
-    'rules_knowledge_required' => 'Wszyscy gracze powinni znać zasady',
+    'rules_will_be_explained' => 'Tłumaczę zasady',
+    'rules_knowledge_required' => 'Nie tłumaczę zasad',
     'minutes' => 'minut',
     'min_max_players' => '{min}-{max} graczy',
     
@@ -169,7 +175,7 @@ return [
     'host_name' => 'Twoje Imię',
     'host_email' => 'Twój Email',
     'join_as_first_player' => 'Czy chcesz również dołączyć do tej gry jako pierwszy gracz?',
-    'language_independent' => 'Niezależny od Języka',
+    'language_independent' => 'Niezależna językowo',
     
     // Frontend - Comments
     'comments' => 'Komentarze',
@@ -244,8 +250,8 @@ return [
     'confirm_resign' => 'Czy na pewno chcesz zrezygnować z tej gry?',
     'confirm_delete_game' => 'Czy na pewno chcesz usunąć tę grę?',
     'confirm_soft_delete' => 'Miękkie usunięcie (możliwe przywrócenie)?',
-    'confirm_hard_delete' => 'TRWALE usunąć? To nie może być cofnięte!',
-    'confirm_fully_delete' => 'Czy na pewno chcesz trwale usunąć tę grę? To nie może być cofnięte!',
+    'confirm_hard_delete' => 'TRWALE usunąć? Nie można tego cofnąć!',
+    'confirm_fully_delete' => 'Czy na pewno chcesz trwale usunąć tę grę? Nie można tego cofnąć!',
     'error_occurred' => 'Wystąpił błąd. Spróbuj ponownie.',
     
     // Email subjects

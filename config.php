@@ -95,9 +95,10 @@ $config = [
     'send_emails' => false, // Send email notifications
     
     // Game Deletion Options:
-    // true - users can choose between full deletion or soft delete
-    // false - only soft delete allowed (except for admin)
-    'allow_full_deletion' => false,
+    // 'allow_choice' - Users can choose between hard delete or soft delete
+    // 'soft_only' - Only soft delete allowed
+    // 'hard_only' - Only hard delete allowed (immediate permanent deletion)
+    'deletion_mode' => 'soft_only',
     
     // Comment Settings
     'restrict_comments' => false, // Require login to post comments

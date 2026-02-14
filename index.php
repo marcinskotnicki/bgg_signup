@@ -358,28 +358,35 @@ $(document).ready(function() {
     $(document).on('click', '.delete-game-btn', function(e) {
         e.preventDefault();
         const gameId = $(this).data('game-id');
+        const deletionMode = '<?php echo $config['deletion_mode']; ?>';
         
-        // Check if hard deletion is allowed
-        <?php if ($config['allow_full_deletion']): ?>
-        // Ask user if they want soft or hard delete
-        const deleteChoice = confirm('<?php echo t('confirm_delete_game'); ?>\n\nClick OK for soft delete (game can be restored).\nClick Cancel, then you\'ll be asked about permanent deletion.');
-        
-        if (deleteChoice) {
-            // Soft delete
-            deleteGame(gameId, 'soft');
+        if (deletionMode === 'hard_only') {
+            // Hard delete only
+            if (confirm('<?php echo t('confirm_hard_delete_game'); ?>')) {
+                deleteGame(gameId, 'hard');
+            }
+            
+        } else if (deletionMode === 'allow_choice') {
+            // User can choose
+            const deleteChoice = confirm('<?php echo t('confirm_delete_game'); ?>\n\n<?php echo t('delete_choice_prompt'); ?>');
+            
+            if (deleteChoice) {
+                // Soft delete
+                deleteGame(gameId, 'soft');
+            } else {
+                // Ask about hard delete
+                const hardDelete = confirm('<?php echo t('confirm_hard_delete'); ?>');
+                if (hardDelete) {
+                    deleteGame(gameId, 'hard');
+                }
+            }
+            
         } else {
-            // Ask about hard delete
-            const hardDelete = confirm('Do you want to PERMANENTLY delete this game?\n\nThis cannot be undone!');
-            if (hardDelete) {
-                fullyDeleteGame(gameId);
+            // Soft delete only
+            if (confirm('<?php echo t('confirm_delete_game'); ?>')) {
+                deleteGame(gameId, 'soft');
             }
         }
-        <?php else: ?>
-        // Only soft delete allowed
-        if (confirm('<?php echo t('confirm_delete_game'); ?>')) {
-            deleteGame(gameId, 'soft');
-        }
-        <?php endif; ?>
     });
     
     // Restore Game Button
@@ -477,7 +484,7 @@ function deleteGame(gameId, deletionType) {
     
     $.post('ajax/delete_game.php', { 
         game_id: gameId,
-        deletion_type: deletionType
+        delete_type: deletionType
     }, function(response) {
         if (response.success) {
             // Force page reload with cache busting

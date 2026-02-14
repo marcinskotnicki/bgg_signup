@@ -234,7 +234,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
         // Handle boolean and special values
         $bool_fields = [
             'allow_reserve_list', 'require_emails', 'send_emails', 
-            'allow_full_deletion', 'restrict_comments', 'use_captcha', 'allow_private_messages'
+            'restrict_comments', 'use_captcha', 'allow_private_messages'
         ];
         
         foreach ($bool_fields as $key) {
@@ -251,6 +251,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
             $value = $_POST['allow_logged_in'];
             $pattern = "/'allow_logged_in'\s*=>\s*'[^']*'/";
             $replacement = "'allow_logged_in' => '$value'";
+            $config_content = preg_replace($pattern, $replacement, $config_content);
+        }
+        
+        // Handle deletion_mode
+        if (isset($_POST['deletion_mode'])) {
+            $value = $_POST['deletion_mode'];
+            $pattern = "/'deletion_mode'\s*=>\s*'[^']*'/";
+            $replacement = "'deletion_mode' => '$value'";
             $config_content = preg_replace($pattern, $replacement, $config_content);
         }
         
@@ -721,11 +729,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             </div>
             
             <div class="form-group">
-                <label><?php echo t('allow_full_deletion'); ?>:</label>
-                <select name="allow_full_deletion">
-                    <option value="yes" <?php echo $config['allow_full_deletion'] ? 'selected' : ''; ?>><?php echo t('deletion_allowed'); ?></option>
-                    <option value="no" <?php echo !$config['allow_full_deletion'] ? 'selected' : ''; ?>><?php echo t('deletion_soft_only'); ?></option>
+                <label><?php echo t('deletion_mode'); ?>:</label>
+                <select name="deletion_mode">
+                    <option value="soft_only" <?php echo $config['deletion_mode'] === 'soft_only' ? 'selected' : ''; ?>><?php echo t('deletion_soft_only'); ?></option>
+                    <option value="allow_choice" <?php echo $config['deletion_mode'] === 'allow_choice' ? 'selected' : ''; ?>><?php echo t('deletion_allow_choice'); ?></option>
+                    <option value="hard_only" <?php echo $config['deletion_mode'] === 'hard_only' ? 'selected' : ''; ?>><?php echo t('deletion_hard_only'); ?></option>
                 </select>
+                <small><?php echo t('deletion_mode_help'); ?></small>
             </div>
             
             <div class="form-group">
