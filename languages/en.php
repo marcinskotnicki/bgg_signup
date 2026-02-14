@@ -305,6 +305,8 @@ return [
     'your_information' => 'Your Information',
     'add_game_option' => 'Add Game Option',
     'add_game_to_poll' => 'Add Games to Poll',
+    'poll_options' => 'Poll Options',
+    'add_to_poll' => 'Add to Poll',
     'game_poll' => 'Game Selection Poll',
     'vote_for_game' => 'Vote for Game',
     'vote_threshold' => 'Votes needed',

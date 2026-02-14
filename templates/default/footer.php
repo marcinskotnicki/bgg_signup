@@ -49,10 +49,27 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
         $(document).ready(function() {
             $('.modal-close').click(closeModal);
             
-            $('#modal-overlay').click(function(e) {
-                if (e.target.id === 'modal-overlay') {
+            // Track where mouse down started to prevent closing during text selection
+            let mouseDownTarget = null;
+            
+            $('#modal-overlay').on('mousedown', function(e) {
+                mouseDownTarget = e.target;
+            });
+            
+            $('#modal-overlay').on('click', function(e) {
+                // Only close if:
+                // 1. Click target is the overlay itself (not modal content)
+                // 2. Mouse down also started on the overlay (not during text selection)
+                if (e.target.id === 'modal-overlay' && mouseDownTarget === e.target) {
                     closeModal();
                 }
+                // Reset tracking
+                mouseDownTarget = null;
+            });
+            
+            // Prevent clicks on modal content from closing
+            $(document).on('click', '.modal-content', function(e) {
+                e.stopPropagation();
             });
             
             // ESC key to close modal

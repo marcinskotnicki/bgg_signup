@@ -58,13 +58,16 @@ $default_email = $current_user ? $current_user['email'] : '';
             <label><?php echo t('your_email'); ?>:<?php if ($config['require_emails']): ?> <span class="required">*</span><?php endif; ?></label>
             <input type="email" id="creator_email" class="form-control" value="<?php echo htmlspecialchars($default_email); ?>" <?php echo $config['require_emails'] ? 'required' : ''; ?>>
         </div>
-        
-        <button type="button" id="add-poll-option-btn" class="btn btn-primary"><?php echo t('add_game_option'); ?></button>
     </div>
     
     <!-- Step 2: Poll Options -->
     <div id="poll-options-container" style="margin-top: 20px;">
         <!-- Poll options will be added here -->
+    </div>
+    
+    <!-- Add option button - appears below all options -->
+    <div style="margin-top: 15px;">
+        <button type="button" id="add-poll-option-btn" class="btn btn-primary"><?php echo t('add_game_option'); ?></button>
     </div>
     
     <div id="poll-actions" style="display: none; margin-top: 20px;">

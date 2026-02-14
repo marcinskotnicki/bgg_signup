@@ -305,6 +305,8 @@ return [
     'your_information' => 'Twoje Dane',
     'add_game_option' => 'Dodaj Opcję Gry',
     'add_game_to_poll' => 'Dodaj Gry do Głosowania',
+    'poll_options' => 'Opcje Głosowania',
+    'add_to_poll' => 'Dodaj do Głosowania',
     'game_poll' => 'Głosowanie na Grę',
     'vote_for_game' => 'Głosuj na Grę',
     'vote_threshold' => 'Wymagana liczba głosów',
