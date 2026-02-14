@@ -560,100 +560,59 @@ function loadPrivateMessageForm(playerId, gameId) {
 }
 
 // Initialize Timeline
-function initTimeline() {
-    const timeline = $('#timeline');
-    const startTime = '<?php echo $selected_day['start_time']; ?>';
-    const endTime = '<?php echo $selected_day['end_time']; ?>';
-    const extension = <?php echo $config['timeline_extension']; ?>;
-    
-    // Calculate timeline hours
-    const start = parseTime(startTime);
-    const end = parseTime(endTime);
-    const endWithExtension = end + (extension * 60);
-    
-    // Build hour markers
-    const startHour = Math.floor(start / 60);
-    const endHour = Math.ceil(endWithExtension / 60);
-    
-    // Build timeline HTML
-    let html = '<div class="timeline-container-inner">';
-    
-    // Add hour markers header
-    html += '<div class="timeline-hours">';
-    html += '<div class="timeline-table-label-spacer"></div>'; // Spacer for table labels
-    html += '<div class="timeline-hours-bar">';
-    for (let hour = startHour; hour <= endHour; hour++) {
-        const hourMinutes = hour * 60;
-        const position = ((hourMinutes - start) / (endWithExtension - start)) * 100;
-        
-        if (position >= 0 && position <= 100) {
-            const displayHour = hour % 24;
-            const hourStr = displayHour.toString().padStart(2, '0') + ':00';
-            html += '<div class="timeline-hour-marker" style="left: ' + position + '%;">' + hourStr + '</div>';
-        }
-    }
-    html += '</div>';
-    html += '</div>';
-    
-    html += '<div class="timeline-grid">';
-    
-    // Add hour background stripes
-    html += '<div class="timeline-hour-stripes">';
-    for (let hour = startHour; hour < endHour; hour++) {
-        const hourStart = hour * 60;
-        const hourEnd = (hour + 1) * 60;
-        const leftPos = Math.max(0, ((hourStart - start) / (endWithExtension - start)) * 100);
-        const rightPos = Math.min(100, ((hourEnd - start) / (endWithExtension - start)) * 100);
-        const width = rightPos - leftPos;
-        
-        const isEven = (hour - startHour) % 2 === 0;
-        const className = isEven ? 'timeline-hour-stripe-even' : 'timeline-hour-stripe-odd';
-        
-        html += '<div class="' + className + '" style="left: ' + leftPos + '%; width: ' + width + '%;"></div>';
-    }
-    html += '</div>';
-    
-    // Add table rows
-    <?php foreach ($tables_with_games as $index => $table_data): ?>
-        html += '<div class="timeline-row">';
-        html += '<div class="timeline-table-label"><?php echo t('table'); ?> <?php echo $table_data['table']['table_number']; ?></div>';
-        html += '<div class="timeline-games">';
-        
-        <?php foreach ($table_data['games'] as $game): ?>
-            <?php
-            // Calculate end time for this game
-            $start_timestamp = strtotime($game['start_time']);
-            $end_timestamp = $start_timestamp + ($game['play_time'] * 60);
-            $end_time_formatted = date('H:i', $end_timestamp);
-            
-            // Count active players (non-reserve)
-            $active_players = count(array_filter($game['players'], function($p) { return $p['is_reserve'] == 0; }));
-            ?>
-            html += '<div class="timeline-game" data-game-id="<?php echo $game['id']; ?>" style="' + 
-                'left: ' + (((parseTime('<?php echo $game['start_time']; ?>') - start) / (endWithExtension - start)) * 100) + '%; ' +
-                'width: ' + ((<?php echo $game['play_time']; ?> / (endWithExtension - start)) * 100) + '%;' +
-                '">';
-            html += '<span class="timeline-game-name"><?php echo htmlspecialchars($game['name']); ?></span>';
-            html += '<span class="timeline-game-players">(<?php echo t('players'); ?>: <?php echo $active_players; ?>/<?php echo $game['max_players']; ?>)</span>';
-            html += '<span class="timeline-game-time"><?php echo $game['start_time']; ?> - <?php echo $end_time_formatted; ?></span>';
-            html += '</div>';
-        <?php endforeach; ?>
-        
-        html += '</div>';
-        html += '</div>';
-    <?php endforeach; ?>
-    
-    html += '</div>';
-    html += '</div>';
-    
-    timeline.html(html);
-}
-
 // Parse time string to minutes since midnight
 function parseTime(timeStr) {
     const parts = timeStr.split(':');
     return parseInt(parts[0]) * 60 + parseInt(parts[1]);
 }
+
+// Timeline configuration data
+const TIMELINE_CONFIG = {
+    startTime: '<?php echo $selected_day['start_time']; ?>',
+    endTime: '<?php echo $selected_day['end_time']; ?>',
+    extension: <?php echo $config['timeline_extension']; ?>,
+    tableLabel: '<?php echo t('table'); ?>',
+    playersLabel: '<?php echo t('players'); ?>',
+    tables: [
+        <?php foreach ($tables_with_games as $index => $table_data): ?>
+        {
+            table_number: <?php echo $table_data['table']['table_number']; ?>,
+            games: [
+                <?php foreach ($table_data['games'] as $game): ?>
+                <?php
+                // Calculate end time for this game
+                $start_timestamp = strtotime($game['start_time']);
+                $end_timestamp = $start_timestamp + ($game['play_time'] * 60);
+                $end_time_formatted = date('H:i', $end_timestamp);
+                
+                // Count active players (non-reserve)
+                $active_players = count(array_filter($game['players'], function($p) { return $p['is_reserve'] == 0; }));
+                ?>
+                {
+                    id: <?php echo $game['id']; ?>,
+                    name: <?php echo json_encode($game['name']); ?>,
+                    start_time: '<?php echo $game['start_time']; ?>',
+                    end_time: '<?php echo $end_time_formatted; ?>',
+                    play_time: <?php echo $game['play_time']; ?>,
+                    active_players: <?php echo $active_players; ?>,
+                    max_players: <?php echo $game['max_players']; ?>
+                }<?php echo ($game === end($table_data['games'])) ? '' : ','; ?>
+                <?php endforeach; ?>
+            ]
+        }<?php echo ($index === count($tables_with_games) - 1) ? '' : ','; ?>
+        <?php endforeach; ?>
+    ]
+};
+</script>
+
+<!-- Include timeline template -->
+<script src="<?php echo $template_dir; ?>/timeline.js"></script>
+
+<script>
+// Initialize timeline on page load
+$(document).ready(function() {
+    initTimeline();
+});
 </script>
 
 <?php

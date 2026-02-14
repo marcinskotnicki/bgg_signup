@@ -300,6 +300,11 @@ return [
     
     // System głosowania
     'create_poll' => 'Utwórz Głosowanie',
+    'create_game_poll' => 'Utwórz Głosowanie na Grę',
+    'poll_info_text' => 'Utwórz głosowanie, aby pozwolić graczom zagłosować na grę. Gdy gra osiągnie wymaganą liczbę głosów, zostanie automatycznie dodana do harmonogramu, a głosowanie zostanie zamknięte.',
+    'your_information' => 'Twoje Dane',
+    'add_game_option' => 'Dodaj Opcję Gry',
+    'add_game_to_poll' => 'Dodaj Gry do Głosowania',
     'game_poll' => 'Głosowanie na Grę',
     'vote_for_game' => 'Głosuj na Grę',
     'vote_threshold' => 'Wymagana liczba głosów',

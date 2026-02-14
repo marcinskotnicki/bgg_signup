@@ -607,7 +607,7 @@ a:hover {
     border-top: 1px solid #ecf0f1;
 }
 
-.btn-add-game, .btn-add-table {
+.btn-add-game, .btn-add-table, .btn-create-poll {
     padding: 12px 30px;
     background: #27ae60;
     color: white;
@@ -617,9 +617,10 @@ a:hover {
     font-size: 16px;
     font-weight: bold;
     transition: background 0.3s;
+    margin: 0 5px;
 }
 
-.btn-add-game:hover, .btn-add-table:hover {
+.btn-add-game:hover, .btn-add-table:hover, .btn-create-poll:hover {
     background: #229954;
 }
 
@@ -680,6 +681,13 @@ a:hover {
     font-weight: bold;
     color: #2c3e50;
     border-left: 2px solid #95a5a6;
+}
+
+.timeline-hour-marker.timeline-final-marker {
+    /* Final vertical line at the end - minimal visible content */
+    font-size: 0;
+    color: transparent;
+    padding: 0;
 }
 
 .timeline-grid {
@@ -866,4 +874,29 @@ a:hover {
 
 .btn-add-comment:hover {
     background: #2980b9;
+}
+
+/* Mail Icons */
+.mail-icon {
+    cursor: pointer !important;
+    font-size: 14px;
+    margin-left: 6px;
+    opacity: 0.6;
+    transition: opacity 0.2s, transform 0.2s;
+    display: inline-block;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.mail-icon:hover {
+    opacity: 1;
+    transform: scale(1.2);
+    cursor: pointer !important;
+}
+
+.game_name .mail-icon {
+    margin-left: 10px;
+    font-size: 16px;
 }
