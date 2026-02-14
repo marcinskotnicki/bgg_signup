@@ -325,6 +325,8 @@ return [
     'cannot_remove_voted_option' => 'Nie można usunąć opcji z głosami',
     'has_votes' => 'ma głosy',
     'confirm_remove_option' => 'Usunąć tę opcję?',
+    'added' => 'Dodano',
+    'removed' => 'Usunięto',
     'game_poll' => 'Głosowanie na Grę',
     'vote_for_game' => 'Głosuj na Grę',
     'vote_threshold' => 'Wymagana liczba głosów',

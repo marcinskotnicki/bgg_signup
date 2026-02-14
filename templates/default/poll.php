@@ -11,18 +11,46 @@
 
 $is_closed = $poll['is_active'] == 0;
 $is_greyed = $is_closed && $config['closed_poll_action'] === 'grey';
+
+// Check if current user can edit/delete this poll
+$can_edit = false;
+if ($current_user) {
+    if ($current_user['is_admin']) {
+        $can_edit = true;
+    } elseif (isset($poll['created_by_user_id']) && $poll['created_by_user_id'] == $current_user['id']) {
+        $can_edit = true;
+    }
+}
 ?>
 
 <div class="poll-container <?php echo $is_greyed ? 'poll-closed' : ''; ?>" data-poll-id="<?php echo $poll['id']; ?>">
     <div class="poll-header">
-        <h3 class="poll-title">
-            <?php echo t('game_poll'); ?>
-            <?php if ($is_closed): ?>
-                <span class="poll-status-closed">(<?php echo t('closed'); ?>)</span>
+        <div class="poll-header-top">
+            <div class="poll-title-section">
+                <h3 class="poll-title">
+                    <?php echo t('game_poll'); ?>
+                    <?php if ($is_closed): ?>
+                        <span class="poll-status-closed">(<?php echo t('closed'); ?>)</span>
+                    <?php endif; ?>
+                </h3>
+                <div class="poll-creator">
+                    <?php echo t('created_by'); ?>: <?php echo htmlspecialchars($poll['creator_name']); ?>
+                    <?php if (!empty($poll['start_time'])): ?>
+                        <br><?php echo t('poll_start_time'); ?>: <strong><?php echo htmlspecialchars($poll['start_time']); ?></strong>
+                    <?php endif; ?>
+                </div>
+            </div>
+            
+            <?php if ($can_edit && !$is_closed): ?>
+                <div class="poll-actions">
+                    <button class="btn-edit-poll" data-poll-id="<?php echo $poll['id']; ?>">
+                        <?php echo t('edit_poll'); ?>
+                    </button>
+                    <button class="btn-delete-poll" data-poll-id="<?php echo $poll['id']; ?>">
+                        <?php echo t('delete_poll'); ?>
+                    </button>
+                </div>
             <?php endif; ?>
-        </h3>
-        <div class="poll-creator">
-            <?php echo t('created_by'); ?>: <?php echo htmlspecialchars($poll['creator_name']); ?>
         </div>
     </div>
     
@@ -87,6 +115,17 @@ $is_greyed = $is_closed && $config['closed_poll_action'] === 'grey';
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 2px solid #ecf0f1;
+}
+
+.poll-header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.poll-title-section {
+    flex: 1;
 }
 
 .poll-title {
@@ -188,6 +227,41 @@ $is_greyed = $is_closed && $config['closed_poll_action'] === 'grey';
     font-weight: bold;
     font-size: 12px;
 }
+
+.poll-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.btn-edit-poll,
+.btn-delete-poll {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 13px;
+    transition: background 0.3s;
+}
+
+.btn-edit-poll {
+    background: #3498db;
+    color: white;
+}
+
+.btn-edit-poll:hover {
+    background: #2980b9;
+}
+
+.btn-delete-poll {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-delete-poll:hover {
+    background: #c0392b;
+}
 </style>
 
 <script>
@@ -197,9 +271,40 @@ $(document).on('click', '.btn-vote', function() {
     loadVoteForm(optionId, pollId);
 });
 
+$(document).on('click', '.btn-edit-poll', function() {
+    const pollId = $(this).data('poll-id');
+    loadEditPollForm(pollId);
+});
+
+$(document).on('click', '.btn-delete-poll', function() {
+    const pollId = $(this).data('poll-id');
+    deletePoll(pollId);
+});
+
 function loadVoteForm(optionId, pollId) {
     $.get('../ajax/vote_form.php', { option_id: optionId, poll_id: pollId }, function(html) {
         openModal(html);
+    });
+}
+
+function loadEditPollForm(pollId) {
+    $.get('../ajax/edit_poll_form.php', { poll_id: pollId }, function(html) {
+        openModal(html);
+    });
+}
+
+function deletePoll(pollId) {
+    if (!confirm('<?php echo t('confirm_delete_poll'); ?>')) {
+        return;
+    }
+    
+    $.post('../ajax/delete_poll.php', { poll_id: pollId }, function(response) {
+        if (response.success) {
+            alert(response.message || '<?php echo t('poll_deleted_success'); ?>');
+            location.reload();
+        } else {
+            alert(response.error || '<?php echo t('error_occurred'); ?>');
+        }
     });
 }
 </script>

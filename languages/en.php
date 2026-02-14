@@ -325,6 +325,8 @@ return [
     'cannot_remove_voted_option' => 'Cannot remove option with votes',
     'has_votes' => 'has votes',
     'confirm_remove_option' => 'Remove this option?',
+    'added' => 'Added',
+    'removed' => 'Removed',
     'game_poll' => 'Game Selection Poll',
     'vote_for_game' => 'Vote for Game',
     'vote_threshold' => 'Votes needed',
