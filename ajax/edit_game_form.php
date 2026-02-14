@@ -65,6 +65,28 @@ if (!$can_edit) {
     die('Permission denied');
 }
 
+// Get custom thumbnails from /thumbnails directory
+function get_custom_thumbnails() {
+    $thumbnails = [];
+    $thumbnail_dir = '../thumbnails/';
+    
+    if (is_dir($thumbnail_dir)) {
+        $files = scandir($thumbnail_dir);
+        foreach ($files as $file) {
+            if ($file !== '.' && $file !== '..' && !is_dir($thumbnail_dir . $file)) {
+                // Check if it's an image file
+                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                    $thumbnails[] = $file;
+                }
+            }
+        }
+        sort($thumbnails);
+    }
+    
+    return $thumbnails;
+}
+
 // Get custom thumbnails
 $custom_thumbnails = get_custom_thumbnails();
 

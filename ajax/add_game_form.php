@@ -29,9 +29,6 @@ $current_user = get_current_user($db);
 // Get table ID
 $table_id = isset($_GET['table_id']) ? intval($_GET['table_id']) : 0;
 
-// DEBUG: Log the table_id being loaded
-error_log("ADD_GAME_FORM: Loaded with table_id = $table_id");
-
 if (!$table_id) {
     die('Invalid table ID');
 }
@@ -61,7 +58,28 @@ if ($last_game) {
     $default_start_time = $table['start_time'];
 }
 
-// Get custom thumbnails
+// Get custom thumbnails from /thumbnails directory
+function get_custom_thumbnails() {
+    $thumbnails = [];
+    $thumbnail_dir = '../thumbnails/';
+    
+    if (is_dir($thumbnail_dir)) {
+        $files = scandir($thumbnail_dir);
+        foreach ($files as $file) {
+            if ($file !== '.' && $file !== '..' && !is_dir($thumbnail_dir . $file)) {
+                // Check if it's an image file
+                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                    $thumbnails[] = $file;
+                }
+            }
+        }
+        sort($thumbnails);
+    }
+    
+    return $thumbnails;
+}
+
 $custom_thumbnails = get_custom_thumbnails();
 
 // Pre-fill user data if logged in
@@ -516,16 +534,9 @@ $(document).ready(function() {
         
         const formData = $(this).serialize();
         
-        // DEBUG: Log the form data being submitted
-        console.log('Submitting add game form');
-        console.log('Serialized form data:', formData);
-        console.log('Form element:', this);
-        console.log('Table ID input value:', $('input[name="table_id"]', this).val());
-        
         $('#submit-game').prop('disabled', true).text('<?php echo t('saving'); ?>...');
         
         $.post('../ajax/add_game_submit.php', formData, function(response) {
-            console.log('Received response:', response);
             if (response.success) {
                 closeModal();
                 // Force page reload with cache busting

@@ -449,6 +449,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         <h1><?php echo t('admin_panel'); ?></h1>
         <div class="header-right">
             <span><?php echo htmlspecialchars($user_name); ?></span>
+            <a href="admin_thumbnails.php" class="view-site" style="background: #f39c12;">📁 Thumbnails</a>
             <a href="index.php" class="view-site"><?php echo t('view_site'); ?></a>
             <a href="?action=logout" class="logout"><?php echo t('logout'); ?></a>
         </div>

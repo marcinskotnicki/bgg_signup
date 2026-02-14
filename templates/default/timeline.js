@@ -45,14 +45,17 @@ function initTimeline() {
     
     html += '<div class="timeline-grid">';
     
-    // Add hour background stripes
+    // Add hour background stripes (including the final hour)
     html += '<div class="timeline-hour-stripes">';
-    for (let hour = startHour; hour < endHour; hour++) {
+    for (let hour = startHour; hour <= endHour; hour++) {
         const hourStart = hour * 60;
         const hourEnd = (hour + 1) * 60;
         const leftPos = Math.max(0, ((hourStart - start) / (endWithExtension - start)) * 100);
         const rightPos = Math.min(100, ((hourEnd - start) / (endWithExtension - start)) * 100);
         const width = rightPos - leftPos;
+        
+        // Skip if this column would be outside bounds
+        if (width <= 0 || leftPos >= 100) continue;
         
         const isEven = (hour - startHour) % 2 === 0;
         const className = isEven ? 'timeline-hour-stripe-even' : 'timeline-hour-stripe-odd';
@@ -60,8 +63,6 @@ function initTimeline() {
         html += '<div class="' + className + '" style="left: ' + leftPos + '%; width: ' + width + '%;"></div>';
     }
     
-    // Add final vertical line in stripes area
-    html += '<div class="timeline-hour-stripe-final" style="left: 100%; position: absolute; top: 0; bottom: 0; border-left: 2px solid #95a5a6;"></div>';
     html += '</div>'; // timeline-hour-stripes
     
     // Add table rows with games

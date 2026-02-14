@@ -33,6 +33,28 @@ if (!$table_id) {
     die('Invalid table ID');
 }
 
+// Get table info and event times
+$stmt = $db->prepare("SELECT t.*, ed.start_time, ed.end_time 
+    FROM tables t 
+    JOIN event_days ed ON t.event_day_id = ed.id 
+    WHERE t.id = ?");
+$stmt->execute([$table_id]);
+$table = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Get last game on this table to calculate default start time
+$stmt = $db->prepare("SELECT * FROM games WHERE table_id = ? AND is_active = 1 ORDER BY start_time DESC LIMIT 1");
+$stmt->execute([$table_id]);
+$last_game = $stmt->fetch(PDO::FETCH_ASSOC);
+
+// Calculate default start time
+if ($last_game) {
+    $last_start = strtotime($last_game['start_time']);
+    $default_start_time = date('H:i', $last_start + ($last_game['play_time'] * 60));
+} else {
+    // No games yet, use event start time
+    $default_start_time = $table['start_time'];
+}
+
 // Pre-fill user data if logged in
 $default_name = $current_user ? $current_user['name'] : '';
 $default_email = $current_user ? $current_user['email'] : '';
@@ -61,7 +83,7 @@ $default_email = $current_user ? $current_user['email'] : '';
         
         <div class="form-group">
             <label><?php echo t('poll_start_time'); ?>: <span class="required">*</span></label>
-            <input type="time" id="poll_start_time" class="form-control" required>
+            <input type="time" id="poll_start_time" class="form-control" value="<?php echo htmlspecialchars($default_start_time); ?>" required>
             <small><?php echo t('poll_start_time_help'); ?></small>
         </div>
     </div>

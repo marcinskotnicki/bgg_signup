@@ -107,25 +107,25 @@ $sender_email = $current_user ? $current_user['email'] : '';
         
         <div class="form-group">
             <label><?php echo t('your_name'); ?>: <span class="required">*</span></label>
-            <input type="text" name="sender_name" value="<?php echo htmlspecialchars($sender_name); ?>" required <?php echo $current_user ? 'readonly' : ''; ?>>
+            <input type="text" name="sender_name" class="form-control" value="<?php echo htmlspecialchars($sender_name); ?>" required <?php echo $current_user ? 'readonly' : ''; ?>>
         </div>
         
         <div class="form-group">
             <label><?php echo t('your_email'); ?>: <span class="required">*</span></label>
-            <input type="email" name="sender_email" value="<?php echo htmlspecialchars($sender_email); ?>" required <?php echo $current_user ? 'readonly' : ''; ?>>
+            <input type="email" name="sender_email" class="form-control" value="<?php echo htmlspecialchars($sender_email); ?>" required <?php echo $current_user ? 'readonly' : ''; ?>>
             <small><?php echo t('reply_to_address'); ?></small>
         </div>
         
         <div class="form-group">
             <label><?php echo t('message'); ?>: <span class="required">*</span></label>
-            <textarea name="message" rows="6" required></textarea>
+            <textarea name="message" class="form-control" rows="6" required></textarea>
         </div>
         
         <div class="form-actions">
-            <button type="submit" id="submit-message" class="btn-primary">
+            <button type="submit" id="submit-message" class="btn btn-primary">
                 <?php echo t('send_message'); ?>
             </button>
-            <button type="button" class="btn-secondary" onclick="closeModal()">
+            <button type="button" class="btn btn-secondary" onclick="closeModal()">
                 <?php echo t('cancel'); ?>
             </button>
         </div>
@@ -133,6 +133,16 @@ $sender_email = $current_user ? $current_user['email'] : '';
 </div>
 
 <style>
+.private-message-form-container {
+    padding: 20px;
+}
+
+.private-message-form-container h3 {
+    margin-top: 0;
+    color: #2c3e50;
+    font-size: 20px;
+}
+
 .message-info {
     background: #f8f9fa;
     padding: 15px;
@@ -140,8 +150,97 @@ $sender_email = $current_user ? $current_user['email'] : '';
     margin-bottom: 20px;
     border-left: 4px solid #3498db;
 }
+
 .message-info p {
     margin: 5px 0;
+}
+
+.modal-form .form-group {
+    margin-bottom: 20px;
+}
+
+.modal-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.modal-form .form-group .required {
+    color: #e74c3c;
+}
+
+.modal-form .form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    font-family: inherit;
+}
+
+.modal-form textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.modal-form .form-control:focus {
+    outline: none;
+    border-color: #3498db;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.modal-form .form-control[readonly] {
+    background: #f5f5f5;
+    cursor: not-allowed;
+}
+
+.modal-form small {
+    display: block;
+    margin-top: 5px;
+    color: #7f8c8d;
+    font-size: 12px;
+}
+
+.modal-form .form-actions {
+    margin-top: 25px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.modal-form .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.modal-form .btn-primary {
+    background: #27ae60;
+    color: white;
+}
+
+.modal-form .btn-primary:hover {
+    background: #229954;
+}
+
+.modal-form .btn-primary:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+}
+
+.modal-form .btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.modal-form .btn-secondary:hover {
+    background: #7f8c8d;
 }
 </style>
 
