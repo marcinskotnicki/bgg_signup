@@ -12,6 +12,15 @@
 // Load configuration
 $config = require_once 'config.php';
 
+// Auto-migrate old allow_full_deletion to deletion_mode if needed
+if (!isset($config['deletion_mode']) && isset($config['allow_full_deletion'])) {
+    $config['deletion_mode'] = $config['allow_full_deletion'] ? 'allow_choice' : 'soft_only';
+}
+// Set default if neither exists
+if (!isset($config['deletion_mode'])) {
+    $config['deletion_mode'] = 'soft_only';
+}
+
 // Prevent browser caching to ensure fresh data is always displayed
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Cache-Control: post-check=0, pre-check=0", false);

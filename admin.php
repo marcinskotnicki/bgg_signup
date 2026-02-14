@@ -12,6 +12,15 @@
 // Load configuration
 $config = require_once 'config.php';
 
+// Auto-migrate old allow_full_deletion to deletion_mode if needed
+if (!isset($config['deletion_mode']) && isset($config['allow_full_deletion'])) {
+    $config['deletion_mode'] = $config['allow_full_deletion'] ? 'allow_choice' : 'soft_only';
+}
+// Set default if neither exists
+if (!isset($config['deletion_mode'])) {
+    $config['deletion_mode'] = 'soft_only';
+}
+
 // Load translation system
 require_once 'includes/translations.php';
 
@@ -211,6 +220,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
         $config_file = 'config.php';
         $config_content = file_get_contents($config_file);
         
+        // Create backup before making changes
+        copy($config_file, $config_file . '.backup');
+        
         // Update config values
         $config_updates = [
             'venue_name', 'default_event_name', 'default_start_time', 'default_end_time',
@@ -254,12 +266,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
             $config_content = preg_replace($pattern, $replacement, $config_content);
         }
         
-        // Handle deletion_mode
+        // Handle deletion_mode (with backward compatibility for allow_full_deletion)
         if (isset($_POST['deletion_mode'])) {
             $value = $_POST['deletion_mode'];
+            
+            // Try to replace deletion_mode if it exists
             $pattern = "/'deletion_mode'\s*=>\s*'[^']*'/";
             $replacement = "'deletion_mode' => '$value'";
-            $config_content = preg_replace($pattern, $replacement, $config_content);
+            $new_content = preg_replace($pattern, $replacement, $config_content);
+            
+            // If deletion_mode wasn't found, try to replace old allow_full_deletion
+            if ($new_content === $config_content) {
+                // Replace the old allow_full_deletion section with new deletion_mode
+                $old_pattern = "/(\/\/ Game Deletion Options:.*?)'allow_full_deletion'\s*=>\s*(true|false),/s";
+                $new_section = "$1'deletion_mode' => '$value',";
+                $new_content = preg_replace($old_pattern, $new_section, $config_content);
+            }
+            
+            $config_content = $new_content;
         }
         
         // Handle verification_method
@@ -279,7 +303,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
         }
         
         // Write back to config file
-        file_put_contents($config_file, $config_content);
+        if (file_put_contents($config_file, $config_content) === false) {
+            $error = t('options_update_error', ['error' => 'Failed to write config file']);
+        } else {
+            // Verify the file was written correctly by trying to load it
+            try {
+                $test_config = require $config_file;
+                if (!is_array($test_config)) {
+                    // Config is corrupted, restore from backup
+                    if (file_exists($config_file . '.backup')) {
+                        copy($config_file . '.backup', $config_file);
+                    }
+                    $error = t('options_update_error', ['error' => 'Config file corrupted - restored from backup']);
+                }
+            } catch (Exception $e) {
+                // Config has syntax error, restore from backup
+                if (file_exists($config_file . '.backup')) {
+                    copy($config_file . '.backup', $config_file);
+                }
+                $error = t('options_update_error', ['error' => 'Config syntax error: ' . $e->getMessage()]);
+            }
+        }
         
         // Handle password change separately (in database)
         $password_changed = false;
@@ -1064,8 +1108,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                 alert('An error occurred');
             });
         }
-            updateEmailRequirement();
-        });
     </script>
 </body>
 </html>
