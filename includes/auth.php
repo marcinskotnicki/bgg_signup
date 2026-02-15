@@ -20,7 +20,7 @@ function get_current_user($db) {
     $auth_token = $_COOKIE['bgg_auth_token'];
     
     // Verify auth token
-    $stmt = $db->prepare("SELECT id, name, email, password_hash, is_admin FROM users WHERE id = ?");
+    $stmt = $db->prepare("SELECT id, name, email, password_hash, is_admin, preferred_template FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
     

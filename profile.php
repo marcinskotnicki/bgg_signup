@@ -194,7 +194,18 @@ $comments_made = $stmt->fetchColumn();
             border-radius: 4px;
             font-size: 14px;
         }
-        .form-group input:focus {
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            background: white;
+            cursor: pointer;
+        }
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #3498db;
         }
