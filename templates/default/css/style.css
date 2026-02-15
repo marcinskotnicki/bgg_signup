@@ -277,7 +277,7 @@ a:hover {
 
 /* Game Name */
 .game_name {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: bold;
 }
 
@@ -518,11 +518,11 @@ a:hover {
     display: flex;
     gap: 10px;
     margin-bottom: 30px;
-    border-bottom: 2px solid #ecf0f1;
+    border-bottom: 3px solid #ecf0f1;
 }
 
 .day-tab {
-    padding: 12px 24px;
+    padding: 18px 36px;
     background: #f8f9fa;
     border: none;
     border-radius: 8px 8px 0 0;
@@ -533,31 +533,39 @@ a:hover {
     display: flex;
     flex-direction: column;
     align-items: center;
+    font-size: 20px;
+    font-weight: 700;
 }
 
 .day-tab:hover {
     background: #e9ecef;
     text-decoration: none;
+    transform: translateY(-2px);
 }
 
 .day-tab.active {
     background: #3498db;
     color: white;
     font-weight: bold;
+    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
 }
 
 .day-date {
-    font-size: 12px;
-    opacity: 0.8;
-    margin-top: 3px;
+    font-size: 15px;
+    opacity: 0.85;
+    margin-top: 5px;
+    font-weight: normal;
 }
 
 .single-day-info {
     text-align: center;
-    padding: 15px;
+    padding: 24px;
     background: #f8f9fa;
     border-radius: 8px;
     margin-bottom: 30px;
+    font-size: 20px;
+    font-weight: 700;
+    border: 2px solid #e9ecef;
 }
 
 .day-time {
@@ -620,8 +628,28 @@ a:hover {
     margin: 0 5px;
 }
 
-.btn-add-game:hover, .btn-add-table:hover, .btn-create-poll:hover {
+/* Add Game is primary action - make it bigger and more prominent */
+.btn-add-game {
+    padding: 16px 40px;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(39, 174, 96, 0.2);
+}
+
+/* Create Poll is secondary - make it visually smaller */
+.btn-create-poll {
+    background: #f39c12;
+    padding: 9px 22px;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.btn-add-game:hover, .btn-add-table:hover {
     background: #229954;
+}
+
+.btn-create-poll:hover {
+    background: #e67e22;
 }
 
 .add-table-section {
@@ -799,81 +827,85 @@ a:hover {
 }
 /* Comments Section */
 .game-comments-section {
-    margin-top: 20px;
-    padding-top: 15px;
+    margin-top: 25px;
+    padding-top: 20px;
     border-top: 2px solid #ecf0f1;
 }
 
 .comments-header {
-    font-size: 16px;
-    color: #2c3e50;
-    margin-bottom: 15px;
+    font-size: 13px;
+    color: #95a5a6;
+    margin-bottom: 10px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .comment-count {
-    font-size: 14px;
-    color: #7f8c8d;
+    font-size: 12px;
+    color: #95a5a6;
     font-weight: normal;
 }
 
 .comments-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    margin-bottom: 15px;
+    gap: 8px;
+    margin-bottom: 10px;
 }
 
 .comment-item {
     background: #f8f9fa;
-    padding: 12px;
-    border-radius: 6px;
-    border-left: 3px solid #3498db;
+    padding: 8px;
+    border-radius: 4px;
+    border-left: 2px solid #bdc3c7;
 }
 
 .comment-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 
 .comment-author {
     font-weight: bold;
     color: #2c3e50;
-    font-size: 14px;
+    font-size: 12px;
 }
 
 .comment-time {
-    font-size: 12px;
+    font-size: 11px;
     color: #95a5a6;
 }
 
 .comment-text {
     color: #34495e;
-    font-size: 14px;
-    line-height: 1.6;
+    font-size: 12px;
+    line-height: 1.5;
 }
 
 .add-comment-btn-container {
-    margin-top: 10px;
+    margin-top: 6px;
 }
 
 .btn-add-comment {
-    background: #3498db;
+    background: #bdc3c7;
     color: white;
     border: none;
-    padding: 8px 16px;
-    border-radius: 4px;
+    padding: 5px 12px;
+    border-radius: 3px;
     cursor: pointer;
-    font-size: 14px;
+    font-size: 12px;
+    font-weight: normal;
     transition: background 0.3s;
 }
 
 .btn-add-comment:hover {
-    background: #2980b9;
+    background: #95a5a6;
 }
 
 /* Mail Icons */

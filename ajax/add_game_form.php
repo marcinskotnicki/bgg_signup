@@ -58,28 +58,7 @@ if ($last_game) {
     $default_start_time = $table['start_time'];
 }
 
-// Get custom thumbnails from /thumbnails directory
-function get_custom_thumbnails() {
-    $thumbnails = [];
-    $thumbnail_dir = '../thumbnails/';
-    
-    if (is_dir($thumbnail_dir)) {
-        $files = scandir($thumbnail_dir);
-        foreach ($files as $file) {
-            if ($file !== '.' && $file !== '..' && !is_dir($thumbnail_dir . $file)) {
-                // Check if it's an image file
-                $ext = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-                if (in_array($ext, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
-                    $thumbnails[] = $file;
-                }
-            }
-        }
-        sort($thumbnails);
-    }
-    
-    return $thumbnails;
-}
-
+// Get custom thumbnails (function is in includes/bgg_api.php)
 $custom_thumbnails = get_custom_thumbnails();
 
 // Pre-fill user data if logged in
@@ -352,6 +331,26 @@ $default_email = $current_user ? $current_user['email'] : '';
     font-size: 14px;
     font-weight: bold;
     transition: background 0.3s;
+}
+
+/* BGG Search is primary - make it bigger and more prominent */
+#bgg-search-btn {
+    padding: 16px 32px;
+    font-size: 17px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#bgg-search-btn:hover:not(:disabled) {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transform: translateY(-1px);
+}
+
+/* Manual Add is secondary - keep it smaller and less prominent */
+#add-manual-btn {
+    padding: 9px 18px;
+    font-size: 13px;
+    font-weight: 600;
 }
 
 .btn-primary {
