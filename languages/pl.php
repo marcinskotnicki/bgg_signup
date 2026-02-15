@@ -234,6 +234,8 @@ return [
     'confirm_changes' => 'Potwierdź Zmiany',
     'current_password' => 'Obecne Hasło',
     'required_to_confirm_changes' => 'Wymagane do potwierdzenia zmian',
+    'required_for_password_email_changes' => 'Wymagane tylko przy zmianie hasła lub emaila',
+    'current_password_required' => 'Obecne hasło jest wymagane do zmiany emaila lub hasła',
     'save_changes' => 'Zapisz Zmiany',
     'profile_updated_successfully' => 'Profil zaktualizowany pomyślnie!',
     
@@ -451,7 +453,7 @@ return [
     'config_feature_3' => 'Tworzy kopię zapasową przed aktualizacją',
     'config_feature_4' => 'Bezpieczny proces łączenia',
     'update_config_button' => 'Aktualizuj Config',
-    'update_config_confirm' => 'Zaktualizować config.php z GitHub?\n\nTo:\n• Zachowa wszystkie obecne ustawienia (SMTP, tokeny API, itp.)\n• Doda nowe stałe konfiguracyjne\n• Utworzy kopię zapasową najpierw\n\nKontynuować?',
+    'update_config_confirm' => 'Zaktualizować config.php z GitHub? To: Zachowa wszystkie obecne ustawienia (SMTP, tokeny API, itp.), Doda nowe stałe konfiguracyjne, Utworzy kopię zapasową najpierw. Kontynuować?',
     'cache_version_updated' => 'Wersja pamięci podręcznej zaktualizowana: %s → %s. Użytkownicy otrzymają świeże pliki CSS/JS przy następnym ładowaniu strony.',
     
     // User Template Preference
@@ -462,5 +464,44 @@ return [
     // Poll Settings
     'allow_multiple_poll_votes' => 'Pozwól na Wiele Głosów w Ankiecie',
     'allow_multiple_poll_votes_description' => 'Jeśli włączone, użytkownicy mogą głosować na wiele opcji w ankiecie. Jeśli wyłączone, użytkownicy mogą głosować tylko raz na ankietę.',
+    
+    // Update Button States
+    'updating_database' => 'Aktualizowanie Bazy Danych...',
+    'update_complete' => 'Aktualizacja Zakończona',
+    'update_failed_try_again' => 'Aktualizacja Nie Powiodła Się - Spróbuj Ponownie',
+    'updating_config_file' => 'Aktualizowanie Pliku Konfiguracyjnego...',
+    
+    // Password Reset
+    'forgot_password' => 'Zapomniałem Hasła',
+    'forgot_password_instructions' => 'Wpisz swój adres email, a wyślemy Ci link do zresetowania hasła.',
+    'send_reset_link' => 'Wyślij Link',
+    'password_reset_email_sent' => 'Jeśli konto z tym emailem istnieje, link do resetowania hasła został wysłany.',
+    'back_to_login' => 'Powrót do Logowania',
+    'reset_password' => 'Resetuj Hasło',
+    'enter_new_password' => 'Wpisz nowe hasło poniżej.',
+    'reset_password_button' => 'Resetuj Hasło',
+    'reset_link_expired' => 'Ten link resetowania hasła wygasł. Poproś o nowy.',
+    'invalid_reset_link' => 'Nieprawidłowy lub wygasły link.',
+    'password_reset_success' => 'Twoje hasło zostało zresetowane! Możesz teraz zalogować się nowym hasłem.',
+    'login_now' => 'Zaloguj Się',
+    'email_required' => 'Adres email jest wymagany',
+    'email_send_failed' => 'Nie udało się wysłać emaila. Skontaktuj się z pomocą techniczną.',
+    
+    // Email content
+    'password_reset_email_subject' => 'Prośba o Reset Hasła',
+    'password_reset_email_title' => 'Reset Hasła',
+    'password_reset_email_body' => 'Cześć %s, poprosiłeś o reset hasła. Kliknij przycisk poniżej aby ustawić nowe hasło:',
+    'password_reset_link_expires' => 'Ten link wygasa za 1 godzinę.',
+    'password_reset_ignore_if_not_you' => 'Jeśli to nie Ty, możesz zignorować tego emaila.',
+    
+    // Admin User Management (additional)
+    'user_management' => 'Zarządzanie Użytkownikami',
+    'tab_users' => 'Użytkownicy',
+    'role' => 'Rola',
+    'user' => 'Użytkownik',
+    'make_admin' => 'Zrób Adminem',
+    'make_user' => 'Zrób Użytkownikiem',
+    'enter_new_password_for_user' => 'Wpisz nowe hasło dla użytkownika',
+    'confirm_delete_user' => 'Czy na pewno chcesz usunąć tego użytkownika? Nie można tego cofnąć!',
 ];
 ?>

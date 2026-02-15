@@ -168,9 +168,17 @@ function update_user_profile($db, $user_id, $name, $email, $current_password, $n
         return ['success' => false, 'error' => 'user_not_found'];
     }
     
-    // Verify current password
-    if (!password_verify($current_password, $user['password_hash'])) {
-        return ['success' => false, 'error' => 'incorrect_current_password'];
+    // Only verify current password if changing password or email
+    $changing_password = !empty($new_password);
+    $changing_email = ($email !== $user['email']);
+    
+    if ($changing_password || $changing_email) {
+        if (empty($current_password)) {
+            return ['success' => false, 'error' => 'current_password_required'];
+        }
+        if (!password_verify($current_password, $user['password_hash'])) {
+            return ['success' => false, 'error' => 'incorrect_current_password'];
+        }
     }
     
     // Validate new data

@@ -540,3 +540,42 @@ function email_poll_closed($db, $poll_id, $winning_game_name, $voter_email) {
     
     send_email($voter_email, $subject, $message, $config);
 }
+
+/**
+ * Send password reset email
+ * 
+ * @param PDO $db Database connection
+ * @param string $email User email address
+ * @param string $reset_link Password reset link
+ */
+function email_password_reset($db, $email, $reset_link) {
+    global $config;
+    
+    if ($config['send_emails'] !== 'yes') {
+        return; // Emails disabled
+    }
+    
+    $stmt = $db->prepare("SELECT name FROM users WHERE email = ?");
+    $stmt->execute([$email]);
+    $user = $stmt->fetch(PDO::FETCH_ASSOC);
+    
+    if (!$user) {
+        return;
+    }
+    
+    $subject = t('password_reset_email_subject');
+    
+    $message = email_template([
+        'title' => t('password_reset_email_title'),
+        'content' => sprintf(t('password_reset_email_body'), htmlspecialchars($user['name'])) . 
+            '<br><br><div style="text-align: center;"><a href="' . htmlspecialchars($reset_link) . 
+            '" style="display:inline-block; padding:12px 24px; background:#667eea; color:white; text-decoration:none; border-radius:5px; font-weight:bold;">' . 
+            t('reset_password_button') . '</a></div><br>' .
+            '<p style="color:#666; font-size:13px;">' . t('password_reset_link_expires') . '</p>' .
+            '<p style="color:#666; font-size:13px;">' . t('password_reset_ignore_if_not_you') . '</p>',
+        'footer' => '',
+        'link' => ''
+    ]);
+    
+    send_email($email, $subject, $message, $config);
+}

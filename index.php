@@ -32,6 +32,13 @@ require_once 'includes/translations.php';
 // Load auth helper
 require_once 'includes/auth.php';
 
+// Handle logout
+if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    logout_user();
+    header('Location: index.php');
+    exit;
+}
+
 // Load BGG API helper
 require_once 'includes/bgg_api.php';
 
@@ -567,11 +574,21 @@ function loadJoinGameForm(gameId, isReserve) {
 
 // Resign from Game
 function resignFromGame(playerId, gameId) {
-    $.post('ajax/resign_player.php', { player_id: playerId, game_id: gameId }, function(response) {
-        if (response.success) {
-            location.reload();
-        } else {
-            alert(response.error || '<?php echo t('error_occurred'); ?>');
+    $.ajax({
+        url: 'ajax/resign_player.php',
+        method: 'POST',
+        data: { player_id: playerId, game_id: gameId },
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                location.reload();
+            } else {
+                alert(response.error || '<?php echo t('error_occurred'); ?>');
+            }
+        },
+        error: function(xhr) {
+            console.error('Resign error:', xhr.responseText);
+            alert('<?php echo t('error_occurred'); ?>');
         }
     });
 }

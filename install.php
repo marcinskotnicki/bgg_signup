@@ -128,6 +128,16 @@ function create_database($admin_name, $admin_email, $admin_password) {
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )");
         
+        // Password reset tokens
+        $db->exec("CREATE TABLE IF NOT EXISTS password_resets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            token TEXT NOT NULL UNIQUE,
+            expires_at DATETIME NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+        )");
+        
         // BGG API cache
         $db->exec("CREATE TABLE IF NOT EXISTS bgg_cache (
             cache_key TEXT PRIMARY KEY,

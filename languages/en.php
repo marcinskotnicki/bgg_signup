@@ -234,6 +234,8 @@ return [
     'confirm_changes' => 'Confirm Changes',
     'current_password' => 'Current Password',
     'required_to_confirm_changes' => 'Required to confirm any changes',
+    'required_for_password_email_changes' => 'Required only when changing password or email',
+    'current_password_required' => 'Current password is required to change email or password',
     'save_changes' => 'Save Changes',
     'profile_updated_successfully' => 'Profile updated successfully!',
     
@@ -451,7 +453,7 @@ return [
     'config_feature_3' => 'Creates backup before updating',
     'config_feature_4' => 'Safe merge process',
     'update_config_button' => 'Update Config File',
-    'update_config_confirm' => 'Update config.php from GitHub?\n\nThis will:\n• Preserve all your current settings (SMTP, API tokens, etc.)\n• Add any new configuration constants\n• Create a backup first\n\nContinue?',
+    'update_config_confirm' => 'Update config.php from GitHub? This will: Preserve all your current settings (SMTP, API tokens, etc.), Add any new configuration constants, Create a backup first. Continue?',
     'cache_version_updated' => 'Cache version updated: %s → %s. Users will get fresh CSS/JS on next page load.',
     
     // User Template Preference
@@ -462,5 +464,44 @@ return [
     // Poll Settings
     'allow_multiple_poll_votes' => 'Allow Multiple Poll Votes',
     'allow_multiple_poll_votes_description' => 'If enabled, users can vote for multiple options in a poll. If disabled, users can only vote once per poll.',
+    
+    // Update Button States
+    'updating_database' => 'Updating Database...',
+    'update_complete' => 'Update Complete',
+    'update_failed_try_again' => 'Update Failed - Try Again',
+    'updating_config_file' => 'Updating Config File...',
+    
+    // Password Reset
+    'forgot_password' => 'Forgot Password',
+    'forgot_password_instructions' => 'Enter your email address and we\'ll send you a link to reset your password.',
+    'send_reset_link' => 'Send Reset Link',
+    'password_reset_email_sent' => 'If an account exists with that email, a password reset link has been sent.',
+    'back_to_login' => 'Back to Login',
+    'reset_password' => 'Reset Password',
+    'enter_new_password' => 'Enter your new password below.',
+    'reset_password_button' => 'Reset Password',
+    'reset_link_expired' => 'This password reset link has expired. Please request a new one.',
+    'invalid_reset_link' => 'Invalid or expired reset link.',
+    'password_reset_success' => 'Your password has been reset successfully! You can now log in with your new password.',
+    'login_now' => 'Login Now',
+    'email_required' => 'Email address is required',
+    'email_send_failed' => 'Failed to send email. Please contact support.',
+    
+    // Email content
+    'password_reset_email_subject' => 'Password Reset Request',
+    'password_reset_email_title' => 'Password Reset',
+    'password_reset_email_body' => 'Hi %s, you requested a password reset. Click the button below to set a new password:',
+    'password_reset_link_expires' => 'This link expires in 1 hour.',
+    'password_reset_ignore_if_not_you' => 'If you didn\'t request this, you can safely ignore this email.',
+    
+    // Admin User Management (additional)
+    'user_management' => 'User Management',
+    'tab_users' => 'Users',
+    'role' => 'Role',
+    'user' => 'User',
+    'make_admin' => 'Make Admin',
+    'make_user' => 'Make User',
+    'enter_new_password_for_user' => 'Enter new password for this user',
+    'confirm_delete_user' => 'Are you sure you want to delete this user? This cannot be undone!',
 ];
 ?>

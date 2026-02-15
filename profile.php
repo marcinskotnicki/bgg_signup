@@ -365,8 +365,8 @@ $comments_made = $stmt->fetchColumn();
                     
                     <div class="form-group">
                         <label><?php echo t('current_password'); ?>:</label>
-                        <input type="password" name="current_password" required>
-                        <small><?php echo t('required_to_confirm_changes'); ?></small>
+                        <input type="password" name="current_password">
+                        <small><?php echo t('required_for_password_email_changes'); ?></small>
                     </div>
                 </div>
                 

@@ -20,7 +20,7 @@ $page_title = isset($page_title) ? $page_title : '';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo isset($page_title) ? htmlspecialchars($page_title) . ' - ' : ''; ?><?php echo htmlspecialchars($venue_name); ?></title>
-    <link rel="stylesheet" href="<?php echo TEMPLATES_DIR . '/' . $config['active_template']; ?>/css/style.css?v=<?php echo defined('CACHE_VERSION') ? CACHE_VERSION : '1.0.0'; ?>">
+    <link rel="stylesheet" href="<?php echo TEMPLATES_DIR . '/' . (isset($active_template) ? $active_template : $config['active_template']); ?>/css/style.css?v=<?php echo defined('CACHE_VERSION') ? CACHE_VERSION : '1.0.0'; ?>">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
@@ -34,7 +34,7 @@ $page_title = isset($page_title) ? $page_title : '';
                         <a href="admin.php" class="btn-admin"><?php echo t('admin_panel'); ?></a>
                     <?php endif; ?>
                     <a href="profile.php" class="btn-profile"><?php echo t('user_profile'); ?></a>
-                    <a href="?logout=1" class="btn-logout"><?php echo t('logout'); ?></a>
+                    <a href="?action=logout" class="btn-logout"><?php echo t('logout'); ?></a>
                 <?php else: ?>
                     <a href="login.php" class="btn-login"><?php echo t('login'); ?></a>
                 <?php endif; ?>

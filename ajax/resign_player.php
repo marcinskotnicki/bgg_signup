@@ -3,6 +3,9 @@
  * AJAX Handler: Resign from Game
  */
 
+// Start output buffering to catch any warnings/notices
+ob_start();
+
 header('Content-Type: application/json');
 
 // Load configuration
@@ -113,12 +116,16 @@ try {
     // Send email notification
     email_player_resigned($db, $game_id, $player_name);
     
+    // Clean any output buffer before sending JSON
+    ob_end_clean();
+    
     echo json_encode(['success' => true]);
     
 } catch (PDOException $e) {
     if (isset($db) && $db->inTransaction()) {
         $db->rollBack();
     }
+    ob_end_clean();
     echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
 }
 ?>

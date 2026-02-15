@@ -199,6 +199,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['register'])) {
                 </div>
                 
                 <button type="submit" name="login"><?php echo t('login'); ?></button>
+                
+                <div class="forgot-password-link" style="text-align: center; margin-top: 15px;">
+                    <a href="forgot_password.php" style="color: #667eea; text-decoration: none; font-size: 14px;">
+                        <?php echo t('forgot_password'); ?>?
+                    </a>
+                </div>
             </form>
             
             <div class="toggle-form">
