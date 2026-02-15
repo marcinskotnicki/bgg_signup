@@ -401,6 +401,7 @@ return [
     'upload_thumbnail' => 'Prześlij Miniaturę',
     'existing_thumbnails' => 'Istniejące Miniatury',
     'no_thumbnails_uploaded' => 'Nie przesłano jeszcze miniatur. Prześlij pierwszą powyżej!',
+    'upload_in_admin' => 'Prześlij w Panelu Administracyjnym',
     'confirm_delete_thumbnail' => 'Usunąć tę miniaturę?',
     
     // Archives
@@ -422,5 +423,34 @@ return [
     'to' => 'do',
     'games' => 'gry',
     'players' => 'gracze',
+    
+    // Update Tab
+    'update_files_github' => 'Aktualizuj Pliki z GitHub',
+    'update_files_description' => 'Pobiera i zastępuje wszystkie pliki z repozytorium GitHub.',
+    'update_files_button' => 'Aktualizuj Pliki',
+    'update_database_schema' => 'Aktualizuj Schemat Bazy Danych',
+    'update_schema_description' => 'Automatycznie wykrywa i dodaje brakujące kolumny w bazie danych przez porównanie z install.php z GitHub.',
+    'update_schema_feature_1' => 'Automatycznie wykrywa zmiany schematu',
+    'update_schema_feature_2' => 'Tworzy kopię zapasową przed aktualizacją',
+    'update_schema_feature_3' => 'Dodaje tylko brakujące kolumny',
+    'update_schema_feature_4' => 'Bezpieczne i odwracalne',
+    'update_schema_button' => 'Aktualizuj Schemat Bazy',
+    'clear_browser_cache' => 'Wyczyść Pamięć Podręczną Przeglądarki',
+    'cache_description' => 'Wymusza przeładowanie świeżych plików CSS i JavaScript przez wszystkich użytkowników poprzez zwiększenie wersji.',
+    'current_version' => 'Aktualna Wersja',
+    'cache_feature_1' => 'Automatycznie zwiększa numer wersji',
+    'cache_feature_2' => 'Użytkownicy otrzymują świeże pliki przy następnej wizycie',
+    'cache_feature_3' => 'Nie wymaga ręcznego Ctrl+F5',
+    'cache_feature_4' => 'Użyj po zmianach CSS/JS',
+    'increment_cache_confirm' => 'Zwiększyć wersję pamięci podręcznej? Wszyscy użytkownicy przeładują pliki CSS/JS przy następnej wizycie.',
+    'increment_cache_button' => 'Zwiększ Wersję',
+    'update_config_file' => 'Aktualizuj Plik Konfiguracyjny',
+    'config_description' => 'Łączy nowe stałe konfiguracyjne z GitHub zachowując obecne ustawienia (SMTP, tokeny API, itp.).',
+    'config_feature_1' => 'Zachowuje wszystkie obecne ustawienia',
+    'config_feature_2' => 'Dodaje nowe stałe z aktualizacji',
+    'config_feature_3' => 'Tworzy kopię zapasową przed aktualizacją',
+    'config_feature_4' => 'Bezpieczny proces łączenia',
+    'update_config_button' => 'Aktualizuj Config',
+    'update_config_confirm' => 'Zaktualizować config.php z GitHub?\n\nTo:\n• Zachowa wszystkie obecne ustawienia (SMTP, tokeny API, itp.)\n• Doda nowe stałe konfiguracyjne\n• Utworzy kopię zapasową najpierw\n\nKontynuować?',
 ];
 ?>

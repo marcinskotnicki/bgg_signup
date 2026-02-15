@@ -12,11 +12,12 @@ function initTimeline() {
     // Calculate timeline hours
     const start = parseTime(startTime);
     const end = parseTime(endTime);
-    const endWithExtension = end + (extension * 60);
+    const endWithExtension = end + (extension * 60); // Configured extension
+    const actualEnd = end + ((extension + 1) * 60); // Add extra hour for overflow protection
     
     // Build hour markers
     const startHour = Math.floor(start / 60);
-    const endHour = Math.ceil(endWithExtension / 60);
+    const endHour = Math.ceil(endWithExtension / 60); // Only show labels up to configured extension
     
     // Build timeline HTML
     let html = '<div class="timeline-container-inner">';
@@ -26,10 +27,10 @@ function initTimeline() {
     html += '<div class="timeline-table-label-spacer"></div>'; // Spacer for table labels
     html += '<div class="timeline-hours-bar">';
     
-    // Hour markers with vertical lines
+    // Hour markers with vertical lines (only up to configured extension)
     for (let hour = startHour; hour <= endHour; hour++) {
         const hourMinutes = hour * 60;
-        const position = ((hourMinutes - start) / (endWithExtension - start)) * 100;
+        const position = ((hourMinutes - start) / (actualEnd - start)) * 100; // Use actualEnd for positioning
         
         if (position >= 0 && position <= 100) {
             const displayHour = hour % 24;
@@ -50,8 +51,8 @@ function initTimeline() {
     for (let hour = startHour; hour <= endHour; hour++) {
         const hourStart = hour * 60;
         const hourEnd = (hour + 1) * 60;
-        const leftPos = Math.max(0, ((hourStart - start) / (endWithExtension - start)) * 100);
-        const rightPos = Math.min(100, ((hourEnd - start) / (endWithExtension - start)) * 100);
+        const leftPos = Math.max(0, ((hourStart - start) / (actualEnd - start)) * 100);
+        const rightPos = Math.min(100, ((hourEnd - start) / (actualEnd - start)) * 100);
         const width = rightPos - leftPos;
         
         // Skip if this column would be outside bounds
@@ -74,8 +75,8 @@ function initTimeline() {
         table.games.forEach(function(game) {
             const gameStart = parseTime(game.start_time);
             const gameWidth = game.play_time;
-            const leftPos = ((gameStart - start) / (endWithExtension - start)) * 100;
-            const widthPercent = (gameWidth / (endWithExtension - start)) * 100;
+            const leftPos = ((gameStart - start) / (actualEnd - start)) * 100;
+            const widthPercent = (gameWidth / (actualEnd - start)) * 100;
             
             html += '<div class="timeline-game" data-game-id="' + game.id + '" style="' + 
                 'left: ' + leftPos + '%; ' +

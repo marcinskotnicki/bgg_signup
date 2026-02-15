@@ -110,11 +110,20 @@ $default_email = $current_user ? $current_user['email'] : '';
             <div id="thumbnail-selector" class="form-group" style="display: none;">
                 <label><?php echo t('select_thumbnail'); ?>:</label>
                 <div class="thumbnail-grid">
-                    <?php foreach ($custom_thumbnails as $thumb): ?>
-                        <div class="thumbnail-option" data-thumbnail="thumbnails/<?php echo $thumb; ?>">
-                            <img src="thumbnails/<?php echo $thumb; ?>" alt="Thumbnail">
-                        </div>
-                    <?php endforeach; ?>
+                    <?php if (empty($custom_thumbnails)): ?>
+                        <p style="color: #95a5a6; font-style: italic;">
+                            <?php echo t('no_thumbnails_uploaded'); ?> 
+                            <?php if ($current_user && $current_user['is_admin']): ?>
+                                <a href="admin.php" target="_blank" style="color: #3498db;"><?php echo t('upload_in_admin'); ?></a>
+                            <?php endif; ?>
+                        </p>
+                    <?php else: ?>
+                        <?php foreach ($custom_thumbnails as $thumb): ?>
+                            <div class="thumbnail-option" data-thumbnail="thumbnails/<?php echo $thumb; ?>">
+                                <img src="thumbnails/<?php echo $thumb; ?>" alt="Thumbnail">
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
                 </div>
             </div>
             

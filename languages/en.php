@@ -401,6 +401,7 @@ return [
     'upload_thumbnail' => 'Upload Thumbnail',
     'existing_thumbnails' => 'Existing Thumbnails',
     'no_thumbnails_uploaded' => 'No thumbnails uploaded yet. Upload your first one above!',
+    'upload_in_admin' => 'Upload in Admin Panel',
     'confirm_delete_thumbnail' => 'Delete this thumbnail?',
     
     // Archives
@@ -422,5 +423,34 @@ return [
     'to' => 'to',
     'games' => 'games',
     'players' => 'players',
+    
+    // Update Tab
+    'update_files_github' => 'Update Files from GitHub',
+    'update_files_description' => 'Downloads and replaces all files from the GitHub repository.',
+    'update_files_button' => 'Update Files',
+    'update_database_schema' => 'Update Database Schema',
+    'update_schema_description' => 'Automatically detects and applies missing database columns by comparing with GitHub\'s install.php.',
+    'update_schema_feature_1' => 'Detects schema changes automatically',
+    'update_schema_feature_2' => 'Creates backup before updating',
+    'update_schema_feature_3' => 'Applies only missing columns',
+    'update_schema_feature_4' => 'Safe and reversible',
+    'update_schema_button' => 'Update Database Schema',
+    'clear_browser_cache' => 'Clear Browser Cache',
+    'cache_description' => 'Force all users to reload fresh CSS and JavaScript files by incrementing the cache version.',
+    'current_version' => 'Current Version',
+    'cache_feature_1' => 'Increments version number automatically',
+    'cache_feature_2' => 'Users get fresh files on next visit',
+    'cache_feature_3' => 'No manual Ctrl+F5 needed',
+    'cache_feature_4' => 'Use after CSS/JS changes',
+    'increment_cache_confirm' => 'Increment cache version? All users will reload CSS/JS files on next visit.',
+    'increment_cache_button' => 'Increment Cache Version',
+    'update_config_file' => 'Update Configuration File',
+    'config_description' => 'Merges new configuration constants from GitHub while preserving your current settings (SMTP, API tokens, etc.).',
+    'config_feature_1' => 'Preserves all your current settings',
+    'config_feature_2' => 'Adds new constants from updates',
+    'config_feature_3' => 'Creates backup before updating',
+    'config_feature_4' => 'Safe merge process',
+    'update_config_button' => 'Update Config File',
+    'update_config_confirm' => 'Update config.php from GitHub?\n\nThis will:\n• Preserve all your current settings (SMTP, API tokens, etc.)\n• Add any new configuration constants\n• Create a backup first\n\nContinue?',
 ];
 ?>

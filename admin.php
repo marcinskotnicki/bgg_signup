@@ -973,52 +973,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         </div>
         
         <div class="update-section">
-            <h3>🔄 Update Files from GitHub</h3>
+            <h3>🔄 <?php echo t('update_files_github'); ?></h3>
             <p><strong><?php echo t('github_repository'); ?>:</strong> <a href="<?php echo GITHUB_REPO; ?>" target="_blank"><?php echo GITHUB_REPO; ?></a></p>
-            <p>Downloads and replaces all files from the GitHub repository.</p>
+            <p><?php echo t('update_files_description'); ?></p>
             <form method="POST" onsubmit="return confirm('<?php echo t('update_confirm'); ?>');">
-                <button type="submit" name="run_update" class="btn-update">Update Files</button>
+                <button type="submit" name="run_update" class="btn-update"><?php echo t('update_files_button'); ?></button>
             </form>
         </div>
         
         <div class="update-section">
-            <h3>🚀 Update Database Schema</h3>
-            <p>Automatically detects and applies missing database columns by comparing with GitHub's install.php.</p>
+            <h3>🚀 <?php echo t('update_database_schema'); ?></h3>
+            <p><?php echo t('update_schema_description'); ?></p>
             <ul class="update-features">
-                <li>✓ Detects schema changes automatically</li>
-                <li>✓ Creates backup before updating</li>
-                <li>✓ Applies only missing columns</li>
-                <li>✓ Safe and reversible</li>
+                <li>✓ <?php echo t('update_schema_feature_1'); ?></li>
+                <li>✓ <?php echo t('update_schema_feature_2'); ?></li>
+                <li>✓ <?php echo t('update_schema_feature_3'); ?></li>
+                <li>✓ <?php echo t('update_schema_feature_4'); ?></li>
             </ul>
-            <button type="button" id="update-schema-btn" class="btn-update-schema">Update Database Schema</button>
+            <button type="button" id="update-schema-btn" class="btn-update-schema"><?php echo t('update_schema_button'); ?></button>
             <div id="schema-update-log" style="display: none; margin-top: 15px;"></div>
         </div>
         
         <div class="update-section">
-            <h3>♻️ Clear Browser Cache</h3>
-            <p>Force all users to reload fresh CSS and JavaScript files by incrementing the cache version.</p>
-            <p><strong>Current Version:</strong> <code style="background: #ecf0f1; padding: 2px 6px; border-radius: 3px;"><?php echo defined('CACHE_VERSION') ? CACHE_VERSION : '1.0.0'; ?></code></p>
+            <h3>♻️ <?php echo t('clear_browser_cache'); ?></h3>
+            <p><?php echo t('cache_description'); ?></p>
+            <p><strong><?php echo t('current_version'); ?>:</strong> <code style="background: #ecf0f1; padding: 2px 6px; border-radius: 3px;"><?php echo defined('CACHE_VERSION') ? CACHE_VERSION : '1.0.0'; ?></code></p>
             <ul class="update-features">
-                <li>✓ Increments version number automatically</li>
-                <li>✓ Users get fresh files on next visit</li>
-                <li>✓ No manual Ctrl+F5 needed</li>
-                <li>✓ Use after CSS/JS changes</li>
+                <li>✓ <?php echo t('cache_feature_1'); ?></li>
+                <li>✓ <?php echo t('cache_feature_2'); ?></li>
+                <li>✓ <?php echo t('cache_feature_3'); ?></li>
+                <li>✓ <?php echo t('cache_feature_4'); ?></li>
             </ul>
-            <form method="POST" onsubmit="return confirm('Increment cache version? All users will reload CSS/JS files on next visit.');">
-                <button type="submit" name="increment_cache" class="btn-update">♻️ Increment Cache Version</button>
+            <form method="POST" onsubmit="return confirm('<?php echo t('increment_cache_confirm'); ?>');">
+                <button type="submit" name="increment_cache" class="btn-update">♻️ <?php echo t('increment_cache_button'); ?></button>
             </form>
         </div>
         
         <div class="update-section">
-            <h3>⚙️ Update Configuration File</h3>
-            <p>Merges new configuration constants from GitHub while preserving your current settings (SMTP, API tokens, etc.).</p>
+            <h3>⚙️ <?php echo t('update_config_file'); ?></h3>
+            <p><?php echo t('config_description'); ?></p>
             <ul class="update-features">
-                <li>✓ Preserves all your current settings</li>
-                <li>✓ Adds new constants from updates</li>
-                <li>✓ Creates backup before updating</li>
-                <li>✓ Safe merge process</li>
+                <li>✓ <?php echo t('config_feature_1'); ?></li>
+                <li>✓ <?php echo t('config_feature_2'); ?></li>
+                <li>✓ <?php echo t('config_feature_3'); ?></li>
+                <li>✓ <?php echo t('config_feature_4'); ?></li>
             </ul>
-            <button type="button" id="update-config-btn" class="btn-update-schema">⚙️ Update Config File</button>
+            <button type="button" id="update-config-btn" class="btn-update-schema">⚙️ <?php echo t('update_config_button'); ?></button>
             <div id="config-update-log" style="display: none; margin-top: 15px;"></div>
         </div>
         
@@ -1119,6 +1119,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         <div id="thumbnails-grid" class="thumbnails-grid"></div>
         
         <style>
+        #thumbnail-file {
+            border: 2px dashed #3498db;
+            border-radius: 4px;
+            padding: 15px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        #thumbnail-file:hover {
+            border-color: #2980b9;
+            background: #e9ecef;
+        }
         .thumbnails-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
@@ -1223,6 +1235,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         }
         .btn-view:hover {
             background: #2980b9;
+        }
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            font-size: 13px;
+            cursor: pointer;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .btn-delete:hover {
+            background: #c0392b;
+        }
+        .btn-delete:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
         }
         .badge {
             display: inline-block;
@@ -1472,7 +1502,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             const logDiv = document.getElementById('config-update-log');
             
             // Confirm action
-            if (!confirm('Update config.php from GitHub?\n\nThis will:\n• Preserve all your current settings (SMTP, API tokens, etc.)\n• Add any new configuration constants\n• Create a backup first\n\nContinue?')) {
+            if (!confirm('<?php echo addslashes(t('update_config_confirm')); ?>')) {
                 return;
             }
             

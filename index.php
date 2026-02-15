@@ -185,7 +185,7 @@ include $template_dir . '/header.php';
         <span class="archive-icon">📅</span>
         <span class="archive-text">
             <strong><?php echo t('viewing_archive'); ?>:</strong> 
-            <?php echo date('l, F j, Y', strtotime($archive_date)); ?>
+            <?php echo format_date($archive_date, 'full'); ?>
         </span>
         <a href="index.php" class="btn-current-event"><?php echo t('view_current_event'); ?></a>
     </div>
