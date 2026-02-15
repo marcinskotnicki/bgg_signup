@@ -197,7 +197,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['increment_cache'])) {
             
             file_put_contents($config_file, $config_content);
             
-            $message = "Cache version updated: $current_version → $new_version. Users will get fresh CSS/JS on next page load.";
+            $message = sprintf(t('cache_version_updated'), $current_version, $new_version);
         } else {
             $error = "Could not find CACHE_VERSION in config.php";
         }

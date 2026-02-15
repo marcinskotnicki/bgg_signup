@@ -422,7 +422,15 @@ function format_difficulty($difficulty) {
  */
 function get_custom_thumbnails() {
     $thumbnails = [];
+    
+    // Determine the correct path to thumbnails directory
+    // If called from ajax/, we need to go up one level
     $thumbnail_dir = THUMBNAILS_DIR;
+    
+    // Check if we need to adjust path (if called from subdirectory)
+    if (!is_dir($thumbnail_dir)) {
+        $thumbnail_dir = '../' . THUMBNAILS_DIR;
+    }
     
     if (is_dir($thumbnail_dir)) {
         $files = scandir($thumbnail_dir);

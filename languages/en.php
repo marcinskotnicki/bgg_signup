@@ -452,5 +452,6 @@ return [
     'config_feature_4' => 'Safe merge process',
     'update_config_button' => 'Update Config File',
     'update_config_confirm' => 'Update config.php from GitHub?\n\nThis will:\n• Preserve all your current settings (SMTP, API tokens, etc.)\n• Add any new configuration constants\n• Create a backup first\n\nContinue?',
+    'cache_version_updated' => 'Cache version updated: %s → %s. Users will get fresh CSS/JS on next page load.',
 ];
 ?>

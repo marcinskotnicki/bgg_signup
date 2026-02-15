@@ -452,5 +452,6 @@ return [
     'config_feature_4' => 'Bezpieczny proces łączenia',
     'update_config_button' => 'Aktualizuj Config',
     'update_config_confirm' => 'Zaktualizować config.php z GitHub?\n\nTo:\n• Zachowa wszystkie obecne ustawienia (SMTP, tokeny API, itp.)\n• Doda nowe stałe konfiguracyjne\n• Utworzy kopię zapasową najpierw\n\nKontynuować?',
+    'cache_version_updated' => 'Wersja pamięci podręcznej zaktualizowana: %s → %s. Użytkownicy otrzymają świeże pliki CSS/JS przy następnym ładowaniu strony.',
 ];
 ?>
