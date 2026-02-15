@@ -123,7 +123,7 @@ try {
     if ($threshold_reached) {
         // Check if any other options also reached threshold at the same time
         $stmt = $db->prepare("
-            SELECT po.id, po.vote_threshold, po.display_order, COUNT(pv.id) as vote_count
+            SELECT po.*, COUNT(pv.id) as vote_count
             FROM poll_options po
             LEFT JOIN poll_votes pv ON po.id = pv.poll_option_id
             WHERE po.poll_id = ?

@@ -1513,7 +1513,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             const logDiv = document.getElementById('config-update-log');
             
             // Confirm action
-            if (!confirm('<?php echo addslashes(t('update_config_confirm')); ?>')) {
+            if (!confirm(<?php echo json_encode(t('update_config_confirm')); ?>)) {
                 return;
             }
             
