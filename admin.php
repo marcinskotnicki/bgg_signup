@@ -100,7 +100,7 @@ if (!$is_admin) {
     <html>
     <head>
         <meta charset="UTF-8">
-        <title><?php echo t('admin_login'); ?> - BGG Signup</title>
+        <title><?php echo t('admin_login'); ?> - <?php echo htmlspecialchars($config['venue_name']); ?></title>
         <style>
             body { font-family: Arial, sans-serif; max-width: 400px; margin: 100px auto; padding: 20px; }
             h1 { color: #333; text-align: center; }
@@ -424,7 +424,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
 <html>
 <head>
     <meta charset="UTF-8">
-    <title><?php echo t('admin_panel'); ?> - BGG Signup</title>
+    <title><?php echo t('admin_panel'); ?> - <?php echo htmlspecialchars($config['venue_name']); ?></title>
     <style>
         body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
         .header { background: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
