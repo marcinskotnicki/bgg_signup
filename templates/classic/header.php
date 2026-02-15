@@ -8,6 +8,9 @@ if (!isset($config)) {
     $config = require __DIR__ . '/../../config.php';
 }
 
+// Get available languages
+$available_languages = get_available_languages();
+
 $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup';
 $page_title = isset($page_title) ? $page_title : '';
 ?>
@@ -37,6 +40,7 @@ $page_title = isset($page_title) ? $page_title : '';
                 <?php endif; ?>
                 
                 <!-- Language Selector -->
+                <?php if (!empty($available_languages) && count($available_languages) > 1): ?>
                 <div class="language-selector">
                     <?php foreach ($available_languages as $lang_code => $lang_name): ?>
                         <?php if ($lang_code !== $current_language): ?>
@@ -46,6 +50,7 @@ $page_title = isset($page_title) ? $page_title : '';
                         <?php endif; ?>
                     <?php endforeach; ?>
                 </div>
+                <?php endif; ?>
             </div>
         </div>
     </header>
