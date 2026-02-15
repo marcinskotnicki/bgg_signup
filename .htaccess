@@ -1,0 +1,119 @@
+# BGG Signup System - Apache Configuration
+# Provides clean URLs, security headers, and performance optimizations
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+    
+    # Security: Block access to sensitive files
+    RewriteRule ^config\.php$ - [F,L]
+    RewriteRule ^\.git - [F,L]
+    RewriteRule ^\.env$ - [F,L]
+    RewriteRule ^install\.php$ - [F,L]
+    
+    # Block direct access to includes directory
+    RewriteRule ^includes/ - [F,L]
+    
+    # Clean URLs for archive/date viewing
+    # /archive/2025-02-15 -> index.php?date=2025-02-15
+    RewriteRule ^archive/([0-9]{4}-[0-9]{2}-[0-9]{2})$ index.php?date=$1 [L,QSA]
+    
+    # Clean URL for event by ID
+    # /event/5 -> index.php?event_id=5
+    RewriteRule ^event/([0-9]+)$ index.php?event_id=$1 [L,QSA]
+    
+    # Clean URL for specific day
+    # /day/2 -> index.php?day=2
+    RewriteRule ^day/([0-9]+)$ index.php?day=$1 [L,QSA]
+    
+    # Admin shortcuts
+    RewriteRule ^admin$ admin.php [L]
+    RewriteRule ^admin/thumbnails$ admin_thumbnails.php [L]
+    RewriteRule ^login$ login.php [L]
+    RewriteRule ^register$ register.php [L]
+    
+    # Fallback: if file doesn't exist, route to index
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_URI} !^/ajax/
+    RewriteCond %{REQUEST_URI} !^/includes/
+    RewriteCond %{REQUEST_URI} !\.(css|js|jpg|jpeg|png|gif|svg|ico|webp)$
+    # RewriteRule ^(.*)$ index.php?slug=$1 [L,QSA]
+</IfModule>
+
+# Security Headers
+<IfModule mod_headers.c>
+    # Prevent clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+    
+    # Prevent MIME sniffing
+    Header always set X-Content-Type-Options "nosniff"
+    
+    # Enable XSS protection
+    Header always set X-XSS-Protection "1; mode=block"
+    
+    # Referrer policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
+
+# Default documents
+DirectoryIndex index.php index.html
+
+# Error documents
+ErrorDocument 404 /index.php
+ErrorDocument 403 /index.php
+
+# File compression
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css text/javascript application/javascript application/json
+</IfModule>
+
+# Browser caching
+<IfModule mod_expires.c>
+    ExpiresActive On
+    
+    # Images
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/webp "access plus 1 month"
+    ExpiresByType image/svg+xml "access plus 1 month"
+    
+    # CSS and JavaScript (cache busting via version parameter)
+    ExpiresByType text/css "access plus 1 year"
+    ExpiresByType application/javascript "access plus 1 year"
+    ExpiresByType text/javascript "access plus 1 year"
+    
+    # Fonts
+    ExpiresByType font/woff "access plus 1 year"
+    ExpiresByType font/woff2 "access plus 1 year"
+    ExpiresByType font/ttf "access plus 1 year"
+    ExpiresByType font/otf "access plus 1 year"
+    
+    # HTML
+    ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+
+# Database protection
+<Files "*.db">
+    Order allow,deny
+    Deny from all
+</Files>
+
+<Files "*.sqlite">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Log files protection
+<Files "*.log">
+    Order allow,deny
+    Deny from all
+</Files>
+
+# PHP file upload size (adjust based on server limits)
+# php_value upload_max_filesize 2M
+# php_value post_max_size 2M

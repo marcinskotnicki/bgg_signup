@@ -11,6 +11,11 @@ if (!defined('DB_FILE')) {
     define('DB_FILE', 'boardgame_events.db');
 }
 
+// Cache Version (increment to force browser cache refresh)
+if (!defined('CACHE_VERSION')) {
+    define('CACHE_VERSION', '1.0.0');
+}
+
 // GitHub Repository (for updates - uses ZIP download, no API, no rate limits!)
 if (!defined('GITHUB_REPO')) {
     define('GITHUB_REPO', 'https://github.com/marcinskotnicki/bgg_signup');

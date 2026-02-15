@@ -167,6 +167,45 @@ require_once 'update.php';
 $message = '';
 $error = '';
 
+// Increment Cache Version
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['increment_cache'])) {
+    try {
+        // Read current config file
+        $config_file = 'config.php';
+        $config_content = file_get_contents($config_file);
+        
+        // Extract current version
+        if (preg_match("/define\('CACHE_VERSION',\s*'([^']+)'\)/", $config_content, $matches)) {
+            $current_version = $matches[1];
+            
+            // Increment version (e.g., 1.0.0 -> 1.0.1, or timestamp)
+            $version_parts = explode('.', $current_version);
+            if (count($version_parts) == 3) {
+                $version_parts[2] = (int)$version_parts[2] + 1;
+                $new_version = implode('.', $version_parts);
+            } else {
+                // Fallback to timestamp
+                $new_version = date('YmdHis');
+            }
+            
+            // Update config file
+            $config_content = preg_replace(
+                "/define\('CACHE_VERSION',\s*'[^']+'\)/",
+                "define('CACHE_VERSION', '$new_version')",
+                $config_content
+            );
+            
+            file_put_contents($config_file, $config_content);
+            
+            $message = "Cache version updated: $current_version → $new_version. Users will get fresh CSS/JS on next page load.";
+        } else {
+            $error = "Could not find CACHE_VERSION in config.php";
+        }
+    } catch (Exception $e) {
+        $error = "Failed to update cache version: " . $e->getMessage();
+    }
+}
+
 // Add New Event
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['add_event'])) {
     $event_name = $_POST['event_name'];
@@ -449,6 +488,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         <h1><?php echo t('admin_panel'); ?></h1>
         <div class="header-right">
             <span><?php echo htmlspecialchars($user_name); ?></span>
+            <a href="admin_archives.php" class="view-site" style="background: #9b59b6;">📚 Archives</a>
             <a href="admin_thumbnails.php" class="view-site" style="background: #f39c12;">📁 Thumbnails</a>
             <a href="index.php" class="view-site"><?php echo t('view_site'); ?></a>
             <a href="?action=logout" class="logout"><?php echo t('logout'); ?></a>
@@ -952,6 +992,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             </ul>
             <button type="button" id="update-schema-btn" class="btn-update-schema">Update Database Schema</button>
             <div id="schema-update-log" style="display: none; margin-top: 15px;"></div>
+        </div>
+        
+        <div class="update-section">
+            <h3>♻️ Clear Browser Cache</h3>
+            <p>Force all users to reload fresh CSS and JavaScript files by incrementing the cache version.</p>
+            <p><strong>Current Version:</strong> <code style="background: #ecf0f1; padding: 2px 6px; border-radius: 3px;"><?php echo CACHE_VERSION; ?></code></p>
+            <ul class="update-features">
+                <li>✓ Increments version number automatically</li>
+                <li>✓ Users get fresh files on next visit</li>
+                <li>✓ No manual Ctrl+F5 needed</li>
+                <li>✓ Use after CSS/JS changes</li>
+            </ul>
+            <form method="POST" onsubmit="return confirm('Increment cache version? All users will reload CSS/JS files on next visit.');">
+                <button type="submit" name="increment_cache" class="btn-update">♻️ Increment Cache Version</button>
+            </form>
         </div>
         
         <?php if (!empty($update_messages)): ?>

@@ -46,9 +46,30 @@ try {
 // Get current user
 $current_user = get_current_user($db);
 
-// Get active event
-$stmt = $db->query("SELECT * FROM events WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1");
-$active_event = $stmt->fetch(PDO::FETCH_ASSOC);
+// Check if viewing archived event by date
+$viewing_archive = false;
+$archive_date = null;
+
+if (isset($_GET['date']) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $_GET['date'])) {
+    $archive_date = $_GET['date'];
+    $viewing_archive = true;
+    
+    // Find event that has this date
+    $stmt = $db->prepare("
+        SELECT DISTINCT e.* 
+        FROM events e
+        JOIN event_days ed ON e.id = ed.event_id
+        WHERE ed.date = ?
+        ORDER BY e.created_at DESC
+        LIMIT 1
+    ");
+    $stmt->execute([$archive_date]);
+    $active_event = $stmt->fetch(PDO::FETCH_ASSOC);
+} else {
+    // Get active event (normal behavior)
+    $stmt = $db->query("SELECT * FROM events WHERE is_active = 1 ORDER BY created_at DESC LIMIT 1");
+    $active_event = $stmt->fetch(PDO::FETCH_ASSOC);
+}
 
 // Get event days if event exists
 $event_days = [];
@@ -56,6 +77,14 @@ if ($active_event) {
     $stmt = $db->prepare("SELECT * FROM event_days WHERE event_id = ? ORDER BY day_number ASC");
     $stmt->execute([$active_event['id']]);
     $event_days = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // If viewing archive, filter to show only the specific date
+    if ($viewing_archive && $archive_date) {
+        $event_days = array_filter($event_days, function($day) use ($archive_date) {
+            return $day['date'] === $archive_date;
+        });
+        $event_days = array_values($event_days); // Re-index array
+    }
 }
 
 // Determine which day to show (default to first day)
@@ -149,6 +178,55 @@ $template_dir = TEMPLATES_DIR . '/' . $config['active_template'];
 // Include header
 include $template_dir . '/header.php';
 ?>
+
+<?php if ($viewing_archive && $archive_date): ?>
+<div class="archive-banner">
+    <div class="archive-banner-content">
+        <span class="archive-icon">📅</span>
+        <span class="archive-text">
+            <strong><?php echo t('viewing_archive'); ?>:</strong> 
+            <?php echo date('l, F j, Y', strtotime($archive_date)); ?>
+        </span>
+        <a href="index.php" class="btn-current-event"><?php echo t('view_current_event'); ?></a>
+    </div>
+</div>
+<style>
+.archive-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 0;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.archive-banner-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+.archive-icon {
+    font-size: 24px;
+}
+.archive-text {
+    flex: 1;
+    font-size: 16px;
+}
+.btn-current-event {
+    background: white;
+    color: #667eea;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-weight: bold;
+    white-space: nowrap;
+}
+.btn-current-event:hover {
+    background: #f0f0f0;
+}
+</style>
+<?php endif; ?>
 
 <div class="event-container">
     <?php if (!$active_event): ?>
@@ -606,7 +684,7 @@ const TIMELINE_CONFIG = {
 </script>
 
 <!-- Include timeline template -->
-<script src="<?php echo $template_dir; ?>/timeline.js"></script>
+<script src="<?php echo $template_dir; ?>/timeline.js?v=<?php echo CACHE_VERSION; ?>"></script>
 
 <script>
 // Initialize timeline on page load
