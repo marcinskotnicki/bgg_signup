@@ -1009,6 +1009,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             </form>
         </div>
         
+        <div class="update-section">
+            <h3>⚙️ Update Configuration File</h3>
+            <p>Merges new configuration constants from GitHub while preserving your current settings (SMTP, API tokens, etc.).</p>
+            <ul class="update-features">
+                <li>✓ Preserves all your current settings</li>
+                <li>✓ Adds new constants from updates</li>
+                <li>✓ Creates backup before updating</li>
+                <li>✓ Safe merge process</li>
+            </ul>
+            <button type="button" id="update-config-btn" class="btn-update-schema">⚙️ Update Config File</button>
+            <div id="config-update-log" style="display: none; margin-top: 15px;"></div>
+        </div>
+        
         <?php if (!empty($update_messages)): ?>
             <h3><?php echo t('update_log'); ?>:</h3>
             <div class="log-viewer">
@@ -1299,6 +1312,68 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                 btn.disabled = false;
                 btn.textContent = 'Update Failed - Try Again';
                 alert('An error occurred during schema update');
+            });
+        });
+        
+        // Config update function
+        document.getElementById('update-config-btn')?.addEventListener('click', function() {
+            const btn = this;
+            const logDiv = document.getElementById('config-update-log');
+            
+            // Confirm action
+            if (!confirm('Update config.php from GitHub?\n\nThis will:\n• Preserve all your current settings (SMTP, API tokens, etc.)\n• Add any new configuration constants\n• Create a backup first\n\nContinue?')) {
+                return;
+            }
+            
+            // Disable button and show loading
+            btn.disabled = true;
+            btn.textContent = 'Updating Config...';
+            
+            // Show log area
+            logDiv.style.display = 'block';
+            logDiv.innerHTML = '<div class="schema-log-entry schema-log-info">Starting config file update...</div>';
+            
+            // Call update endpoint
+            fetch('ajax/update_config.php', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Display log messages
+                if (data.log && data.log.length > 0) {
+                    let logHtml = '';
+                    data.log.forEach(entry => {
+                        const levelClass = 'schema-log-' + entry.level.toLowerCase();
+                        logHtml += `<div class="schema-log-entry ${levelClass}">${entry.message}</div>`;
+                    });
+                    logDiv.innerHTML = logHtml;
+                }
+                
+                // Re-enable button
+                btn.disabled = false;
+                
+                if (data.success) {
+                    btn.textContent = '✓ Update Complete';
+                    btn.style.background = '#27ae60';
+                    alert('Config file updated successfully!\n\nYour settings have been preserved.');
+                } else {
+                    btn.textContent = 'Update Failed - Try Again';
+                    btn.style.background = '#e74c3c';
+                    alert('Config update failed: ' + (data.error || 'Unknown error'));
+                }
+                
+                // Reset button after 3 seconds
+                setTimeout(() => {
+                    btn.textContent = '⚙️ Update Config File';
+                    btn.style.background = '';
+                }, 3000);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                logDiv.innerHTML += '<div class="schema-log-entry schema-log-error">Error: ' + error.message + '</div>';
+                btn.disabled = false;
+                btn.textContent = 'Update Failed - Try Again';
+                alert('An error occurred during config update');
             });
         });
     </script>
