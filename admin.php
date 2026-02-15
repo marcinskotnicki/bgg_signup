@@ -997,7 +997,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         <div class="update-section">
             <h3>♻️ Clear Browser Cache</h3>
             <p>Force all users to reload fresh CSS and JavaScript files by incrementing the cache version.</p>
-            <p><strong>Current Version:</strong> <code style="background: #ecf0f1; padding: 2px 6px; border-radius: 3px;"><?php echo CACHE_VERSION; ?></code></p>
+            <p><strong>Current Version:</strong> <code style="background: #ecf0f1; padding: 2px 6px; border-radius: 3px;"><?php echo defined('CACHE_VERSION') ? CACHE_VERSION : '1.0.0'; ?></code></p>
             <ul class="update-features">
                 <li>✓ Increments version number automatically</li>
                 <li>✓ Users get fresh files on next visit</li>

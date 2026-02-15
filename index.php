@@ -684,7 +684,7 @@ const TIMELINE_CONFIG = {
 </script>
 
 <!-- Include timeline template -->
-<script src="<?php echo $template_dir; ?>/timeline.js?v=<?php echo CACHE_VERSION; ?>"></script>
+<script src="<?php echo $template_dir; ?>/timeline.js?v=<?php echo defined('CACHE_VERSION') ? CACHE_VERSION : '1.0.0'; ?>"></script>
 
 <script>
 // Initialize timeline on page load
