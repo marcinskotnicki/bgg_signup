@@ -250,6 +250,35 @@ a:hover {
     gap: 15px;
     align-items: center;
     margin-bottom: 15px;
+    position: relative;
+}
+
+/* Game/Poll Number Badge */
+.game-number-badge {
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    background: #3498db;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 10;
+}
+
+.poll-container {
+    position: relative;
+}
+
+.poll-container .game-number-badge {
+    top: 10px;
+    left: 10px;
 }
 
 /* Game Thumbnail */

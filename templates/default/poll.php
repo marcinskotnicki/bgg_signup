@@ -24,6 +24,9 @@ if ($current_user) {
 ?>
 
 <div class="poll-container <?php echo $is_greyed ? 'poll-closed' : ''; ?>" data-poll-id="<?php echo $poll['id']; ?>">
+    <!-- Poll Number -->
+    <div class="game-number-badge"><?php echo $poll_number; ?></div>
+    
     <div class="poll-header">
         <div class="poll-header-top">
             <div class="poll-title-section">

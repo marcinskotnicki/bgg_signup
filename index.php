@@ -277,28 +277,35 @@ include $template_dir . '/header.php';
                         </h2>
                         
                         <ul class="games-list">
-                            <?php if (empty($table_data['games'])): ?>
+                            <?php if (empty($table_data['games']) && empty($table_data['polls'])): ?>
                                 <li class="no-games">
                                     <?php echo t('no_games_yet'); ?>
                                 </li>
                             <?php else: ?>
+                                <?php 
+                                // Number counter for games and polls on this table
+                                $item_number = 1; 
+                                ?>
+                                
                                 <?php foreach ($table_data['games'] as $game): ?>
                                     <?php
                                     // Include game template
                                     $players = $game['players'];
+                                    $game_number = $item_number++;
                                     include $template_dir . '/game.php';
                                     ?>
                                 <?php endforeach; ?>
-                            <?php endif; ?>
                             
                             <!-- Display Polls -->
                             <?php if (!empty($table_data['polls'])): ?>
                                 <?php foreach ($table_data['polls'] as $poll): ?>
                                     <?php
                                     $poll_options = $poll['options'];
+                                    $poll_number = $item_number++;
                                     include $template_dir . '/poll.php';
                                     ?>
                                 <?php endforeach; ?>
+                            <?php endif; ?>
                             <?php endif; ?>
                         </ul>
                         

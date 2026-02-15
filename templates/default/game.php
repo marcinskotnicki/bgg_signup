@@ -48,6 +48,9 @@ $is_inactive = $game['is_active'] == 0;
     <div class="table">
         <a name="game_<?php echo $game['id']; ?>" id="game_<?php echo $game['id']; ?>"></a>
         
+        <!-- Game Number -->
+        <div class="game-number-badge"><?php echo $game_number; ?></div>
+        
         <!-- Game Thumbnail -->
         <div class="game_thumbnail">
             <?php if ($game['thumbnail']): ?>
