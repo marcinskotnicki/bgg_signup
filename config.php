@@ -82,6 +82,7 @@ $config = [
     
     // User Interaction Settings
     'allow_reserve_list' => true,
+    'allow_multiple_poll_votes' => true, // Allow users to vote for multiple options in a poll
     
     // User Authentication Options:
     // 'no' - no login system

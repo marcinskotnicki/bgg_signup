@@ -61,15 +61,28 @@ try {
         exit;
     }
     
-    // Check if this email has already voted in this poll
-    $stmt = $db->prepare("SELECT COUNT(*) FROM poll_votes pv 
-                          JOIN poll_options po ON pv.poll_option_id = po.id 
-                          WHERE po.poll_id = ? AND pv.voter_email = ?");
-    $stmt->execute([$poll_id, $voter_email]);
-    $existing_votes = $stmt->fetchColumn();
+    // Check if multiple votes are allowed (config setting)
+    if (!$config['allow_multiple_poll_votes']) {
+        // Check if this email has already voted in this poll
+        $stmt = $db->prepare("SELECT COUNT(*) FROM poll_votes pv 
+                              JOIN poll_options po ON pv.poll_option_id = po.id 
+                              WHERE po.poll_id = ? AND pv.voter_email = ?");
+        $stmt->execute([$poll_id, $voter_email]);
+        $existing_votes = $stmt->fetchColumn();
+        
+        if ($existing_votes > 0) {
+            echo json_encode(['success' => false, 'error' => 'You have already voted in this poll']);
+            exit;
+        }
+    }
     
-    if ($existing_votes > 0) {
-        echo json_encode(['success' => false, 'error' => 'You have already voted in this poll']);
+    // Always check if this email has already voted for THIS SPECIFIC OPTION
+    $stmt = $db->prepare("SELECT COUNT(*) FROM poll_votes WHERE poll_option_id = ? AND voter_email = ?");
+    $stmt->execute([$option_id, $voter_email]);
+    $voted_for_this_option = $stmt->fetchColumn();
+    
+    if ($voted_for_this_option > 0) {
+        echo json_encode(['success' => false, 'error' => 'You have already voted for this option']);
         exit;
     }
     

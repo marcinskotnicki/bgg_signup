@@ -284,7 +284,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
         
         // Handle boolean and special values
         $bool_fields = [
-            'allow_reserve_list', 'require_emails', 'send_emails', 
+            'allow_reserve_list', 'allow_multiple_poll_votes', 'require_emails', 'send_emails', 
             'restrict_comments', 'use_captcha', 'allow_private_messages'
         ];
         
@@ -777,6 +777,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                     <option value="1" <?php echo $config['allow_reserve_list'] ? 'selected' : ''; ?>><?php echo t('yes'); ?></option>
                     <option value="0" <?php echo !$config['allow_reserve_list'] ? 'selected' : ''; ?>><?php echo t('no'); ?></option>
                 </select>
+            </div>
+            
+            <div class="form-group">
+                <label><?php echo t('allow_multiple_poll_votes'); ?>:</label>
+                <select name="allow_multiple_poll_votes">
+                    <option value="1" <?php echo $config['allow_multiple_poll_votes'] ? 'selected' : ''; ?>><?php echo t('yes'); ?></option>
+                    <option value="0" <?php echo !$config['allow_multiple_poll_votes'] ? 'selected' : ''; ?>><?php echo t('no'); ?></option>
+                </select>
+                <small style="display: block; color: #666; margin-top: 5px;">
+                    <?php echo t('allow_multiple_poll_votes_description'); ?>
+                </small>
             </div>
             
             <div class="form-group">

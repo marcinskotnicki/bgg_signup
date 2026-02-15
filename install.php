@@ -124,6 +124,7 @@ function create_database($admin_name, $admin_email, $admin_password) {
             email TEXT UNIQUE NOT NULL,
             password_hash TEXT NOT NULL,
             is_admin INTEGER DEFAULT 0,
+            preferred_template TEXT DEFAULT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )");
         

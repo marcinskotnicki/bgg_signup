@@ -172,8 +172,19 @@ foreach ($tables as $table) {
 // Page title
 $page_title = $active_event ? $active_event['name'] : t('no_active_event');
 
-// Template directory
-$template_dir = TEMPLATES_DIR . '/' . $config['active_template'];
+// Template directory - check user preference first, then site default
+$active_template = $config['active_template']; // Site default
+
+// If user is logged in and has a preferred template, use it
+if ($current_user && !empty($current_user['preferred_template'])) {
+    // Verify the template exists
+    $user_template_path = TEMPLATES_DIR . '/' . $current_user['preferred_template'];
+    if (is_dir($user_template_path)) {
+        $active_template = $current_user['preferred_template'];
+    }
+}
+
+$template_dir = TEMPLATES_DIR . '/' . $active_template;
 
 // Include header
 include $template_dir . '/header.php';

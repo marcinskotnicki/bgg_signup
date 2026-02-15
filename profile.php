@@ -47,8 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_profile'])) {
     $email = trim($_POST['email']);
     $current_password = $_POST['current_password'];
     $new_password = trim($_POST['new_password']);
+    $preferred_template = isset($_POST['preferred_template']) ? $_POST['preferred_template'] : null;
     
-    $result = update_user_profile($db, $current_user['id'], $name, $email, $current_password, $new_password);
+    // If 'default' is selected, set to null (use site default)
+    if ($preferred_template === 'default') {
+        $preferred_template = null;
+    }
+    
+    $result = update_user_profile($db, $current_user['id'], $name, $email, $current_password, $new_password, $preferred_template);
     
     if ($result['success']) {
         $message = t('profile_updated_successfully');
@@ -306,6 +312,30 @@ $comments_made = $stmt->fetchColumn();
                         <label><?php echo t('email'); ?>:</label>
                         <input type="email" name="email" value="<?php echo htmlspecialchars($current_user['email']); ?>" required>
                         <small><?php echo t('email_used_for_login'); ?></small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><?php echo t('preferred_template'); ?>:</label>
+                        <select name="preferred_template">
+                            <option value="default" <?php echo empty($current_user['preferred_template']) ? 'selected' : ''; ?>>
+                                <?php echo t('use_site_default'); ?> (<?php echo ucfirst($config['active_template']); ?>)
+                            </option>
+                            <?php 
+                            // Get available templates
+                            $templates_path = TEMPLATES_DIR;
+                            if (is_dir($templates_path)) {
+                                $template_folders = array_diff(scandir($templates_path), ['.', '..']);
+                                foreach ($template_folders as $template_folder) {
+                                    if (is_dir($templates_path . '/' . $template_folder)) {
+                                        $selected = ($current_user['preferred_template'] === $template_folder) ? 'selected' : '';
+                                        echo "<option value=\"" . htmlspecialchars($template_folder) . "\" $selected>" 
+                                           . htmlspecialchars(ucfirst($template_folder)) . "</option>";
+                                    }
+                                }
+                            }
+                            ?>
+                        </select>
+                        <small><?php echo t('template_preference_description'); ?></small>
                     </div>
                 </div>
                 

@@ -453,5 +453,14 @@ return [
     'update_config_button' => 'Update Config File',
     'update_config_confirm' => 'Update config.php from GitHub?\n\nThis will:\n• Preserve all your current settings (SMTP, API tokens, etc.)\n• Add any new configuration constants\n• Create a backup first\n\nContinue?',
     'cache_version_updated' => 'Cache version updated: %s → %s. Users will get fresh CSS/JS on next page load.',
+    
+    // User Template Preference
+    'preferred_template' => 'Preferred Template',
+    'use_site_default' => 'Use Site Default',
+    'template_preference_description' => 'Choose your preferred visual theme. This will override the site default for you.',
+    
+    // Poll Settings
+    'allow_multiple_poll_votes' => 'Allow Multiple Poll Votes',
+    'allow_multiple_poll_votes_description' => 'If enabled, users can vote for multiple options in a poll. If disabled, users can only vote once per poll.',
 ];
 ?>

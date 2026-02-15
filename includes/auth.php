@@ -158,7 +158,7 @@ function logout_user() {
  * @param string $new_password New password (optional)
  * @return array Result array with 'success' and 'error' keys
  */
-function update_user_profile($db, $user_id, $name, $email, $current_password, $new_password = '') {
+function update_user_profile($db, $user_id, $name, $email, $current_password, $new_password = '', $preferred_template = null) {
     // Get current user data
     $stmt = $db->prepare("SELECT email, password_hash FROM users WHERE id = ?");
     $stmt->execute([$user_id]);
@@ -203,8 +203,8 @@ function update_user_profile($db, $user_id, $name, $email, $current_password, $n
     
     // Update user
     try {
-        $stmt = $db->prepare("UPDATE users SET name = ?, email = ?, password_hash = ? WHERE id = ?");
-        $stmt->execute([$name, $email, $password_hash, $user_id]);
+        $stmt = $db->prepare("UPDATE users SET name = ?, email = ?, password_hash = ?, preferred_template = ? WHERE id = ?");
+        $stmt->execute([$name, $email, $password_hash, $preferred_template, $user_id]);
         
         // Update auth cookie if password changed
         if (!empty($new_password)) {

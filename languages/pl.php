@@ -453,5 +453,14 @@ return [
     'update_config_button' => 'Aktualizuj Config',
     'update_config_confirm' => 'Zaktualizować config.php z GitHub?\n\nTo:\n• Zachowa wszystkie obecne ustawienia (SMTP, tokeny API, itp.)\n• Doda nowe stałe konfiguracyjne\n• Utworzy kopię zapasową najpierw\n\nKontynuować?',
     'cache_version_updated' => 'Wersja pamięci podręcznej zaktualizowana: %s → %s. Użytkownicy otrzymają świeże pliki CSS/JS przy następnym ładowaniu strony.',
+    
+    // User Template Preference
+    'preferred_template' => 'Preferowany Szablon',
+    'use_site_default' => 'Użyj Domyślnego',
+    'template_preference_description' => 'Wybierz preferowany motyw wizualny. To zastąpi domyślne ustawienie strony dla Ciebie.',
+    
+    // Poll Settings
+    'allow_multiple_poll_votes' => 'Pozwól na Wiele Głosów w Ankiecie',
+    'allow_multiple_poll_votes_description' => 'Jeśli włączone, użytkownicy mogą głosować na wiele opcji w ankiecie. Jeśli wyłączone, użytkownicy mogą głosować tylko raz na ankietę.',
 ];
 ?>
