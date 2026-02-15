@@ -1,0 +1,729 @@
+/**
+ * Classic Template Stylesheet
+ * Dark, compact design with horizontal layout
+ */
+
+/* ===== GLOBAL ===== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #0d0d0d;
+    color: #e0e0e0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+a {
+    color: #4a9eff;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+/* ===== HEADER ===== */
+.site-header {
+    background: #1a1a1a;
+    border-bottom: 2px solid #333;
+    padding: 12px 0;
+}
+
+.header-container {
+    max-width: 100%;
+    padding: 0 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.site-title {
+    font-size: 24px;
+    color: #fff;
+    margin: 0;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-size: 13px;
+}
+
+.user-name {
+    color: #aaa;
+}
+
+.btn-admin, .btn-profile, .btn-login, .btn-logout {
+    padding: 6px 12px;
+    background: #2c3e50;
+    color: #fff;
+    border-radius: 3px;
+    font-size: 12px;
+}
+
+.btn-admin:hover, .btn-profile:hover, .btn-login:hover {
+    background: #34495e;
+    text-decoration: none;
+}
+
+.btn-logout {
+    background: #c0392b;
+}
+
+.btn-logout:hover {
+    background: #e74c3c;
+    text-decoration: none;
+}
+
+.language-selector {
+    display: flex;
+    gap: 8px;
+}
+
+.lang-link {
+    padding: 4px 8px;
+    background: #333;
+    border-radius: 3px;
+    font-size: 11px;
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+    max-width: 100%;
+    padding: 20px;
+    min-height: calc(100vh - 150px);
+}
+
+/* ===== EVENT HEADER ===== */
+.event-header {
+    margin-bottom: 20px;
+}
+
+.event-title {
+    font-size: 28px;
+    color: #fff;
+    margin-bottom: 10px;
+}
+
+.homepage-message {
+    background: #1a1a1a;
+    padding: 12px;
+    border-left: 3px solid #4a9eff;
+    margin-bottom: 15px;
+    font-size: 13px;
+}
+
+/* ===== ARCHIVE BANNER ===== */
+.archive-banner {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.archive-banner-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.btn-current-event {
+    background: white;
+    color: #667eea;
+    padding: 6px 12px;
+    border-radius: 3px;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+/* ===== DAY TABS ===== */
+.day-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 8px;
+}
+
+.day-tab {
+    padding: 10px 20px;
+    background: #1a1a1a;
+    border-radius: 4px 4px 0 0;
+    cursor: pointer;
+    text-decoration: none;
+    color: #aaa;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.day-tab:hover {
+    background: #252525;
+    text-decoration: none;
+}
+
+.day-tab.active {
+    background: #2c3e50;
+    color: #fff;
+}
+
+.day-date {
+    font-size: 12px;
+    opacity: 0.8;
+    display: block;
+    margin-top: 2px;
+}
+
+.single-day-info {
+    text-align: center;
+    padding: 15px;
+    background: #1a1a1a;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    font-size: 16px;
+}
+
+/* ===== TABLES ===== */
+.table-section {
+    margin-bottom: 30px;
+}
+
+.table-header {
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background: #1a1a1a;
+    border-left: 4px solid #4a9eff;
+}
+
+.games-list {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.no-games {
+    width: 100%;
+    padding: 30px;
+    text-align: center;
+    background: #1a1a1a;
+    border-radius: 4px;
+    color: #777;
+}
+
+/* ===== GAME CARDS (Horizontal Layout) ===== */
+.game-card {
+    background: #2c3e50;
+    border-radius: 4px;
+    padding: 15px;
+    flex: 1 1 calc(50% - 8px); /* Two columns on desktop */
+    min-width: 400px;
+    position: relative;
+}
+
+.game-card.game-inactive {
+    opacity: 0.5;
+    filter: grayscale(0.5);
+}
+
+.game-number {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #4a9eff;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Game Layout: Info on left, Players on right */
+.game-layout {
+    display: flex;
+    gap: 15px;
+}
+
+.game-info {
+    flex: 1;
+}
+
+.game-players {
+    width: 200px;
+    flex-shrink: 0;
+}
+
+/* Game Header */
+.game-header {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+}
+
+.game-thumb {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+    border: 2px solid #34495e;
+}
+
+.game-title-section {
+    flex: 1;
+}
+
+.game-title {
+    font-size: 16px;
+    margin-bottom: 4px;
+    color: #fff;
+}
+
+.game-title a {
+    color: #fff;
+}
+
+.game-time {
+    font-size: 12px;
+    color: #95a5a6;
+}
+
+/* Game Meta */
+.game-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+    font-size: 12px;
+    color: #bdc3c7;
+}
+
+.meta-item {
+    padding: 3px 8px;
+    background: #34495e;
+    border-radius: 3px;
+}
+
+.game-host {
+    font-size: 12px;
+    color: #95a5a6;
+    margin-bottom: 8px;
+}
+
+.game-description {
+    font-size: 12px;
+    padding: 8px;
+    background: #34495e;
+    border-radius: 3px;
+    margin-bottom: 8px;
+    color: #ecf0f1;
+}
+
+/* Game Actions */
+.game-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 6px;
+}
+
+/* ===== PLAYERS SECTION ===== */
+.players-header {
+    font-size: 13px;
+    font-weight: bold;
+    color: #ecf0f1;
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid #34495e;
+}
+
+.players-list, .reserve-list {
+    margin-bottom: 8px;
+}
+
+.player-item {
+    padding: 4px 6px;
+    margin-bottom: 2px;
+    background: #34495e;
+    border-radius: 3px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.player-item.reserve {
+    background: #2c3e50;
+    opacity: 0.7;
+}
+
+.player-number {
+    color: #95a5a6;
+    font-weight: bold;
+}
+
+.player-name {
+    flex: 1;
+    color: #ecf0f1;
+}
+
+.player-badge {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.reserve-header {
+    font-size: 11px;
+    color: #95a5a6;
+    margin-top: 10px;
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+/* ===== COMMENTS ===== */
+.game-comments {
+    margin-top: 12px;
+    padding: 10px;
+    background: #1a1a1a;
+    border-radius: 3px;
+}
+
+.comments-list {
+    margin-bottom: 8px;
+}
+
+.comment-item {
+    padding: 6px;
+    margin-bottom: 4px;
+    background: #0d0d0d;
+    border-left: 2px solid #4a9eff;
+    font-size: 12px;
+    color: #bdc3c7;
+}
+
+.comment-item strong {
+    color: #ecf0f1;
+}
+
+/* ===== POLL CARDS ===== */
+.poll-card {
+    background: #e67e22;
+    border-radius: 4px;
+    padding: 15px;
+    flex: 1 1 calc(50% - 8px);
+    min-width: 400px;
+    position: relative;
+}
+
+.poll-card.poll-closed {
+    opacity: 0.6;
+    background: #7f8c8d;
+}
+
+.poll-header {
+    margin-bottom: 12px;
+}
+
+.poll-title {
+    font-size: 16px;
+    color: #fff;
+    margin-bottom: 4px;
+}
+
+.poll-status {
+    font-size: 13px;
+    opacity: 0.8;
+}
+
+.poll-creator {
+    font-size: 11px;
+    color: rgba(255,255,255,0.8);
+}
+
+.poll-options {
+    margin-bottom: 10px;
+}
+
+.poll-option {
+    background: rgba(0,0,0,0.2);
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 3px;
+}
+
+.poll-option.poll-winner {
+    background: #27ae60;
+}
+
+.poll-option-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-size: 13px;
+    color: #fff;
+}
+
+.poll-progress {
+    height: 16px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.poll-progress-bar {
+    height: 100%;
+    background: rgba(255,255,255,0.4);
+    transition: width 0.3s;
+}
+
+.poll-actions {
+    display: flex;
+    gap: 6px;
+}
+
+/* ===== BUTTONS ===== */
+.btn-sm {
+    padding: 4px 10px;
+    font-size: 11px;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.btn-join {
+    background: #27ae60;
+    color: white;
+    width: 100%;
+}
+
+.btn-join:hover {
+    background: #229954;
+}
+
+.btn-reserve {
+    background: #f39c12;
+    color: white;
+    width: 100%;
+}
+
+.btn-reserve:hover {
+    background: #e67e22;
+}
+
+.btn-edit {
+    background: #3498db;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #2980b9;
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #c0392b;
+}
+
+.btn-comment {
+    background: #95a5a6;
+    color: white;
+}
+
+.btn-comment:hover {
+    background: #7f8c8d;
+}
+
+.btn-vote {
+    background: #f39c12;
+    color: white;
+}
+
+.btn-vote:hover {
+    background: #e67e22;
+}
+
+/* Add Game/Poll Buttons */
+.add-game-section {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.btn-add-game, .btn-create-poll, .btn-add-table {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s;
+}
+
+.btn-add-game {
+    background: #27ae60;
+    color: white;
+    flex: 1;
+}
+
+.btn-add-game:hover {
+    background: #229954;
+}
+
+.btn-create-poll {
+    background: #e67e22;
+    color: white;
+}
+
+.btn-create-poll:hover {
+    background: #d35400;
+}
+
+.btn-add-table {
+    background: #3498db;
+    color: white;
+}
+
+.btn-add-table:hover {
+    background: #2980b9;
+}
+
+/* ===== TIMELINE ===== */
+.timeline-section {
+    margin-top: 40px;
+    background: #1a1a1a;
+    padding: 20px;
+    border-radius: 4px;
+}
+
+.timeline-title {
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 15px;
+}
+
+/* (Timeline styles continue as in default template) */
+
+/* ===== FOOTER ===== */
+.site-footer {
+    background: #1a1a1a;
+    border-top: 2px solid #333;
+    padding: 15px 20px;
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+}
+
+.powered-by {
+    margin-top: 5px;
+}
+
+.powered-by a {
+    color: #4a9eff;
+}
+
+/* ===== MODAL ===== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.8);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background: #2c3e50;
+    padding: 20px;
+    border-radius: 4px;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    color: #ecf0f1;
+}
+
+.modal-close {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 24px;
+    cursor: pointer;
+    color: #bdc3c7;
+}
+
+.modal-close:hover {
+    color: #ecf0f1;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .game-card {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+    
+    .poll-card {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+    
+    /* Stack players below game info on mobile */
+    .game-layout {
+        flex-direction: column;
+    }
+    
+    .game-players {
+        width: 100%;
+    }
+    
+    .header-right {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    
+    .day-tabs {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 10px;
+    }
+    
+    .site-title {
+        font-size: 18px;
+    }
+    
+    .header-right {
+        font-size: 11px;
+    }
+}
