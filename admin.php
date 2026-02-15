@@ -488,8 +488,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         <h1><?php echo t('admin_panel'); ?></h1>
         <div class="header-right">
             <span><?php echo htmlspecialchars($user_name); ?></span>
-            <a href="admin_archives.php" class="view-site" style="background: #9b59b6;">📚 Archives</a>
-            <a href="admin_thumbnails.php" class="view-site" style="background: #f39c12;">📁 Thumbnails</a>
             <a href="index.php" class="view-site"><?php echo t('view_site'); ?></a>
             <a href="?action=logout" class="logout"><?php echo t('logout'); ?></a>
         </div>
@@ -500,6 +498,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         <button class="tab-button" onclick="openTab(event, 'options')"><?php echo t('tab_options'); ?></button>
         <button class="tab-button" onclick="openTab(event, 'users')"><?php echo t('tab_users'); ?></button>
         <button class="tab-button" onclick="openTab(event, 'add-event')"><?php echo t('tab_add_event'); ?></button>
+        <button class="tab-button" onclick="openTab(event, 'thumbnails')"><?php echo t('tab_thumbnails'); ?></button>
+        <button class="tab-button" onclick="openTab(event, 'archives')"><?php echo t('tab_archives'); ?></button>
         <button class="tab-button" onclick="openTab(event, 'update')"><?php echo t('tab_update'); ?></button>
     </div>
     
@@ -1091,6 +1091,157 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         </style>
     </div>
     
+    <!-- Tab 6: Thumbnails -->
+    <div id="thumbnails" class="tab-content">
+        <h2><?php echo t('manage_thumbnails'); ?></h2>
+        
+        <div class="info-box">
+            <strong>ℹ️ <?php echo t('usage'); ?>:</strong> <?php echo t('thumbnails_usage'); ?>
+            <ul>
+                <li><?php echo t('supported_formats'); ?>: JPG, PNG, GIF, WEBP</li>
+                <li><?php echo t('maximum_size'); ?>: 2MB</li>
+                <li><?php echo t('recommended_dimensions'); ?>: 200x200 pixels</li>
+            </ul>
+        </div>
+        
+        <div class="upload-section">
+            <h3><?php echo t('upload_new_thumbnail'); ?></h3>
+            <form id="thumbnail-upload-form" enctype="multipart/form-data">
+                <div style="display: flex; gap: 10px; align-items: flex-start; margin-bottom: 20px;">
+                    <input type="file" name="thumbnail" id="thumbnail-file" accept="image/jpeg,image/png,image/gif,image/webp" required style="flex: 1; padding: 10px;">
+                    <button type="submit" class="btn-update"><?php echo t('upload_thumbnail'); ?></button>
+                </div>
+                <div id="upload-message"></div>
+            </form>
+        </div>
+        
+        <h3><?php echo t('existing_thumbnails'); ?> (<span id="thumbnail-count">0</span>)</h3>
+        <div id="thumbnails-grid" class="thumbnails-grid"></div>
+        
+        <style>
+        .thumbnails-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .thumbnail-item {
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+        }
+        .thumbnail-item img {
+            width: 100%;
+            height: 150px;
+            object-fit: contain;
+            border-radius: 4px;
+            background: white;
+            padding: 5px;
+        }
+        .thumbnail-name {
+            margin: 10px 0;
+            font-size: 13px;
+            color: #2c3e50;
+            word-break: break-all;
+        }
+        .thumbnail-actions {
+            display: flex;
+            gap: 5px;
+            margin-top: 10px;
+        }
+        .btn-delete-thumb {
+            flex: 1;
+            background: #e74c3c;
+            color: white;
+            padding: 8px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .btn-delete-thumb:hover {
+            background: #c0392b;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #95a5a6;
+        }
+        </style>
+    </div>
+    
+    <!-- Tab 7: Archives -->
+    <div id="archives" class="tab-content">
+        <h2><?php echo t('event_archives'); ?></h2>
+        
+        <div id="archives-content">
+            <p><?php echo t('loading'); ?>...</p>
+        </div>
+        
+        <style>
+        .events-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        .events-table th {
+            background: #34495e;
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: bold;
+        }
+        .events-table td {
+            padding: 12px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        .events-table tr:hover {
+            background: #f8f9fa;
+        }
+        .event-active {
+            background: #d5f4e6 !important;
+        }
+        .event-stats {
+            font-size: 13px;
+            color: #7f8c8d;
+        }
+        .event-stats span {
+            margin-right: 15px;
+        }
+        .btn-view {
+            background: #3498db;
+            color: white;
+            padding: 6px 12px;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 13px;
+            display: inline-block;
+            margin-right: 5px;
+        }
+        .btn-view:hover {
+            background: #2980b9;
+        }
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .badge-active {
+            background: #27ae60;
+            color: white;
+        }
+        .badge-archived {
+            background: #95a5a6;
+            color: white;
+        }
+        </style>
+    </div>
+    
     <script>
         // Tab switching
         function openTab(evt, tabName) {
@@ -1376,6 +1527,114 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                 alert('An error occurred during config update');
             });
         });
+        
+        // Load thumbnails when tab is opened
+        function loadThumbnails() {
+            fetch('ajax/list_thumbnails.php')
+                .then(response => response.json())
+                .then(data => {
+                    const grid = document.getElementById('thumbnails-grid');
+                    const count = document.getElementById('thumbnail-count');
+                    
+                    if (data.success && data.thumbnails.length > 0) {
+                        count.textContent = data.thumbnails.length;
+                        grid.innerHTML = data.thumbnails.map(thumb => `
+                            <div class="thumbnail-item">
+                                <img src="thumbnails/${thumb}" alt="${thumb}">
+                                <div class="thumbnail-name">${thumb}</div>
+                                <div class="thumbnail-actions">
+                                    <button class="btn-delete-thumb" onclick="deleteThumbnail('${thumb}')">
+                                        <?php echo t('delete'); ?>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+                    } else {
+                        count.textContent = '0';
+                        grid.innerHTML = '<div class="empty-state"><p><?php echo t('no_thumbnails_uploaded'); ?></p></div>';
+                    }
+                })
+                .catch(error => console.error('Error loading thumbnails:', error));
+        }
+        
+        // Upload thumbnail
+        document.getElementById('thumbnail-upload-form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const messageDiv = document.getElementById('upload-message');
+            
+            fetch('ajax/upload_thumbnail.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    messageDiv.innerHTML = '<div class="message success">' + data.message + '</div>';
+                    this.reset();
+                    loadThumbnails();
+                } else {
+                    messageDiv.innerHTML = '<div class="message error">' + data.error + '</div>';
+                }
+            })
+            .catch(error => {
+                messageDiv.innerHTML = '<div class="message error">Upload failed</div>';
+            });
+        });
+        
+        // Delete thumbnail
+        function deleteThumbnail(filename) {
+            if (!confirm('<?php echo t('confirm_delete_thumbnail'); ?>')) {
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('filename', filename);
+            
+            fetch('ajax/delete_thumbnail.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    loadThumbnails();
+                } else {
+                    alert(data.error || 'Delete failed');
+                }
+            });
+        }
+        
+        // Load archives when tab is opened
+        function loadArchives() {
+            fetch('ajax/list_archives.php')
+                .then(response => response.json())
+                .then(data => {
+                    const container = document.getElementById('archives-content');
+                    
+                    if (data.success) {
+                        container.innerHTML = data.html;
+                    } else {
+                        container.innerHTML = '<p class="message error">' + data.error + '</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading archives:', error);
+                    document.getElementById('archives-content').innerHTML = '<p class="message error">Failed to load archives</p>';
+                });
+        }
+        
+        // Override openTab to load data when needed
+        const originalOpenTab = openTab;
+        openTab = function(evt, tabName) {
+            originalOpenTab(evt, tabName);
+            
+            if (tabName === 'thumbnails') {
+                loadThumbnails();
+            } else if (tabName === 'archives') {
+                loadArchives();
+            }
+        };
     </script>
 </body>
 </html>

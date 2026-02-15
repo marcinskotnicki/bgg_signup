@@ -386,5 +386,41 @@ return [
     // Archives
     'viewing_archive' => 'Viewing Archive',
     'view_current_event' => 'View Current Event',
+    
+    // Admin Tabs
+    'tab_thumbnails' => 'Thumbnails',
+    'tab_archives' => 'Archives',
+    
+    // Thumbnails
+    'manage_thumbnails' => 'Manage Default Thumbnails',
+    'thumbnails_usage' => 'These thumbnails can be selected when adding games manually (not from BGG)',
+    'supported_formats' => 'Supported formats',
+    'maximum_size' => 'Maximum size',
+    'recommended_dimensions' => 'Recommended dimensions',
+    'upload_new_thumbnail' => 'Upload New Thumbnail',
+    'upload_thumbnail' => 'Upload Thumbnail',
+    'existing_thumbnails' => 'Existing Thumbnails',
+    'no_thumbnails_uploaded' => 'No thumbnails uploaded yet. Upload your first one above!',
+    'confirm_delete_thumbnail' => 'Delete this thumbnail?',
+    
+    // Archives
+    'event_archives' => 'Event Archives',
+    'active_events' => 'Active Events',
+    'archived_events' => 'Archived Events',
+    'no_active_events' => 'No active events.',
+    'no_archived_events' => 'No archived events yet. Events become archived when you create a new event.',
+    'event_name' => 'Event Name',
+    'dates' => 'Dates',
+    'statistics' => 'Statistics',
+    'created' => 'Created',
+    'actions' => 'Actions',
+    'view' => 'View',
+    'active' => 'ACTIVE',
+    'archived' => 'ARCHIVED',
+    'cannot_delete_active' => 'Cannot delete active event',
+    'confirm_delete_event' => 'Permanently delete this event and all its data? This cannot be undone!',
+    'to' => 'to',
+    'games' => 'games',
+    'players' => 'players',
 ];
 ?>

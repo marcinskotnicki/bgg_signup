@@ -386,5 +386,41 @@ return [
     // Archives
     'viewing_archive' => 'Przeglądanie Archiwum',
     'view_current_event' => 'Zobacz Bieżące Wydarzenie',
+    
+    // Admin Tabs
+    'tab_thumbnails' => 'Miniatury',
+    'tab_archives' => 'Archiwum',
+    
+    // Thumbnails
+    'manage_thumbnails' => 'Zarządzaj Domyślnymi Miniaturami',
+    'thumbnails_usage' => 'Te miniatury mogą być wybrane przy ręcznym dodawaniu gier (nie z BGG)',
+    'supported_formats' => 'Obsługiwane formaty',
+    'maximum_size' => 'Maksymalny rozmiar',
+    'recommended_dimensions' => 'Zalecane wymiary',
+    'upload_new_thumbnail' => 'Prześlij Nową Miniaturę',
+    'upload_thumbnail' => 'Prześlij Miniaturę',
+    'existing_thumbnails' => 'Istniejące Miniatury',
+    'no_thumbnails_uploaded' => 'Nie przesłano jeszcze miniatur. Prześlij pierwszą powyżej!',
+    'confirm_delete_thumbnail' => 'Usunąć tę miniaturę?',
+    
+    // Archives
+    'event_archives' => 'Archiwum Wydarzeń',
+    'active_events' => 'Aktywne Wydarzenia',
+    'archived_events' => 'Zarchiwizowane Wydarzenia',
+    'no_active_events' => 'Brak aktywnych wydarzeń.',
+    'no_archived_events' => 'Brak zarchiwizowanych wydarzeń. Wydarzenia są archiwizowane po utworzeniu nowego wydarzenia.',
+    'event_name' => 'Nazwa Wydarzenia',
+    'dates' => 'Daty',
+    'statistics' => 'Statystyki',
+    'created' => 'Utworzono',
+    'actions' => 'Akcje',
+    'view' => 'Zobacz',
+    'active' => 'AKTYWNE',
+    'archived' => 'ZARCHIWIZOWANE',
+    'cannot_delete_active' => 'Nie można usunąć aktywnego wydarzenia',
+    'confirm_delete_event' => 'Trwale usunąć to wydarzenie i wszystkie jego dane? To nie może być cofnięte!',
+    'to' => 'do',
+    'games' => 'gry',
+    'players' => 'gracze',
 ];
 ?>
