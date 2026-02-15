@@ -143,6 +143,16 @@ try {
             // Get table_id from poll
             $table_id = $poll['table_id'];
             
+            // Provide defaults for potentially NULL values from poll option
+            $game_name = $winner['game_name'] ?? 'Unknown Game';
+            $bgg_id = $winner['bgg_id'] ?? null;
+            $bgg_url = $winner['bgg_url'] ?? null;
+            $thumbnail = $winner['thumbnail'] ?? null;
+            $play_time = $winner['play_time'] ?? 60; // Default 60 minutes
+            $min_players = $winner['min_players'] ?? 1;
+            $max_players = $winner['max_players'] ?? 6;
+            $difficulty = $winner['difficulty'] ?? 2.5;
+            
             // Insert game
             $stmt = $db->prepare("INSERT INTO games (
                 table_id, bgg_id, bgg_url, name, thumbnail, play_time, 
@@ -153,14 +163,14 @@ try {
             
             $stmt->execute([
                 $table_id,
-                $winner['bgg_id'],
-                $winner['bgg_url'],
-                $winner['game_name'],
-                $winner['thumbnail'],
-                $winner['play_time'],
-                $winner['min_players'],
-                $winner['max_players'],
-                $winner['difficulty'],
+                $bgg_id,
+                $bgg_url,
+                $game_name,
+                $thumbnail,
+                $play_time,
+                $min_players,
+                $max_players,
+                $difficulty,
                 '12:00', // Default start time - could be improved
                 $poll['creator_name'],
                 $poll['creator_email'],

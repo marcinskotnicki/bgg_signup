@@ -102,73 +102,131 @@ function fetch_url($url) {
 /**
  * Parse config file to extract define() constants
  */
-function parse_config_defines($content) {
-    $defines = [];
+function parse_config_array($content) {
+    $config_values = [];
     
-    // Match all define() statements
-    // Pattern: define('CONSTANT_NAME', 'value') or define('CONSTANT_NAME', value)
-    preg_match_all(
-        "/define\s*\(\s*['\"]([^'\"]+)['\"]\s*,\s*(.+?)\)\s*;/s",
-        $content,
-        $matches,
-        PREG_SET_ORDER
-    );
-    
-    foreach ($matches as $match) {
-        $const_name = $match[1];
-        $const_value = trim($match[2]);
+    // Extract the return array content
+    // Look for: return [ ... ];
+    if (preg_match('/return\s*\[(.*)\];/s', $content, $match)) {
+        $array_content = $match[1];
         
-        $defines[$const_name] = [
-            'value' => $const_value,
-            'full_statement' => $match[0]
-        ];
+        // Match all key => value pairs
+        // Pattern handles: 'key' => 'value', 'key' => true, 'key' => 123, etc.
+        preg_match_all(
+            "/['\"]([^'\"]+)['\"]\s*=>\s*(.+?)(?=,\s*['\"]|\s*\])/s",
+            $array_content,
+            $matches,
+            PREG_SET_ORDER
+        );
+        
+        foreach ($matches as $match) {
+            $key = $match[1];
+            $value = trim($match[2]);
+            // Remove trailing comma if present
+            $value = rtrim($value, ',');
+            
+            $config_values[$key] = [
+                'value' => $value,
+                'key' => $key
+            ];
+        }
     }
     
-    return $defines;
+    return $config_values;
 }
 
 /**
  * Merge current config values into new template
  */
 function merge_configs($current_content, $new_content) {
-    add_log("Parsing current config...");
-    $current_defines = parse_config_defines($current_content);
-    add_log("Found " . count($current_defines) . " constants in current config");
+    add_log("Starting config merge...");
     
-    add_log("Parsing new config template...");
-    $new_defines = parse_config_defines($new_content);
-    add_log("Found " . count($new_defines) . " constants in new template");
+    // Parse both configs to extract values
+    $current_values = parse_config_values($current_content);
+    $new_values = parse_config_values($new_content);
     
+    add_log("Current config has " . count($current_values['defines']) . " constants and " . count($current_values['array']) . " array settings");
+    add_log("New template has " . count($new_values['defines']) . " constants and " . count($new_values['array']) . " array settings");
+    
+    // Start with new template
     $merged_content = $new_content;
-    $preserved_count = 0;
-    $new_count = 0;
     
-    // For each constant in the new template
-    foreach ($new_defines as $const_name => $new_data) {
-        if (isset($current_defines[$const_name])) {
-            // Constant exists in current config - preserve user value
-            $current_value = $current_defines[$const_name]['value'];
-            $new_statement = $new_data['full_statement'];
+    // Merge defines (constants)
+    foreach ($new_values['defines'] as $const_name => $new_data) {
+        if (isset($current_values['defines'][$const_name])) {
+            // Preserve user's value
+            $user_value = $current_values['defines'][$const_name]['value'];
+            $old_line = $new_data['full_statement'];
+            $new_line = "    define('$const_name', $user_value);";
             
-            // Build replacement statement with current value
-            $replacement = "define('$const_name', $current_value);";
-            
-            // Replace in merged content
-            $merged_content = str_replace($new_statement, $replacement, $merged_content);
-            
-            $preserved_count++;
-            add_log("Preserved: $const_name", "SUCCESS");
+            $merged_content = str_replace($old_line, $new_line, $merged_content);
+            add_log("Preserved constant: $const_name", "SUCCESS");
         } else {
-            // New constant - keep default from template
-            $new_count++;
-            add_log("Added new: $const_name", "INFO");
+            add_log("New constant: $const_name (using default)", "INFO");
         }
     }
     
-    add_log("Preserved $preserved_count existing values");
-    add_log("Added $new_count new constants");
+    // Merge array values
+    foreach ($new_values['array'] as $key => $new_data) {
+        if (isset($current_values['array'][$key])) {
+            // Preserve user's value
+            $user_value = $current_values['array'][$key]['value'];
+            $old_line = $new_data['full_statement'];
+            
+            // Rebuild the line with user's value
+            $new_line = "    '$key' => $user_value,";
+            
+            $merged_content = str_replace($old_line, $new_line, $merged_content);
+            add_log("Preserved setting: $key", "SUCCESS");
+        } else {
+            add_log("New setting: $key (using default)", "INFO");
+        }
+    }
     
+    add_log("Config merge completed successfully");
     return $merged_content;
+}
+
+/**
+ * Parse config file to extract both defines and array values
+ */
+function parse_config_values($content) {
+    $defines = [];
+    $array = [];
+    
+    // Parse define() statements
+    $lines = explode("\n", $content);
+    foreach ($lines as $line) {
+        $trimmed = trim($line);
+        
+        // Match: define('KEY', value);
+        if (preg_match("/define\('([^']+)',\s*(.+?)\);/", $trimmed, $matches)) {
+            $const_name = $matches[1];
+            $value = $matches[2];
+            
+            $defines[$const_name] = [
+                'value' => $value,
+                'full_statement' => $trimmed
+            ];
+        }
+        
+        // Match: 'key' => value, (with optional trailing comma and whitespace)
+        // This handles both middle items (with comma) and last item (without comma)
+        if (preg_match("/'([^']+)'\s*=>\s*(.+?)(?:,\s*(?:\/\/.*)?)?$/", $trimmed, $matches)) {
+            $key = $matches[1];
+            $value = rtrim($matches[2], ', '); // Remove any trailing comma and spaces
+            
+            $array[$key] = [
+                'value' => $value,
+                'full_statement' => $trimmed
+            ];
+        }
+    }
+    
+    return [
+        'defines' => $defines,
+        'array' => $array
+    ];
 }
 
 /**

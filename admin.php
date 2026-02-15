@@ -1284,6 +1284,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
     </div>
     
     <script>
+        // Translations for dynamic button text
+        const translations = {
+            updatingDatabase: <?php echo json_encode(t('updating_database')); ?>,
+            updateComplete: <?php echo json_encode(t('update_complete')); ?>,
+            updateFailed: <?php echo json_encode(t('update_failed_try_again')); ?>,
+            updateDatabaseSchema: <?php echo json_encode(t('update_database_schema')); ?>,
+            updatingConfig: <?php echo json_encode(t('updating_config_file')); ?>,
+            updateConfigFile: <?php echo json_encode(t('update_config_file')); ?>
+        };
+        
         // Tab switching
         function openTab(evt, tabName) {
             var i, tabcontent, tabbuttons;
@@ -1452,7 +1462,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             
             // Disable button and show loading
             btn.disabled = true;
-            btn.textContent = 'Updating Database...';
+            btn.textContent = translations.updatingDatabase;
             
             // Show log area
             logDiv.style.display = 'block';
@@ -1478,7 +1488,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                 btn.disabled = false;
                 
                 if (data.success) {
-                    btn.textContent = '✓ Update Complete';
+                    btn.textContent = '✓ ' + translations.updateComplete;
                     btn.style.background = '#27ae60';
                     
                     if (data.changes && data.changes.length === 0) {
@@ -1487,14 +1497,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                         alert('Database schema updated successfully!\n\n' + data.changes.length + ' change(s) applied.');
                     }
                 } else {
-                    btn.textContent = 'Update Failed - Try Again';
+                    btn.textContent = translations.updateFailed;
                     btn.style.background = '#e74c3c';
                     alert('Schema update failed: ' + (data.error || 'Unknown error'));
                 }
                 
                 // Reset button after 3 seconds
                 setTimeout(() => {
-                    btn.textContent = 'Update Database Schema';
+                    btn.textContent = '<?php echo t('update_database_schema'); ?>';
                     btn.style.background = '';
                 }, 3000);
             })
@@ -1502,7 +1512,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                 console.error('Error:', error);
                 logDiv.innerHTML += '<div class="schema-log-entry schema-log-error">Error: ' + error.message + '</div>';
                 btn.disabled = false;
-                btn.textContent = 'Update Failed - Try Again';
+                btn.textContent = translations.updateFailed;
                 alert('An error occurred during schema update');
             });
         });
@@ -1545,18 +1555,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                 btn.disabled = false;
                 
                 if (data.success) {
-                    btn.textContent = '✓ Update Complete';
+                    btn.textContent = '✓ ' + translations.updateComplete;
                     btn.style.background = '#27ae60';
                     alert('Config file updated successfully!\n\nYour settings have been preserved.');
                 } else {
-                    btn.textContent = 'Update Failed - Try Again';
+                    btn.textContent = translations.updateFailed;
                     btn.style.background = '#e74c3c';
                     alert('Config update failed: ' + (data.error || 'Unknown error'));
                 }
                 
                 // Reset button after 3 seconds
                 setTimeout(() => {
-                    btn.textContent = '⚙️ Update Config File';
+                    btn.textContent = '⚙️ <?php echo t('update_config_button'); ?>';
                     btn.style.background = '';
                 }, 3000);
             })
@@ -1564,7 +1574,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                 console.error('Error:', error);
                 logDiv.innerHTML += '<div class="schema-log-entry schema-log-error">Error: ' + error.message + '</div>';
                 btn.disabled = false;
-                btn.textContent = 'Update Failed - Try Again';
+                btn.textContent = translations.updateFailed;
                 alert('An error occurred during config update');
             });
         });
