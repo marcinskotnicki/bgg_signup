@@ -74,25 +74,63 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_test'])) {
         $old_error_level = error_reporting(E_ALL);
         ini_set('display_errors', 1);
         
-        // Capture any errors
-        ob_start();
-        $result = send_email($test_email, $subject, $message, $config);
-        $output = ob_get_clean();
-        
-        // Restore settings
-        error_reporting($old_error_level);
-        $config['send_emails'] = $original_send_emails;
-        
-        if ($result) {
-            $test_result = [
-                'success' => true,
-                'message' => "Test email sent successfully to {$test_email}! Check your inbox (and spam folder)."
-            ];
-        } else {
-            $last_error = error_get_last();
+        // Check if mail() function is available
+        if (!function_exists('mail')) {
             $test_result = [
                 'success' => false,
-                'message' => "Failed to send test email.",
+                'message' => "PHP mail() function is NOT available on this server.",
+                'error' => "The mail() function has been disabled by your hosting provider. You need to:\n" .
+                          "1. Contact dhosting.pl support to enable mail() function, OR\n" .
+                          "2. Configure SMTP settings in Admin → Options"
+            ];
+        } else {
+            // Capture any errors
+            ob_start();
+            
+            // Try to send email and capture result
+            $result = send_email($test_email, $subject, $message, $config);
+            
+            $output = ob_get_clean();
+            
+            // Restore settings
+            error_reporting($old_error_level);
+            $config['send_emails'] = $original_send_emails;
+            
+            if ($result) {
+                $test_result = [
+                    'success' => true,
+                    'message' => "Test email sent successfully to {$test_email}! Check your inbox (and spam folder)."
+                ];
+            } else {
+                $last_error = error_get_last();
+                
+                // Build detailed error message
+                $error_details = "Unknown error";
+                if ($last_error && isset($last_error['message'])) {
+                    $error_details = $last_error['message'];
+                }
+                
+                // Check common issues
+                $troubleshooting = [];
+                if (stripos($error_details, 'failed to connect') !== false || stripos($error_details, 'could not execute') !== false) {
+                    $troubleshooting[] = "Mail server not configured properly";
+                    $troubleshooting[] = "Configure SMTP settings in Admin → Options";
+                }
+                if (stripos($error_details, 'disabled') !== false) {
+                    $troubleshooting[] = "mail() function is disabled";
+                    $troubleshooting[] = "Contact hosting support to enable it";
+                }
+                
+                $test_result = [
+                    'success' => false,
+                    'message' => "Failed to send test email.",
+                    'error' => $error_details,
+                    'output' => $output,
+                    'troubleshooting' => $troubleshooting,
+                    'sendmail_path' => ini_get('sendmail_path')
+                ];
+            }
+        }
                 'error' => $last_error ? $last_error['message'] : 'Unknown error',
                 'output' => $output
             ];
@@ -248,6 +286,17 @@ $sendmail_path = ini_get('sendmail_path');
                 <?php if (!$test_result['success'] && isset($test_result['output']) && !empty($test_result['output'])): ?>
                     <p><strong>Output:</strong></p>
                     <pre><?php echo htmlspecialchars($test_result['output']); ?></pre>
+                <?php endif; ?>
+                <?php if (!$test_result['success'] && isset($test_result['troubleshooting']) && !empty($test_result['troubleshooting'])): ?>
+                    <p><strong>Possible solutions:</strong></p>
+                    <ul>
+                        <?php foreach ($test_result['troubleshooting'] as $tip): ?>
+                            <li><?php echo htmlspecialchars($tip); ?></li>
+                        <?php endforeach; ?>
+                    </ul>
+                <?php endif; ?>
+                <?php if (!$test_result['success'] && isset($test_result['sendmail_path'])): ?>
+                    <p><strong>Sendmail path:</strong> <code><?php echo htmlspecialchars($test_result['sendmail_path'] ?: '(not configured)'); ?></code></p>
                 <?php endif; ?>
             </div>
         <?php endif; ?>

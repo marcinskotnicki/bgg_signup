@@ -16,14 +16,17 @@
  * @return bool Success status
  */
 function send_email($to, $subject, $message, $config, $reply_to = null) {
-    // Check if emails are enabled
-    if (!$config['send_emails']) {
+    // Check if emails are enabled (handle both boolean and string values)
+    $emails_enabled = ($config['send_emails'] === 'yes' || $config['send_emails'] === true);
+    
+    if (!$emails_enabled) {
+        error_log("BGG Signup: Email not sent - email sending is disabled in configuration (send_emails = " . var_export($config['send_emails'], true) . ")");
         return false;
     }
     
     // Validate recipient email
     if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
-        error_log("Email not sent: Invalid recipient email");
+        error_log("BGG Signup: Email not sent - invalid recipient email: " . $to);
         return false;
     }
     
@@ -34,6 +37,9 @@ function send_email($to, $subject, $message, $config, $reply_to = null) {
     if ($reply_to === null) {
         $reply_to = $from_email;
     }
+    
+    // Log email attempt
+    error_log("BGG Signup: Attempting to send email to: {$to}, subject: {$subject}, from: {$from_email}");
     
     // Prepare email headers
     $headers = "MIME-Version: 1.0\r\n";
@@ -48,7 +54,9 @@ function send_email($to, $subject, $message, $config, $reply_to = null) {
     
     if (!$result) {
         $last_error = error_get_last();
-        error_log("Email send failed: " . ($last_error ? $last_error['message'] : 'Unknown error'));
+        error_log("BGG Signup: Email send FAILED - " . ($last_error ? $last_error['message'] : 'Unknown error'));
+    } else {
+        error_log("BGG Signup: Email sent successfully to: {$to}");
     }
     
     return $result;
