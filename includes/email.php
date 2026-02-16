@@ -15,6 +15,16 @@
  * @param string $reply_to Optional reply-to email address
  * @return bool Success status
  */
+/**
+ * Send email using PHPMailer (more reliable than PHP mail())
+ * 
+ * @param string $to Recipient email
+ * @param string $subject Email subject
+ * @param string $message Email body (HTML)
+ * @param array $config Configuration array
+ * @param string|null $reply_to Reply-to email
+ * @return bool Success/failure
+ */
 function send_email($to, $subject, $message, $config, $reply_to = null) {
     // Check if emails are enabled (handle both boolean and string values)
     $emails_enabled = ($config['send_emails'] === 'yes' || $config['send_emails'] === true);
@@ -30,49 +40,95 @@ function send_email($to, $subject, $message, $config, $reply_to = null) {
         return false;
     }
     
-    // Determine sender email
-    $from_email = !empty($config['smtp_email']) ? $config['smtp_email'] : 'noreply@' . $_SERVER['HTTP_HOST'];
-    $from_name = !empty($config['venue_name']) ? $config['venue_name'] : 'BGG Signup';
+    // Load PHPMailer
+    require_once __DIR__ . '/../PHPMailer/src/Exception.php';
+    require_once __DIR__ . '/../PHPMailer/src/PHPMailer.php';
+    require_once __DIR__ . '/../PHPMailer/src/SMTP.php';
     
-    // Determine reply-to
-    if ($reply_to === null) {
-        $reply_to = $from_email;
+    use PHPMailer\PHPMailer\PHPMailer;
+    use PHPMailer\PHPMailer\Exception;
+    
+    try {
+        $mail = new PHPMailer(true); // Enable exceptions
+        
+        // Determine sender email and name
+        $from_email = !empty($config['smtp_email']) ? $config['smtp_email'] : 'noreply@' . $_SERVER['HTTP_HOST'];
+        $from_name = !empty($config['venue_name']) ? $config['venue_name'] : 'BGG Signup';
+        
+        // Determine reply-to
+        if ($reply_to === null) {
+            $reply_to = $from_email;
+        }
+        
+        // Check if SMTP is configured
+        $use_smtp = !empty($config['smtp_server']) && !empty($config['smtp_port']);
+        
+        if ($use_smtp) {
+            // SMTP Configuration
+            error_log("BGG Signup: Using SMTP - Server: {$config['smtp_server']}, Port: {$config['smtp_port']}, User: " . ($config['smtp_login'] ?: 'none'));
+            
+            $mail->isSMTP();
+            $mail->Host = $config['smtp_server'];
+            $mail->Port = $config['smtp_port'];
+            
+            // Enable SMTP authentication if credentials provided
+            if (!empty($config['smtp_login']) && !empty($config['smtp_password'])) {
+                $mail->SMTPAuth = true;
+                $mail->Username = $config['smtp_login'];
+                $mail->Password = $config['smtp_password'];
+            } else {
+                $mail->SMTPAuth = false;
+            }
+            
+            // Enable TLS/SSL based on port
+            if ($config['smtp_port'] == 465) {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS; // SSL
+            } elseif ($config['smtp_port'] == 587) {
+                $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS; // TLS
+            }
+            
+            // Debugging (can be removed in production)
+            // $mail->SMTPDebug = 2; // Uncomment for detailed debugging
+            
+        } else {
+            // Use sendmail/mail()
+            error_log("BGG Signup: Using sendmail/mail() - no SMTP configured");
+            $mail->isSendmail();
+        }
+        
+        // Set sender
+        $mail->setFrom($from_email, $from_name);
+        $mail->addReplyTo($reply_to);
+        
+        // Set recipient
+        $mail->addAddress($to);
+        
+        // Email content
+        $mail->isHTML(true);
+        $mail->CharSet = 'UTF-8';
+        $mail->Subject = $subject;
+        $mail->Body = $message;
+        
+        // Generate plain text version from HTML
+        $mail->AltBody = strip_tags($message);
+        
+        // Log attempt
+        error_log("BGG Signup: Attempting to send email to: {$to}, subject: {$subject}, from: {$from_name} <{$from_email}>");
+        
+        // Send email
+        $result = $mail->send();
+        
+        if ($result) {
+            error_log("BGG Signup: Email sent successfully to: {$to}");
+        }
+        
+        return $result;
+        
+    } catch (Exception $e) {
+        error_log("BGG Signup: PHPMailer Error - " . $mail->ErrorInfo);
+        error_log("BGG Signup: Exception details - " . $e->getMessage());
+        return false;
     }
-    
-    // Log email attempt
-    error_log("BGG Signup: Attempting to send email to: {$to}, subject: {$subject}, from: {$from_email}");
-    
-    // Prepare email headers - format is critical for some mail servers
-    $headers = array();
-    $headers[] = "MIME-Version: 1.0";
-    $headers[] = "Content-type: text/html; charset=UTF-8";
-    $headers[] = "From: " . $from_name . " <" . $from_email . ">";  // Proper format with name
-    $headers[] = "Reply-To: " . $reply_to;
-    $headers[] = "Return-Path: " . $from_email;  // Important for some servers
-    $headers[] = "X-Mailer: PHP/" . phpversion();
-    
-    // Join headers with \r\n
-    $headers_string = implode("\r\n", $headers);
-    
-    // Use 5th parameter to set envelope sender (important for SMTP)
-    $additional_params = "-f" . $from_email;
-    
-    // Log what we're sending
-    error_log("BGG Signup: Headers: " . str_replace("\r\n", " | ", $headers_string));
-    error_log("BGG Signup: Additional params: " . $additional_params);
-    
-    // Use PHP mail() function with all parameters
-    $result = @mail($to, $subject, $message, $headers_string, $additional_params);
-    
-    if (!$result) {
-        $last_error = error_get_last();
-        error_log("BGG Signup: Email send FAILED - " . ($last_error ? $last_error['message'] : 'Unknown error'));
-        error_log("BGG Signup: To: {$to}, Subject: {$subject}, From: {$from_email}");
-    } else {
-        error_log("BGG Signup: Email sent successfully to: {$to}");
-    }
-    
-    return $result;
 }
 
 /**
