@@ -32,6 +32,7 @@ function send_email($to, $subject, $message, $config, $reply_to = null) {
     
     // Determine sender email
     $from_email = !empty($config['smtp_email']) ? $config['smtp_email'] : 'noreply@' . $_SERVER['HTTP_HOST'];
+    $from_name = !empty($config['venue_name']) ? $config['venue_name'] : 'BGG Signup';
     
     // Determine reply-to
     if ($reply_to === null) {
@@ -41,20 +42,32 @@ function send_email($to, $subject, $message, $config, $reply_to = null) {
     // Log email attempt
     error_log("BGG Signup: Attempting to send email to: {$to}, subject: {$subject}, from: {$from_email}");
     
-    // Prepare email headers
-    $headers = "MIME-Version: 1.0\r\n";
-    $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-    $headers .= "From: {$from_email}\r\n";
-    $headers .= "Reply-To: {$reply_to}\r\n";
-    $headers .= "X-Mailer: PHP/" . phpversion();
+    // Prepare email headers - format is critical for some mail servers
+    $headers = array();
+    $headers[] = "MIME-Version: 1.0";
+    $headers[] = "Content-type: text/html; charset=UTF-8";
+    $headers[] = "From: " . $from_name . " <" . $from_email . ">";  // Proper format with name
+    $headers[] = "Reply-To: " . $reply_to;
+    $headers[] = "Return-Path: " . $from_email;  // Important for some servers
+    $headers[] = "X-Mailer: PHP/" . phpversion();
     
-    // Use PHP mail() function (works with or without SMTP configured)
-    // Note: Requires proper mail server configuration on the hosting server
-    $result = @mail($to, $subject, $message, $headers);
+    // Join headers with \r\n
+    $headers_string = implode("\r\n", $headers);
+    
+    // Use 5th parameter to set envelope sender (important for SMTP)
+    $additional_params = "-f" . $from_email;
+    
+    // Log what we're sending
+    error_log("BGG Signup: Headers: " . str_replace("\r\n", " | ", $headers_string));
+    error_log("BGG Signup: Additional params: " . $additional_params);
+    
+    // Use PHP mail() function with all parameters
+    $result = @mail($to, $subject, $message, $headers_string, $additional_params);
     
     if (!$result) {
         $last_error = error_get_last();
         error_log("BGG Signup: Email send FAILED - " . ($last_error ? $last_error['message'] : 'Unknown error'));
+        error_log("BGG Signup: To: {$to}, Subject: {$subject}, From: {$from_email}");
     } else {
         error_log("BGG Signup: Email sent successfully to: {$to}");
     }
