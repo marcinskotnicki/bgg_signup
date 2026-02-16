@@ -293,6 +293,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
                 $value = $_POST[$key] === '1' || $_POST[$key] === 'yes' ? 'true' : 'false';
                 $pattern = "/'$key'\s*=>\s*(true|false)/";
                 $replacement = "'$key' => $value";
+                
+                // Debug logging for send_emails
+                if ($key === 'send_emails') {
+                    error_log("BGG Admin: send_emails POST value: " . $_POST[$key]);
+                    error_log("BGG Admin: send_emails computed value: " . $value);
+                    error_log("BGG Admin: send_emails pattern: " . $pattern);
+                    error_log("BGG Admin: send_emails replacement: " . $replacement);
+                }
+                
                 $config_content = preg_replace($pattern, $replacement, $config_content);
             }
         }
@@ -342,9 +351,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
         }
         
         // Write back to config file
-        if (file_put_contents($config_file, $config_content) === false) {
-            $error = t('options_update_error', ['error' => 'Failed to write config file']);
+        $write_result = file_put_contents($config_file, $config_content);
+        
+        if ($write_result === false) {
+            $error = t('options_update_error', ['error' => 'Failed to write config file - check file permissions']);
+            error_log("BGG Admin: Failed to write config file at: " . $config_file);
         } else {
+            error_log("BGG Admin: Successfully wrote " . $write_result . " bytes to config file");
+            
             // Verify the file was written correctly by trying to load it
             try {
                 $test_config = require $config_file;
@@ -354,6 +368,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
                         copy($config_file . '.backup', $config_file);
                     }
                     $error = t('options_update_error', ['error' => 'Config file corrupted - restored from backup']);
+                    error_log("BGG Admin: Config file corrupted after write");
+                } else {
+                    // Log the send_emails value to verify
+                    error_log("BGG Admin: Config loaded, send_emails = " . var_export($test_config['send_emails'], true));
                 }
             } catch (Exception $e) {
                 // Config has syntax error, restore from backup
@@ -361,6 +379,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
                     copy($config_file . '.backup', $config_file);
                 }
                 $error = t('options_update_error', ['error' => 'Config syntax error: ' . $e->getMessage()]);
+                error_log("BGG Admin: Config syntax error: " . $e->getMessage());
             }
         }
         
@@ -392,8 +411,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
             $message = t('options_updated_success');
         }
         
-        // Reload config
-        $config = require 'config.php';
+        // Clear opcache for config file
+        if (function_exists('opcache_invalidate')) {
+            opcache_invalidate($config_file, true);
+        }
+        
+        // Force reload config with absolute path (bypass require_once cache)
+        unset($config);
+        $config = include $config_file;
+        
+        error_log("BGG Admin: Config reloaded, send_emails = " . var_export($config['send_emails'], true));
         
     } catch (Exception $e) {
         $error = t('options_update_error', ['error' => $e->getMessage()]);
@@ -819,8 +846,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             <div class="form-group">
                 <label><?php echo t('send_emails'); ?>:</label>
                 <select name="send_emails">
-                    <option value="yes" <?php echo $config['send_emails'] === 'yes' ? 'selected' : ''; ?>><?php echo t('yes'); ?></option>
-                    <option value="no" <?php echo $config['send_emails'] !== 'yes' ? 'selected' : ''; ?>><?php echo t('no'); ?></option>
+                    <option value="yes" <?php echo ($config['send_emails'] === 'yes' || $config['send_emails'] === true) ? 'selected' : ''; ?>><?php echo t('yes'); ?></option>
+                    <option value="no" <?php echo ($config['send_emails'] === 'no' || $config['send_emails'] === false || !$config['send_emails']) ? 'selected' : ''; ?>><?php echo t('no'); ?></option>
                 </select>
                 <small style="display: block; margin-top: 5px;">
                     💡 <a href="admin_email_test.php" target="_blank" style="color: #3498db; font-weight: bold;">Test Email Configuration →</a>

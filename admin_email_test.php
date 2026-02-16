@@ -57,17 +57,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_test'])) {
         $config['send_emails'] = 'yes';
         
         $subject = "BGG Signup System - Test Email";
-        $message = email_template(
-            "Test Email Successful!",
-            "<p>If you're reading this, your email configuration is working correctly!</p>" .
-            "<p><strong>Test Details:</strong></p>" .
-            "<ul>" .
-            "<li>Sent at: " . date('Y-m-d H:i:s') . "</li>" .
-            "<li>Server: " . $_SERVER['HTTP_HOST'] . "</li>" .
-            "<li>PHP Version: " . phpversion() . "</li>" .
-            "</ul>",
-            $config
-        );
+        $message = email_template([
+            'title' => "Test Email Successful!",
+            'content' => "<p>If you're reading this, your email configuration is working correctly!</p>" .
+                "<p><strong>Test Details:</strong></p>" .
+                "<ul>" .
+                "<li>Sent at: " . date('Y-m-d H:i:s') . "</li>" .
+                "<li>Server: " . $_SERVER['HTTP_HOST'] . "</li>" .
+                "<li>PHP Version: " . phpversion() . "</li>" .
+                "</ul>"
+        ]);
         
         // Enable error reporting for debugging
         $old_error_level = error_reporting(E_ALL);
