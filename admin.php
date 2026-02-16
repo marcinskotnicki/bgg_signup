@@ -306,6 +306,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
                     error_log("BGG Admin: send_emails computed value: " . $value);
                     error_log("BGG Admin: send_emails pattern: " . $pattern);
                     error_log("BGG Admin: send_emails replacement: " . $replacement);
+                    
+                    // Check if pattern matches
+                    if (preg_match($pattern, $config_content, $matches)) {
+                        error_log("BGG Admin: Pattern MATCHED: " . $matches[0]);
+                    } else {
+                        error_log("BGG Admin: Pattern DID NOT MATCH - this is the problem!");
+                        // Try to find what's actually in the file
+                        if (preg_match("/'send_emails'[^,]+/", $config_content, $matches)) {
+                            error_log("BGG Admin: Found in config: " . $matches[0]);
+                        }
+                    }
                 }
                 
                 $config_content = preg_replace($pattern, $replacement, $config_content);

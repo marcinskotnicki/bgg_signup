@@ -87,6 +87,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_test'])) {
             // Capture any errors
             ob_start();
             
+            // Clear any previous errors
+            error_clear_last();
+            
             // Try to send email and capture result
             $result = send_email($test_email, $subject, $message, $config);
             
@@ -112,6 +115,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_test'])) {
                 
                 // Check common issues
                 $troubleshooting = [];
+                
+                // Specific guidance for dhosting.pl
+                $sendmail_path = ini_get('sendmail_path');
+                if (stripos($sendmail_path, 'esmtp') !== false) {
+                    $troubleshooting[] = "Your server uses esmtp with SMTP configuration";
+                    $troubleshooting[] = "The SMTP config file is: " . (preg_match('/-C\s+([^\s]+)/', $sendmail_path, $m) ? $m[1] : 'unknown');
+                    $troubleshooting[] = "Contact dhosting.pl support with this info - they may need to configure your SMTP settings";
+                    $troubleshooting[] = "OR: Configure SMTP settings in Admin → Options (may override system settings)";
+                }
+                
                 if (stripos($error_details, 'failed to connect') !== false || stripos($error_details, 'could not execute') !== false) {
                     $troubleshooting[] = "Mail server not configured properly";
                     $troubleshooting[] = "Configure SMTP settings in Admin → Options";
@@ -121,13 +134,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_test'])) {
                     $troubleshooting[] = "Contact hosting support to enable it";
                 }
                 
+                // If "Unknown error", provide general guidance
+                if ($error_details === "Unknown error") {
+                    $troubleshooting[] = "PHP mail() returned false but didn't provide a specific error";
+                    $troubleshooting[] = "This usually means SMTP authentication failed or mail queue rejected the message";
+                    $troubleshooting[] = "Check your server error logs for more details";
+                    $troubleshooting[] = "For dhosting.pl: Configure SMTP settings in cPanel/DirectAdmin";
+                }
+                
                 $test_result = [
                     'success' => false,
                     'message' => "Failed to send test email.",
                     'error' => $error_details,
                     'output' => $output,
                     'troubleshooting' => $troubleshooting,
-                    'sendmail_path' => ini_get('sendmail_path')
+                    'sendmail_path' => $sendmail_path,
+                    'smtp_configured' => !empty($config['smtp_server'])
                 ];
             }
         }
@@ -293,6 +315,12 @@ $sendmail_path = ini_get('sendmail_path');
                 <?php endif; ?>
                 <?php if (!$test_result['success'] && isset($test_result['sendmail_path'])): ?>
                     <p><strong>Sendmail path:</strong> <code><?php echo htmlspecialchars($test_result['sendmail_path'] ?: '(not configured)'); ?></code></p>
+                <?php endif; ?>
+                <?php if (!$test_result['success'] && isset($test_result['smtp_configured'])): ?>
+                    <p><strong>SMTP in app:</strong> <?php echo $test_result['smtp_configured'] ? '✓ Configured' : '✗ Not configured'; ?></p>
+                    <?php if (!$test_result['smtp_configured']): ?>
+                        <p><em>Consider configuring SMTP settings in Admin → Options → SMTP Settings</em></p>
+                    <?php endif; ?>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
