@@ -3,21 +3,38 @@
  * AJAX Handler: Submit Create Poll
  */
 
+// Start output buffering to catch any warnings/notices
+ob_start();
+
 header('Content-Type: application/json');
 
 // Load configuration
 $config = require_once '../config.php';
 
+// Load translations
+require_once '../includes/translations.php';
+
 // Load auth helper
 require_once '../includes/auth.php';
+
+/**
+ * Send JSON response with clean output buffer
+ */
+function send_json($data) {
+    // Clear output buffer if it exists
+    if (ob_get_level() > 0) {
+        ob_end_clean();
+    }
+    echo json_encode($data);
+    exit;
+}
 
 // Database connection
 try {
     $db = new PDO('sqlite:../' . DB_FILE);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
-    echo json_encode(['success' => false, 'error' => 'Database connection failed']);
-    exit;
+    send_json(['success' => false, 'error' => 'Database connection failed']);
 }
 
 // Get current user
@@ -25,8 +42,7 @@ $current_user = get_current_user($db);
 
 // Check login requirements
 if (($config['allow_logged_in'] === 'required_games' || $config['allow_logged_in'] === 'required_all') && !$current_user) {
-    echo json_encode(['success' => false, 'error' => 'Login required']);
-    exit;
+    send_json(['success' => false, 'error' => 'Login required']);
 }
 
 // Get poll data
@@ -34,8 +50,7 @@ $poll_data_json = isset($_POST['poll_data']) ? $_POST['poll_data'] : '';
 $poll_data = json_decode($poll_data_json, true);
 
 if (!$poll_data || !isset($poll_data['table_id']) || !isset($poll_data['creator_name']) || !isset($poll_data['options'])) {
-    echo json_encode(['success' => false, 'error' => 'Invalid poll data']);
-    exit;
+    send_json(['success' => false, 'error' => 'Invalid poll data']);
 }
 
 $table_id = intval($poll_data['table_id']);
@@ -47,18 +62,15 @@ $options = $poll_data['options'];
 
 // Validate
 if (!$table_id || !$creator_name || count($options) < 2) {
-    echo json_encode(['success' => false, 'error' => 'Poll must have at least 2 options']);
-    exit;
+    send_json(['success' => false, 'error' => 'Poll must have at least 2 options']);
 }
 
 if ($config['require_emails'] && empty($creator_email)) {
-    echo json_encode(['success' => false, 'error' => 'Email is required']);
-    exit;
+    send_json(['success' => false, 'error' => 'Email is required']);
 }
 
 if (empty($start_time)) {
-    echo json_encode(['success' => false, 'error' => 'Start time is required']);
-    exit;
+    send_json(['success' => false, 'error' => 'Start time is required']);
 }
 
 try {
@@ -68,8 +80,7 @@ try {
     $table = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$table) {
-        echo json_encode(['success' => false, 'error' => 'Table not found']);
-        exit;
+        send_json(['success' => false, 'error' => 'Table not found']);
     }
     
     $db->beginTransaction();
@@ -147,7 +158,7 @@ try {
     log_activity($db, $current_user ? $current_user['id'] : null, 'poll_created', 
         "Poll created by $creator_name with " . count($options) . " options on table $table_id");
     
-    echo json_encode([
+    send_json([
         'success' => true,
         'poll_id' => $poll_id
     ]);
@@ -156,6 +167,6 @@ try {
     if (isset($db) && $db->inTransaction()) {
         $db->rollBack();
     }
-    echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+    send_json(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
 }
 ?>

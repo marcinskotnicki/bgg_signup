@@ -99,7 +99,9 @@ $default_email = $current_user ? $current_user['email'] : '';
         
         <div class="form-actions">
             <button type="button" onclick="closeModal()" class="btn btn-secondary"><?php echo t('cancel'); ?></button>
-            <button type="submit" id="submit-join" class="btn btn-primary" disabled><?php echo t('sign_up'); ?></button>
+            <div id="submit-wrapper" style="display: inline-block; cursor: pointer;">
+                <button type="submit" id="submit-join" class="btn btn-primary" disabled><?php echo t('sign_up'); ?></button>
+            </div>
         </div>
     </form>
 </div>
@@ -244,14 +246,20 @@ $(document).ready(function() {
         const requiredFields = $('#join-game-form').find('[required]');
         let firstEmpty = null;
         
+        console.log('Found', requiredFields.length, 'required fields');
+        
         requiredFields.each(function() {
             const $field = $(this);
             const $formGroup = $field.closest('.form-group');
+            const fieldValue = $field.val();
+            
+            console.log('Field:', $field.attr('name'), 'Value:', fieldValue, 'Empty:', !fieldValue);
             
             if (!$field.val()) {
                 // Add error class
                 $formGroup.addClass('has-error');
                 $field.addClass('error-field');
+                console.log('Added error classes to:', $field.attr('name'));
                 
                 // Remember first empty field to focus
                 if (!firstEmpty) {
@@ -266,6 +274,7 @@ $(document).ready(function() {
         
         // Focus first empty field
         if (firstEmpty) {
+            console.log('Focusing field:', firstEmpty.attr('name'));
             firstEmpty.focus();
         }
         
@@ -291,11 +300,16 @@ $(document).ready(function() {
     // Initial validation
     validateForm();
     
-    // Click on disabled submit button - show what's missing
-    $(document).on('click', '#submit-join:disabled', function(e) {
-        e.preventDefault();
-        highlightMissingFields();
-        return false;
+    // Click on submit wrapper when button is disabled - show what's missing
+    $(document).on('click', '#submit-wrapper', function(e) {
+        console.log('Wrapper clicked, button disabled:', $('#submit-join').is(':disabled'));
+        if ($('#submit-join').is(':disabled')) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Highlighting missing fields...');
+            highlightMissingFields();
+            return false;
+        }
     });
     
     // Form submission
