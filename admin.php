@@ -167,6 +167,12 @@ require_once 'update.php';
 $message = '';
 $error = '';
 
+// Check for success message from redirect
+if (isset($_GET['msg']) && $_GET['msg'] === 'success') {
+    $message = t('options_updated_success');
+}
+
+
 // Increment Cache Version
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['increment_cache'])) {
     try {
@@ -421,6 +427,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_options'])) {
         $config = include $config_file;
         
         error_log("BGG Admin: Config reloaded, send_emails = " . var_export($config['send_emails'], true));
+        
+        // Redirect to preserve tab
+        if (isset($_POST['return_tab']) && !empty($_POST['return_tab'])) {
+            $return_tab = $_POST['return_tab'];
+            // Validate tab name (security)
+            $valid_tabs = ['logs', 'options', 'add-event', 'thumbnails', 'archives', 'update'];
+            if (in_array($return_tab, $valid_tabs)) {
+                header("Location: admin.php?msg=success#" . $return_tab);
+                exit;
+            }
+        }
         
     } catch (Exception $e) {
         $error = t('options_update_error', ['error' => $e->getMessage()]);
@@ -701,7 +718,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
     <!-- Tab 2: Options -->
     <div id="options" class="tab-content">
         <h2><?php echo t('system_options'); ?></h2>
-        <form method="POST">
+        <form method="POST" id="options-form">
             <h3><?php echo t('general_settings'); ?></h3>
             
             <div class="form-group">
@@ -1337,7 +1354,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             }
             document.getElementById(tabName).className += " active";
             evt.currentTarget.className += " active";
+            
+            // Save tab to URL hash for persistence
+            window.location.hash = tabName;
         }
+        
+        // Restore tab from URL hash on page load
+        window.addEventListener('load', function() {
+            var hash = window.location.hash.substring(1); // Remove #
+            if (hash && document.getElementById(hash)) {
+                // Find and click the corresponding tab button
+                var tabButtons = document.getElementsByClassName('tab-button');
+                for (var i = 0; i < tabButtons.length; i++) {
+                    var button = tabButtons[i];
+                    // Check if this button's onclick contains the hash
+                    var onclick = button.getAttribute('onclick');
+                    if (onclick && onclick.indexOf("'" + hash + "'") > -1) {
+                        button.click();
+                        break;
+                    }
+                }
+            }
+        });
         
         // Update email requirement based on login setting
         function updateEmailRequirement() {
@@ -1716,6 +1754,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                 loadArchives();
             }
         };
+        
+        // Preserve tab on form submission
+        document.addEventListener('DOMContentLoaded', function() {
+            var forms = document.querySelectorAll('#options-form, #event-form');
+            forms.forEach(function(form) {
+                form.addEventListener('submit', function() {
+                    // Add current hash to a hidden input
+                    var currentHash = window.location.hash;
+                    if (currentHash) {
+                        var hashInput = document.createElement('input');
+                        hashInput.type = 'hidden';
+                        hashInput.name = 'return_tab';
+                        hashInput.value = currentHash.substring(1); // Remove #
+                        form.appendChild(hashInput);
+                    }
+                });
+            });
+        });
     </script>
 </body>
 </html>

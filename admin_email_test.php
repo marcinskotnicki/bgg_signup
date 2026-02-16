@@ -38,8 +38,10 @@ if (!$current_user || !$current_user['is_admin']) {
 $test_result = null;
 $config_issues = [];
 
-// Check configuration
-if ($config['send_emails'] !== 'yes') {
+// Check configuration (handle both boolean and string values)
+$emails_enabled = ($config['send_emails'] === 'yes' || $config['send_emails'] === true);
+
+if (!$emails_enabled) {
     $config_issues[] = "Email sending is DISABLED in settings. Go to Admin Panel → Options and set 'Send Email Notifications' to 'Yes'";
 }
 
@@ -265,7 +267,7 @@ $sendmail_path = ini_get('sendmail_path');
         <?php endif; ?>
         
         <div class="config-item">
-            <strong>Send Emails:</strong> <?php echo $config['send_emails'] === 'yes' ? '✓ Enabled' : '✗ Disabled'; ?>
+            <strong>Send Emails:</strong> <?php echo ($config['send_emails'] === 'yes' || $config['send_emails'] === true) ? '✓ Enabled' : '✗ Disabled'; ?>
         </div>
         
         <div class="config-item">
