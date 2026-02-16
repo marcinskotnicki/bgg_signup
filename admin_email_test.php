@@ -131,10 +131,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['send_test'])) {
                 ];
             }
         }
-                'error' => $last_error ? $last_error['message'] : 'Unknown error',
-                'output' => $output
-            ];
-        }
     } else {
         $test_result = [
             'success' => false,
