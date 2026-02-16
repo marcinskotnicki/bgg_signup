@@ -167,8 +167,8 @@ $default_email = $current_user ? $current_user['email'] : '';
                 <label><?php echo t('language'); ?>: <span class="required">*</span></label>
                 <select id="language" name="language" class="form-control" required>
                     <option value="independent"><?php echo t('language_independent'); ?></option>
-                    <option value="English">English</option>
-                    <option value="Polish">Polski</option>
+                    <option value="English" <?php echo get_current_language() === 'en' ? 'selected' : ''; ?>>English</option>
+                    <option value="Polish" <?php echo get_current_language() === 'pl' ? 'selected' : ''; ?>>Polski</option>
                     <option value="German">Deutsch</option>
                     <option value="French">Français</option>
                 </select>
@@ -514,6 +514,14 @@ $(document).ready(function() {
             $('#thumbnail').val('');
             $('#game_name').val('').prop('readonly', false);
             $('#thumbnail-selector').show();
+            
+            // Auto-select first thumbnail if available
+            const $firstThumbnail = $('.thumbnail-option').first();
+            if ($firstThumbnail.length) {
+                $('.thumbnail-option').removeClass('selected');
+                $firstThumbnail.addClass('selected');
+                $('#thumbnail').val($firstThumbnail.data('thumbnail'));
+            }
         }
         
         validateForm();

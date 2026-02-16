@@ -300,15 +300,19 @@ $(document).ready(function() {
     // Initial validation
     validateForm();
     
-    // Click on submit wrapper when button is disabled - show what's missing
-    $(document).on('click', '#submit-wrapper', function(e) {
-        console.log('Wrapper clicked, button disabled:', $('#submit-join').is(':disabled'));
+    // Hover on submit button when disabled - highlight missing fields
+    $(document).on('mouseenter', '#submit-wrapper', function(e) {
         if ($('#submit-join').is(':disabled')) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Highlighting missing fields...');
             highlightMissingFields();
-            return false;
+        }
+    });
+    
+    // Clear highlights when mouse leaves (optional - you can remove this if you want them to stay)
+    $(document).on('mouseleave', '#submit-wrapper', function(e) {
+        if ($('#submit-join').is(':disabled')) {
+            // Optional: clear highlights
+            // $('.form-group').removeClass('has-error');
+            // $('.form-control').removeClass('error-field');
         }
     });
     

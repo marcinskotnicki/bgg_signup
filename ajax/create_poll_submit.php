@@ -145,7 +145,7 @@ try {
             $option['thumbnail'] ?? null,
             isset($option['play_time']) && $option['play_time'] ? intval($option['play_time']) : null,
             isset($option['min_players']) && $option['min_players'] ? intval($option['min_players']) : null,
-            isset($option['max_players']) && $option['max_players']) ? intval($option['max_players']) : null,
+            isset($option['max_players']) && $option['max_players'] ? intval($option['max_players']) : null,
             isset($option['difficulty']) && $option['difficulty'] ? floatval($option['difficulty']) : null,
             intval($option['vote_threshold']),
             intval($option['display_order'])

@@ -167,8 +167,8 @@ $default_email = $current_user ? $current_user['email'] : '';
         <div class="form-group">
             <label><?php echo t('language'); ?>:</label>
             <select id="option_language" class="form-control">
-                <option value="en">English (EN)</option>
-                <option value="pl">Polski (PL)</option>
+                <option value="en" <?php echo get_current_language() === 'en' ? 'selected' : ''; ?>>English (EN)</option>
+                <option value="pl" <?php echo get_current_language() === 'pl' ? 'selected' : ''; ?>>Polski (PL)</option>
                 <option value="de">Deutsch (DE)</option>
                 <option value="fr">Français (FR)</option>
                 <option value="language_independent"><?php echo t('language_independent'); ?></option>
@@ -468,6 +468,7 @@ $default_email = $current_user ? $current_user['email'] : '';
 </style>
 
 <script>
+const CURRENT_LANGUAGE = '<?php echo get_current_language(); ?>';
 let pollOptions = [];
 let currentOptionIndex = 0;
 
@@ -509,6 +510,14 @@ $(document).ready(function() {
         $('#option-search-results').hide();
         $('#option-details-form').show();
         $('#option-thumbnail-selector').show(); // Show thumbnail selector for manual entries
+        
+        // Auto-select first thumbnail if available
+        const $firstThumbnail = $('.thumbnail-option').first();
+        if ($firstThumbnail.length) {
+            $('.thumbnail-option').removeClass('selected');
+            $firstThumbnail.addClass('selected');
+            $('#option_thumbnail').val($firstThumbnail.data('thumbnail'));
+        }
     });
     
     // Thumbnail selection
@@ -582,7 +591,7 @@ $(document).ready(function() {
             min_players: $('#option_min_players').val() || null,
             max_players: $('#option_max_players').val() || null,
             difficulty: $('#option_difficulty').val() || null,
-            language: $('#option_language').val() || 'en',
+            language: $('#option_language').val() || CURRENT_LANGUAGE,
             vote_threshold: threshold,
             display_order: pollOptions.length
         };
@@ -600,7 +609,7 @@ $(document).ready(function() {
         $('#option_min_players').val('');
         $('#option_max_players').val('');
         $('#option_difficulty').val('');
-        $('#option_language').val('en');
+        $('#option_language').val(CURRENT_LANGUAGE);
         $('#option_threshold').val('3');
         $('#option-thumbnail-selector').hide();
         $('.thumbnail-option').removeClass('selected');
