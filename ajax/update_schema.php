@@ -117,12 +117,13 @@ function parse_schema_from_github() {
     
     $schema = [];
     
-    // Match all CREATE TABLE statements
-    preg_match_all('/CREATE TABLE IF NOT EXISTS (\w+)\s*\((.*?)\);/s', $content, $matches, PREG_SET_ORDER);
+    // Match all CREATE TABLE statements from install.php
+    // Use greedy .* to capture everything up to the LAST ) before ");
+    preg_match_all('/CREATE TABLE IF NOT EXISTS (\w+)\s*\((.*)\)"\);/s', $content, $matches, PREG_SET_ORDER);
     
     foreach ($matches as $match) {
         $table_name = $match[1];
-        $table_def = $match[2];
+        $table_def = trim($match[2]);
         
         // Parse columns
         $columns = [];
