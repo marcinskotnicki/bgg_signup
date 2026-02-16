@@ -82,9 +82,19 @@ $default_email = $current_user ? $current_user['email'] : '';
         </div>
         
         <div class="form-group">
+            <label><?php echo t('poll_comment'); ?>:</label>
+            <textarea id="poll_comment" class="form-control" rows="2" placeholder="<?php echo t('poll_comment_placeholder'); ?>"></textarea>
+            <small><?php echo t('poll_comment_help'); ?></small>
+        </div>
+        
+        <div class="form-group">
             <label><?php echo t('poll_start_time'); ?>: <span class="required">*</span></label>
-            <input type="time" id="poll_start_time" class="form-control" value="<?php echo htmlspecialchars($default_start_time); ?>" required>
-            <small><?php echo t('poll_start_time_help'); ?></small>
+            <input type="time" id="poll_start_time" class="form-control" 
+                   value="<?php echo htmlspecialchars($default_start_time); ?>" 
+                   min="<?php echo htmlspecialchars($table['start_time']); ?>"
+                   max="<?php echo htmlspecialchars($table['end_time']); ?>"
+                   required>
+            <small><?php echo t('poll_start_time_help'); ?> (<?php echo htmlspecialchars($table['start_time']); ?> - <?php echo htmlspecialchars($table['end_time']); ?>)</small>
         </div>
     </div>
     
@@ -128,6 +138,61 @@ $default_email = $current_user ? $current_user['email'] : '';
         <div class="form-group">
             <label><?php echo t('game_name'); ?>: <span class="required">*</span></label>
             <input type="text" id="option_game_name" class="form-control" required>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group form-col">
+                <label><?php echo t('play_time'); ?> (<?php echo t('minutes'); ?>):</label>
+                <input type="number" id="option_play_time" class="form-control" min="1" placeholder="60">
+            </div>
+            
+            <div class="form-group form-col">
+                <label><?php echo t('difficulty'); ?> (1-5):</label>
+                <input type="number" id="option_difficulty" class="form-control" min="1" max="5" step="0.1" placeholder="2.5">
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group form-col">
+                <label><?php echo t('min_players'); ?>:</label>
+                <input type="number" id="option_min_players" class="form-control" min="1" placeholder="2">
+            </div>
+            
+            <div class="form-group form-col">
+                <label><?php echo t('max_players'); ?>:</label>
+                <input type="number" id="option_max_players" class="form-control" min="1" placeholder="4">
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label><?php echo t('language'); ?>:</label>
+            <select id="option_language" class="form-control">
+                <option value="en">English (EN)</option>
+                <option value="pl">Polski (PL)</option>
+                <option value="de">Deutsch (DE)</option>
+                <option value="fr">Français (FR)</option>
+                <option value="language_independent"><?php echo t('language_independent'); ?></option>
+            </select>
+        </div>
+        
+        <div id="option-thumbnail-selector" class="form-group" style="display: none;">
+            <label><?php echo t('select_thumbnail'); ?>:</label>
+            <div class="thumbnail-grid">
+                <?php
+                $custom_thumbnails = get_custom_thumbnails();
+                if (!empty($custom_thumbnails)):
+                    foreach ($custom_thumbnails as $thumbnail):
+                ?>
+                    <div class="thumbnail-option" data-thumbnail="<?php echo htmlspecialchars($thumbnail); ?>">
+                        <img src="<?php echo htmlspecialchars($thumbnail); ?>" alt="Thumbnail">
+                    </div>
+                <?php
+                    endforeach;
+                else:
+                ?>
+                    <p style="color: #666; font-size: 13px;"><?php echo t('no_thumbnails_uploaded'); ?></p>
+                <?php endif; ?>
+            </div>
         </div>
         
         <div class="form-group">
@@ -187,6 +252,50 @@ $default_email = $current_user ? $current_user['email'] : '';
     color: #e74c3c;
 }
 
+.form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.form-col {
+    flex: 1;
+    margin-bottom: 0 !important;
+}
+
+.thumbnail-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.thumbnail-option {
+    width: 80px;
+    height: 80px;
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.thumbnail-option:hover {
+    border-color: #3498db;
+    transform: scale(1.05);
+}
+
+.thumbnail-option.selected {
+    border-color: #27ae60;
+    border-width: 3px;
+}
+
+.thumbnail-option img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
 .poll-option-item {
     background: #f8f9fa;
     padding: 15px;
@@ -200,6 +309,27 @@ $default_email = $current_user ? $current_user['email'] : '';
 
 .poll-option-info {
     flex: 1;
+}
+
+.poll-option-thumbnail {
+    width: 60px;
+    height: 60px;
+    margin-right: 15px;
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.poll-option-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.poll-option-details {
+    color: #7f8c8d;
+    font-size: 12px;
+    margin-top: 4px;
 }
 
 .poll-option-name {
@@ -376,6 +506,15 @@ $(document).ready(function() {
         $('#option_game_name').val('').prop('readonly', false);
         $('#option-search-results').hide();
         $('#option-details-form').show();
+        $('#option-thumbnail-selector').show(); // Show thumbnail selector for manual entries
+    });
+    
+    // Thumbnail selection
+    $(document).on('click', '.thumbnail-option', function() {
+        $('.thumbnail-option').removeClass('selected');
+        $(this).addClass('selected');
+        const thumbnailPath = $(this).data('thumbnail');
+        $('#option_thumbnail').val(thumbnailPath);
     });
     
     // Display search results
@@ -409,6 +548,13 @@ $(document).ready(function() {
                 $('#option_bgg_url').val(game.url);
                 $('#option_thumbnail').val(game.thumbnail);
                 $('#option_game_name').val(game.name).prop('readonly', true);
+                
+                // Populate additional fields from BGG data
+                if (game.play_time) $('#option_play_time').val(game.play_time);
+                if (game.min_players) $('#option_min_players').val(game.min_players);
+                if (game.max_players) $('#option_max_players').val(game.max_players);
+                if (game.difficulty) $('#option_difficulty').val(game.difficulty);
+                
                 $('#option-search-results').hide();
                 $('#option-details-form').show();
             }
@@ -430,6 +576,11 @@ $(document).ready(function() {
             bgg_url: $('#option_bgg_url').val(),
             game_name: gameName,
             thumbnail: $('#option_thumbnail').val(),
+            play_time: $('#option_play_time').val() || null,
+            min_players: $('#option_min_players').val() || null,
+            max_players: $('#option_max_players').val() || null,
+            difficulty: $('#option_difficulty').val() || null,
+            language: $('#option_language').val() || 'en',
             vote_threshold: threshold,
             display_order: pollOptions.length
         };
@@ -443,7 +594,14 @@ $(document).ready(function() {
         $('#option_bgg_url').val('');
         $('#option_thumbnail').val('');
         $('#option_game_name').val('');
+        $('#option_play_time').val('');
+        $('#option_min_players').val('');
+        $('#option_max_players').val('');
+        $('#option_difficulty').val('');
+        $('#option_language').val('en');
         $('#option_threshold').val('3');
+        $('#option-thumbnail-selector').hide();
+        $('.thumbnail-option').removeClass('selected');
         
         validatePoll();
     });
@@ -461,8 +619,29 @@ $(document).ready(function() {
             html += '<h3><?php echo t('poll_options'); ?>:</h3>';
             pollOptions.forEach(function(option, index) {
                 html += '<div class="poll-option-item">';
+                
+                // Add thumbnail if available
+                if (option.thumbnail) {
+                    html += '<div class="poll-option-thumbnail">';
+                    html += '<img src="' + option.thumbnail + '" alt="' + option.game_name + '">';
+                    html += '</div>';
+                }
+                
                 html += '<div class="poll-option-info">';
                 html += '<div class="poll-option-name">' + (index + 1) + '. ' + option.game_name + '</div>';
+                
+                // Show additional details if available
+                let details = [];
+                if (option.play_time) details.push(option.play_time + ' <?php echo t('minutes'); ?>');
+                if (option.min_players && option.max_players) {
+                    details.push(option.min_players + '-' + option.max_players + ' <?php echo t('players'); ?>');
+                }
+                if (option.difficulty) details.push('⚙️ ' + option.difficulty + '/5');
+                
+                if (details.length > 0) {
+                    html += '<div class="poll-option-details">' + details.join(' • ') + '</div>';
+                }
+                
                 html += '<div class="poll-option-threshold"><?php echo t('needs'); ?> ' + option.vote_threshold + ' <?php echo t('votes'); ?></div>';
                 html += '</div>';
                 html += '<div class="poll-option-actions">';
@@ -535,6 +714,7 @@ $(document).ready(function() {
             table_id: $('#table_id').val(),
             creator_name: $('#creator_name').val().trim(),
             creator_email: $('#creator_email').val().trim(),
+            comment: $('#poll_comment').val().trim(),
             start_time: $('#poll_start_time').val(),
             options: pollOptions
         };

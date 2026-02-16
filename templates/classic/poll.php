@@ -39,6 +39,12 @@ if ($current_user) {
         </div>
     </div>
     
+    <?php if (!empty($poll['comment']) && $is_closed == false): ?>
+        <div class="poll-comment">
+            <?php echo nl2br(htmlspecialchars($poll['comment'])); ?>
+        </div>
+    <?php endif; ?>
+    
     <div class="poll-options">
         <?php foreach ($poll_options as $option): ?>
             <?php
@@ -49,20 +55,52 @@ if ($current_user) {
             ?>
             
             <div class="poll-option <?php echo $is_winner ? 'poll-winner' : ''; ?>">
-                <div class="poll-option-header">
-                    <span class="poll-option-name"><?php echo htmlspecialchars($option['game_name']); ?></span>
-                    <span class="poll-option-votes"><?php echo $vote_count; ?>/<?php echo $threshold; ?></span>
-                </div>
-                
-                <div class="poll-progress">
-                    <div class="poll-progress-bar" style="width: <?php echo $percentage; ?>%"></div>
-                </div>
-                
-                <?php if (!$is_closed): ?>
-                    <button class="btn-sm btn-vote" onclick="voteOption(<?php echo $option['id']; ?>, <?php echo $poll['id']; ?>)">
-                        <?php echo t('vote_for_this'); ?>
-                    </button>
+                <?php if ($option['thumbnail']): ?>
+                    <div class="poll-option-thumbnail">
+                        <img src="<?php echo htmlspecialchars($option['thumbnail']); ?>" alt="<?php echo htmlspecialchars($option['game_name']); ?>">
+                    </div>
                 <?php endif; ?>
+                
+                <div class="poll-option-content">
+                    <div class="poll-option-header">
+                        <span class="poll-option-name">
+                            <?php if ($option['bgg_url']): ?>
+                                <a href="<?php echo htmlspecialchars($option['bgg_url']); ?>" target="_blank">
+                                    <?php echo htmlspecialchars($option['game_name']); ?>
+                                </a>
+                            <?php else: ?>
+                                <?php echo htmlspecialchars($option['game_name']); ?>
+                            <?php endif; ?>
+                        </span>
+                        <span class="poll-option-votes"><?php echo $vote_count; ?>/<?php echo $threshold; ?></span>
+                    </div>
+                    
+                    <?php 
+                    // Show game details if available
+                    $details = [];
+                    if ($option['play_time']) $details[] = $option['play_time'] . ' ' . t('minutes');
+                    if ($option['min_players'] && $option['max_players']) {
+                        $details[] = $option['min_players'] . '-' . $option['max_players'] . ' ' . t('players');
+                    }
+                    if ($option['difficulty']) $details[] = '⚙️ ' . number_format($option['difficulty'], 1) . '/5';
+                    
+                    if (!empty($details)): 
+                    ?>
+                        <div class="poll-option-details">
+                            <?php echo implode(' • ', $details); ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <div class="poll-progress">
+                        <div class="poll-progress-bar" style="width: <?php echo $percentage; ?>%"></div>
+                    </div>
+                    
+                    <?php if (!$is_closed): ?>
+                        <button class="btn-sm btn-vote" onclick="voteOption(<?php echo $option['id']; ?>, <?php echo $poll['id']; ?>)">
+                            <?php echo t('vote_for_this'); ?>
+                        </button>
+                    <?php endif; ?>
+                </div>
             </div>
         <?php endforeach; ?>
     </div>

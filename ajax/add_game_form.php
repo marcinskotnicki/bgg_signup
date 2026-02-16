@@ -154,7 +154,12 @@ $default_email = $current_user ? $current_user['email'] : '';
             <!-- Start Time -->
             <div class="form-group">
                 <label><?php echo t('start_time'); ?>: <span class="required">*</span></label>
-                <input type="time" id="start_time" name="start_time" class="form-control" value="<?php echo $default_start_time; ?>" required>
+                <input type="time" id="start_time" name="start_time" class="form-control" 
+                       value="<?php echo $default_start_time; ?>" 
+                       min="<?php echo htmlspecialchars($table['start_time']); ?>"
+                       max="<?php echo htmlspecialchars($table['end_time']); ?>"
+                       required>
+                <small><?php echo t('event_hours'); ?>: <?php echo htmlspecialchars($table['start_time']); ?> - <?php echo htmlspecialchars($table['end_time']); ?></small>
             </div>
             
             <!-- Language -->

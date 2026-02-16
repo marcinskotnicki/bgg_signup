@@ -41,6 +41,7 @@ if (!$poll_data || !isset($poll_data['table_id']) || !isset($poll_data['creator_
 $table_id = intval($poll_data['table_id']);
 $creator_name = trim($poll_data['creator_name']);
 $creator_email = isset($poll_data['creator_email']) ? trim($poll_data['creator_email']) : '';
+$comment = isset($poll_data['comment']) ? trim($poll_data['comment']) : '';
 $start_time = isset($poll_data['start_time']) ? trim($poll_data['start_time']) : '';
 $options = $poll_data['options'];
 
@@ -75,13 +76,14 @@ try {
     
     // Create poll
     $stmt = $db->prepare("INSERT INTO polls (
-        table_id, creator_name, creator_email, created_by_user_id, start_time, is_active, created_at
-    ) VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
+        table_id, creator_name, creator_email, comment, created_by_user_id, start_time, is_active, created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
     
     $stmt->execute([
         $table_id,
         $creator_name,
         $creator_email,
+        $comment,
         $current_user ? $current_user['id'] : null,
         $start_time
     ]);
@@ -92,8 +94,9 @@ try {
     foreach ($options as $option) {
         $stmt = $db->prepare("INSERT INTO poll_options (
             poll_id, bgg_id, bgg_url, game_name, thumbnail, 
+            play_time, min_players, max_players, difficulty,
             vote_threshold, display_order, created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)");
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)");
         
         $stmt->execute([
             $poll_id,
@@ -101,6 +104,10 @@ try {
             $option['bgg_url'] ?? null,
             $option['game_name'],
             $option['thumbnail'] ?? null,
+            isset($option['play_time']) && $option['play_time'] ? intval($option['play_time']) : null,
+            isset($option['min_players']) && $option['min_players'] ? intval($option['min_players']) : null,
+            isset($option['max_players']) && $option['max_players']) ? intval($option['max_players']) : null,
+            isset($option['difficulty']) && $option['difficulty'] ? floatval($option['difficulty']) : null,
             intval($option['vote_threshold']),
             intval($option['display_order'])
         ]);

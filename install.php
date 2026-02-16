@@ -151,6 +151,7 @@ function create_database($admin_name, $admin_email, $admin_password) {
             table_id INTEGER NOT NULL,
             creator_name TEXT NOT NULL,
             creator_email TEXT,
+            comment TEXT,
             created_by_user_id INTEGER,
             start_time TIME,
             is_active INTEGER DEFAULT 1,

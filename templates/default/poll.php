@@ -57,6 +57,12 @@ if ($current_user) {
         </div>
     </div>
     
+    <?php if (!empty($poll['comment']) && $is_closed == false): ?>
+        <div class="poll-comment">
+            <?php echo nl2br(htmlspecialchars($poll['comment'])); ?>
+        </div>
+    <?php endif; ?>
+    
     <div class="poll-options-list">
         <?php foreach ($poll_options as $option): ?>
             <?php
@@ -67,30 +73,54 @@ if ($current_user) {
             ?>
             
             <div class="poll-option <?php echo $is_winner ? 'poll-winner' : ''; ?>">
-                <div class="poll-option-header">
-                    <div class="poll-option-name">
-                        <?php if ($option['bgg_url']): ?>
-                            <a href="<?php echo htmlspecialchars($option['bgg_url']); ?>" target="_blank">
-                                <?php echo htmlspecialchars($option['game_name']); ?>
-                            </a>
-                        <?php else: ?>
-                            <?php echo htmlspecialchars($option['game_name']); ?>
-                        <?php endif; ?>
+                <?php if ($option['thumbnail']): ?>
+                    <div class="poll-option-thumbnail">
+                        <img src="<?php echo htmlspecialchars($option['thumbnail']); ?>" alt="<?php echo htmlspecialchars($option['game_name']); ?>">
                     </div>
-                    <div class="poll-option-votes">
-                        <?php echo $vote_count; ?> / <?php echo $threshold; ?> <?php echo t('votes'); ?>
-                    </div>
-                </div>
-                
-                <div class="poll-progress-bar">
-                    <div class="poll-progress-fill" style="width: <?php echo $percentage; ?>%"></div>
-                </div>
-                
-                <?php if (!$is_closed): ?>
-                    <button class="btn-vote" data-option-id="<?php echo $option['id']; ?>" data-poll-id="<?php echo $poll['id']; ?>">
-                        <?php echo t('vote_for_this'); ?>
-                    </button>
                 <?php endif; ?>
+                
+                <div class="poll-option-content">
+                    <div class="poll-option-header">
+                        <div class="poll-option-name">
+                            <?php if ($option['bgg_url']): ?>
+                                <a href="<?php echo htmlspecialchars($option['bgg_url']); ?>" target="_blank">
+                                    <?php echo htmlspecialchars($option['game_name']); ?>
+                                </a>
+                            <?php else: ?>
+                                <?php echo htmlspecialchars($option['game_name']); ?>
+                            <?php endif; ?>
+                        </div>
+                        <div class="poll-option-votes">
+                            <?php echo $vote_count; ?> / <?php echo $threshold; ?> <?php echo t('votes'); ?>
+                        </div>
+                    </div>
+                    
+                    <?php 
+                    // Show game details if available
+                    $details = [];
+                    if ($option['play_time']) $details[] = $option['play_time'] . ' ' . t('minutes');
+                    if ($option['min_players'] && $option['max_players']) {
+                        $details[] = $option['min_players'] . '-' . $option['max_players'] . ' ' . t('players');
+                    }
+                    if ($option['difficulty']) $details[] = '⚙️ ' . number_format($option['difficulty'], 1) . '/5';
+                    
+                    if (!empty($details)): 
+                    ?>
+                        <div class="poll-option-details">
+                            <?php echo implode(' • ', $details); ?>
+                        </div>
+                    <?php endif; ?>
+                    
+                    <div class="poll-progress-bar">
+                        <div class="poll-progress-fill" style="width: <?php echo $percentage; %>%"></div>
+                    </div>
+                    
+                    <?php if (!$is_closed): ?>
+                        <button class="btn-vote" data-option-id="<?php echo $option['id']; ?>" data-poll-id="<?php echo $poll['id']; ?>">
+                            <?php echo t('vote_for_this'); ?>
+                        </button>
+                    <?php endif; ?>
+                </div>
                 
                 <?php if ($is_winner): ?>
                     <div class="winner-badge"><?php echo t('winner'); ?>!</div>
@@ -147,6 +177,17 @@ if ($current_user) {
     font-size: 14px;
 }
 
+.poll-comment {
+    background: #e8f4f8;
+    border-left: 4px solid #3498db;
+    padding: 12px 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: #2c3e50;
+}
+
 .poll-options-list {
     display: flex;
     flex-direction: column;
@@ -159,11 +200,37 @@ if ($current_user) {
     border-radius: 6px;
     border-left: 4px solid #3498db;
     position: relative;
+    display: flex;
+    gap: 15px;
 }
 
 .poll-option.poll-winner {
     background: #d5f4e6;
     border-left-color: #27ae60;
+}
+
+.poll-option-thumbnail {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.poll-option-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.poll-option-content {
+    flex: 1;
+}
+
+.poll-option-details {
+    font-size: 13px;
+    color: #7f8c8d;
+    margin-bottom: 8px;
 }
 
 .poll-option-header {

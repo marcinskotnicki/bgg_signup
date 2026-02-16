@@ -8,6 +8,9 @@ header('Content-Type: application/json');
 // Load configuration
 $config = require_once '../config.php';
 
+// Load translations
+require_once '../includes/translations.php';
+
 // Load auth helper
 require_once '../includes/auth.php';
 
@@ -171,12 +174,12 @@ try {
                 $min_players,
                 $max_players,
                 $difficulty,
-                '12:00', // Default start time - could be improved
+                $poll['start_time'] ?? '12:00', // Use poll's start time if set
                 $poll['creator_name'],
                 $poll['creator_email'],
-                'en', // Default language - could be improved
+                get_current_language(), // Use current language
                 'Will be explained',
-                'Game selected by poll!',
+                t('game_selected_by_poll'),
                 $poll['created_by_user_id']
             ]);
             
