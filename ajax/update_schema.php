@@ -152,7 +152,11 @@ function parse_schema_from_github() {
             }
         }
         
-        $schema[$table_name] = $columns;
+        // Store both columns and full CREATE TABLE statement
+        $schema[$table_name] = [
+            'columns' => $columns,
+            'create_sql' => "CREATE TABLE IF NOT EXISTS $table_name ($table_def)"
+        ];
     }
     
     add_log("Parsed " . count($schema) . " tables from GitHub schema");
@@ -202,12 +206,19 @@ function detect_schema_changes($github_schema, $current_schema) {
     
     $changes = [];
     
-    foreach ($github_schema as $table => $github_cols) {
+    foreach ($github_schema as $table => $github_data) {
+        // Handle missing tables
         if (!isset($current_schema[$table])) {
-            add_log("Table $table is missing (would need full table creation)", "WARNING");
+            add_log("Table $table is missing - will create it", "WARNING");
+            $changes[] = [
+                'table' => $table,
+                'action' => 'CREATE_TABLE',
+                'sql' => $github_data['create_sql']
+            ];
             continue;
         }
         
+        $github_cols = $github_data['columns'];
         $current_cols = $current_schema[$table];
         
         // Check for missing columns
@@ -265,9 +276,18 @@ function apply_schema_changes($db, $changes) {
             
             try {
                 $db->exec($change['sql']);
-                add_log("✓ Successfully added {$change['table']}.{$change['column']}", "SUCCESS");
+                
+                if ($change['action'] === 'CREATE_TABLE') {
+                    add_log("✓ Successfully created table: {$change['table']}", "SUCCESS");
+                } else {
+                    add_log("✓ Successfully added {$change['table']}.{$change['column']}", "SUCCESS");
+                }
             } catch (PDOException $e) {
-                add_log("✗ Failed to add {$change['table']}.{$change['column']}: " . $e->getMessage(), "ERROR");
+                if ($change['action'] === 'CREATE_TABLE') {
+                    add_log("✗ Failed to create table {$change['table']}: " . $e->getMessage(), "ERROR");
+                } else {
+                    add_log("✗ Failed to add {$change['table']}.{$change['column']}: " . $e->getMessage(), "ERROR");
+                }
                 throw $e;
             }
         }
