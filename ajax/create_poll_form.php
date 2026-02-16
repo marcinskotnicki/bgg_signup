@@ -723,15 +723,40 @@ $(document).ready(function() {
         
         $('#submit-poll').prop('disabled', true).text('<?php echo t('saving'); ?>...');
         
-        $.post('../ajax/create_poll_submit.php', { poll_data: JSON.stringify(data) }, function(response) {
-            if (response.success) {
-                closeModal();
-                location.reload();
-            } else {
-                alert(response.error || '<?php echo t('error_occurred'); ?>');
+        $.ajax({
+            url: '../ajax/create_poll_submit.php',
+            type: 'POST',
+            data: { poll_data: JSON.stringify(data) },
+            dataType: 'json',
+            success: function(response) {
+                console.log('Poll creation response:', response);
+                if (response.success) {
+                    closeModal();
+                    location.reload();
+                } else {
+                    alert(response.error || '<?php echo t('error_occurred'); ?>');
+                    $('#submit-poll').prop('disabled', false).text('<?php echo t('create_poll'); ?>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('=== POLL CREATION ERROR ===');
+                console.error('Status:', status);
+                console.error('Error:', error);
+                console.error('Response Text:', xhr.responseText);
+                console.error('Response Text Length:', xhr.responseText.length);
+                console.error('First 500 chars:', xhr.responseText.substring(0, 500));
+                
+                // Try to parse as JSON anyway
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    alert(response.error || '<?php echo t('error_occurred'); ?>');
+                } catch (e) {
+                    console.error('JSON parse error:', e);
+                    alert('<?php echo t('error_occurred'); ?> (Response not valid JSON)');
+                }
+                
                 $('#submit-poll').prop('disabled', false).text('<?php echo t('create_poll'); ?>');
             }
         });
     });
 });
-</script>
