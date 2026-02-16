@@ -11,6 +11,9 @@ header('Content-Type: application/json');
 // Load configuration
 $config = require_once '../config.php';
 
+// Load translations
+require_once '../includes/translations.php';
+
 // Load auth helper
 require_once '../includes/auth.php';
 

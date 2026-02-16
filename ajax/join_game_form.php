@@ -201,6 +201,25 @@ $default_email = $current_user ? $current_user['email'] : '';
 .btn-secondary:hover {
     background: #7f8c8d;
 }
+
+/* Error field highlighting */
+.form-group.has-error label {
+    color: #e74c3c;
+}
+
+.form-control.error-field {
+    border-color: #e74c3c;
+    background-color: #ffebee;
+}
+
+.form-control.error-field:focus {
+    border-color: #e74c3c;
+    box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1);
+}
+
+select.form-control.error-field {
+    background-color: #ffebee;
+}
 </style>
 
 <script>
@@ -220,15 +239,73 @@ $(document).ready(function() {
         $('#submit-join').prop('disabled', !allFilled);
     }
     
+    // Highlight missing required fields
+    function highlightMissingFields() {
+        const requiredFields = $('#join-game-form').find('[required]');
+        let firstEmpty = null;
+        
+        requiredFields.each(function() {
+            const $field = $(this);
+            const $formGroup = $field.closest('.form-group');
+            
+            if (!$field.val()) {
+                // Add error class
+                $formGroup.addClass('has-error');
+                $field.addClass('error-field');
+                
+                // Remember first empty field to focus
+                if (!firstEmpty) {
+                    firstEmpty = $field;
+                }
+            } else {
+                // Remove error class
+                $formGroup.removeClass('has-error');
+                $field.removeClass('error-field');
+            }
+        });
+        
+        // Focus first empty field
+        if (firstEmpty) {
+            firstEmpty.focus();
+        }
+        
+        return firstEmpty === null;
+    }
+    
+    // Remove error styling when user starts filling field
+    $('#join-game-form').on('input change', 'input, select, textarea', function() {
+        const $field = $(this);
+        const $formGroup = $field.closest('.form-group');
+        
+        if ($field.val()) {
+            $formGroup.removeClass('has-error');
+            $field.removeClass('error-field');
+        }
+        
+        validateForm();
+    });
+    
     // Monitor all form inputs
     $('#join-game-form').on('input change', 'input, select, textarea', validateForm);
     
     // Initial validation
     validateForm();
     
+    // Click on disabled submit button - show what's missing
+    $(document).on('click', '#submit-join:disabled', function(e) {
+        e.preventDefault();
+        highlightMissingFields();
+        return false;
+    });
+    
     // Form submission
     $('#join-game-form').submit(function(e) {
         e.preventDefault();
+        
+        // Final validation with highlighting
+        if (!highlightMissingFields()) {
+            return false;
+        }
         
         const formData = $(this).serialize();
         

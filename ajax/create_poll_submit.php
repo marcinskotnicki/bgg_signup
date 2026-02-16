@@ -74,19 +74,47 @@ try {
     
     $db->beginTransaction();
     
-    // Create poll
-    $stmt = $db->prepare("INSERT INTO polls (
-        table_id, creator_name, creator_email, comment, created_by_user_id, start_time, is_active, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
+    // Check if comment column exists (for backward compatibility)
+    try {
+        $columns = $db->query("PRAGMA table_info(polls)")->fetchAll(PDO::FETCH_ASSOC);
+        $has_comment = false;
+        foreach ($columns as $col) {
+            if ($col['name'] === 'comment') {
+                $has_comment = true;
+                break;
+            }
+        }
+    } catch (Exception $e) {
+        $has_comment = false;
+    }
     
-    $stmt->execute([
-        $table_id,
-        $creator_name,
-        $creator_email,
-        $comment,
-        $current_user ? $current_user['id'] : null,
-        $start_time
-    ]);
+    // Create poll (with or without comment depending on schema)
+    if ($has_comment) {
+        $stmt = $db->prepare("INSERT INTO polls (
+            table_id, creator_name, creator_email, comment, created_by_user_id, start_time, is_active, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
+        
+        $stmt->execute([
+            $table_id,
+            $creator_name,
+            $creator_email,
+            $comment,
+            $current_user ? $current_user['id'] : null,
+            $start_time
+        ]);
+    } else {
+        $stmt = $db->prepare("INSERT INTO polls (
+            table_id, creator_name, creator_email, created_by_user_id, start_time, is_active, created_at
+        ) VALUES (?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
+        
+        $stmt->execute([
+            $table_id,
+            $creator_name,
+            $creator_email,
+            $current_user ? $current_user['id'] : null,
+            $start_time
+        ]);
+    }
     
     $poll_id = $db->lastInsertId();
     

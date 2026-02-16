@@ -182,9 +182,11 @@ $default_email = $current_user ? $current_user['email'] : '';
                 $custom_thumbnails = get_custom_thumbnails();
                 if (!empty($custom_thumbnails)):
                     foreach ($custom_thumbnails as $thumbnail):
+                        // Path relative to index.php (where this form is displayed)
+                        $thumbnail_path = THUMBNAILS_DIR . '/' . $thumbnail;
                 ?>
-                    <div class="thumbnail-option" data-thumbnail="<?php echo htmlspecialchars($thumbnail); ?>">
-                        <img src="<?php echo htmlspecialchars($thumbnail); ?>" alt="Thumbnail">
+                    <div class="thumbnail-option" data-thumbnail="<?php echo htmlspecialchars($thumbnail_path); ?>">
+                        <img src="<?php echo htmlspecialchars($thumbnail_path); ?>" alt="Thumbnail">
                     </div>
                 <?php
                     endforeach;
