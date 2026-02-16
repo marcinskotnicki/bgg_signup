@@ -5,16 +5,14 @@
  * Handles sending email notifications for various events
  */
 
-/**
- * Send email using SMTP or phpmail() fallback
- * 
- * @param string $to Recipient email
- * @param string $subject Email subject
- * @param string $message Email body (HTML)
- * @param array $config Configuration array
- * @param string $reply_to Optional reply-to email address
- * @return bool Success status
- */
+// Load PHPMailer classes
+require_once __DIR__ . '/../PHPMailer/src/Exception.php';
+require_once __DIR__ . '/../PHPMailer/src/PHPMailer.php';
+require_once __DIR__ . '/../PHPMailer/src/SMTP.php';
+
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
 /**
  * Send email using PHPMailer (more reliable than PHP mail())
  * 
@@ -39,14 +37,6 @@ function send_email($to, $subject, $message, $config, $reply_to = null) {
         error_log("BGG Signup: Email not sent - invalid recipient email: " . $to);
         return false;
     }
-    
-    // Load PHPMailer
-    require_once __DIR__ . '/../PHPMailer/src/Exception.php';
-    require_once __DIR__ . '/../PHPMailer/src/PHPMailer.php';
-    require_once __DIR__ . '/../PHPMailer/src/SMTP.php';
-    
-    use PHPMailer\PHPMailer\PHPMailer;
-    use PHPMailer\PHPMailer\Exception;
     
     try {
         $mail = new PHPMailer(true); // Enable exceptions
