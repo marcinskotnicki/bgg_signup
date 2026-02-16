@@ -84,8 +84,7 @@ if ($current_user) {
                     }
                     if ($option['difficulty']) $details[] = '⚙️ ' . number_format($option['difficulty'], 1) . '/5';
                     
-                    if (!empty($details)): 
-                    ?>
+                    if (!empty($details)): ?>
                         <div class="poll-option-details">
                             <?php echo implode(' • ', $details); ?>
                         </div>

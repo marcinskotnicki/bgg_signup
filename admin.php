@@ -819,9 +819,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             <div class="form-group">
                 <label><?php echo t('send_emails'); ?>:</label>
                 <select name="send_emails">
-                    <option value="yes" <?php echo $config['send_emails'] ? 'selected' : ''; ?>><?php echo t('yes'); ?></option>
-                    <option value="no" <?php echo !$config['send_emails'] ? 'selected' : ''; ?>><?php echo t('no'); ?></option>
+                    <option value="yes" <?php echo $config['send_emails'] === 'yes' ? 'selected' : ''; ?>><?php echo t('yes'); ?></option>
+                    <option value="no" <?php echo $config['send_emails'] !== 'yes' ? 'selected' : ''; ?>><?php echo t('no'); ?></option>
                 </select>
+                <small style="display: block; margin-top: 5px;">
+                    💡 <a href="admin_email_test.php" target="_blank" style="color: #3498db; font-weight: bold;">Test Email Configuration →</a>
+                </small>
             </div>
             
             <div class="form-group">
