@@ -783,7 +783,7 @@ a:hover {
 .timeline-row {
     display: flex;
     align-items: stretch;
-    min-height: 70px;
+    min-height: 200px; /* Increased to accommodate stacked games */
     position: relative;
     z-index: 1;
 }
@@ -807,12 +807,13 @@ a:hover {
     background: transparent;
     border: 1px solid #ecf0f1;
     border-radius: 0 4px 4px 0;
+    min-height: 200px; /* Allow space for stacked games */
 }
 
 .timeline-game {
     position: absolute;
-    top: 5px;
-    bottom: 5px;
+    /* top is set inline by PHP for stacking */
+    height: 50px; /* Fixed height instead of bottom */
     background: #3498db;
     color: white;
     border-radius: 4px;
