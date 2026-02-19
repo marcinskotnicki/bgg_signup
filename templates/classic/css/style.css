@@ -229,9 +229,33 @@ a:hover {
     background: #2c3e50;
     border-radius: 4px;
     padding: 15px;
-    flex: 1 1 calc(50% - 8px); /* Two columns on desktop */
-    min-width: 400px;
+    flex: 1 1 calc(33.333% - 11px); /* Three columns on large screens by default */
+    min-width: 350px;
     position: relative;
+}
+
+/* Extra large screens - 4 columns */
+@media (min-width: 1800px) {
+    .game-card {
+        flex: 1 1 calc(25% - 12px);
+        min-width: 300px;
+    }
+}
+
+/* Large screens - 3 columns */
+@media (min-width: 1200px) and (max-width: 1799px) {
+    .game-card {
+        flex: 1 1 calc(33.333% - 11px);
+        min-width: 350px;
+    }
+}
+
+/* Medium screens - 2 columns */
+@media (min-width: 769px) and (max-width: 1199px) {
+    .game-card {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 400px;
+    }
 }
 
 .game-card.game-inactive {
@@ -427,9 +451,33 @@ a:hover {
     background: #e67e22;
     border-radius: 4px;
     padding: 15px;
-    flex: 1 1 calc(50% - 8px);
-    min-width: 400px;
+    flex: 1 1 calc(33.333% - 11px); /* Three columns on large screens by default */
+    min-width: 350px;
     position: relative;
+}
+
+/* Extra large screens - 4 columns */
+@media (min-width: 1800px) {
+    .poll-card {
+        flex: 1 1 calc(25% - 12px);
+        min-width: 300px;
+    }
+}
+
+/* Large screens - 3 columns */
+@media (min-width: 1200px) and (max-width: 1799px) {
+    .poll-card {
+        flex: 1 1 calc(33.333% - 11px);
+        min-width: 350px;
+    }
+}
+
+/* Medium screens - 2 columns */
+@media (min-width: 769px) and (max-width: 1199px) {
+    .poll-card {
+        flex: 1 1 calc(50% - 8px);
+        min-width: 400px;
+    }
 }
 
 .poll-card.poll-closed {
@@ -895,7 +943,7 @@ a:hover {
 .timeline-row {
     display: flex;
     align-items: stretch;
-    min-height: 200px; /* Allow space for stacked games */
+    min-height: 70px; /* Base height for single game */
     position: relative;
     z-index: 1;
 }
@@ -919,7 +967,7 @@ a:hover {
     background: transparent;
     border: 1px solid #ecf0f1;
     border-radius: 0 4px 4px 0;
-    min-height: 200px; /* Allow space for stacked games */
+    /* Height set dynamically by PHP inline style */
 }
 
 .timeline-game {

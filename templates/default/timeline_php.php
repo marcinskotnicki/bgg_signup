@@ -84,16 +84,63 @@ $end_hour = ceil($end_with_extension / 60);
         
         <!-- Table rows with games -->
         <?php foreach ($tables_with_games as $table_data): ?>
+            <?php
+            // First pass: Calculate positions and max height needed
+            $game_positions = [];
+            $max_offset = 0;
+            
+            foreach ($table_data['games'] as $game) {
+                // Skip soft-deleted games in timeline
+                if ($game['is_active'] == 0) continue;
+                
+                // Calculate game positioning
+                $game_start = time_to_minutes($game['start_time']);
+                $game_end = $game_start + $game['play_time'];
+                
+                $game_start_pos = (($game_start - $start_minutes) / ($actual_end - $start_minutes)) * 100;
+                $game_end_pos = (($game_end - $start_minutes) / ($actual_end - $start_minutes)) * 100;
+                
+                // Clip to visible range [0, 100]
+                $display_left = max(0, $game_start_pos);
+                $display_right = min(100, $game_end_pos);
+                $display_width = $display_right - $display_left;
+                
+                // Only process if visible in timeline
+                if ($display_right > 0 && $display_left < 100 && $display_width > 0) {
+                    // Check for overlaps with previous games
+                    $vertical_offset = 0;
+                    foreach ($game_positions as $pos) {
+                        if ($game_start_pos < $pos['end'] && $game_end_pos > $pos['start']) {
+                            $vertical_offset = max($vertical_offset, $pos['offset'] + 1);
+                        }
+                    }
+                    
+                    // Track max offset for height calculation
+                    $max_offset = max($max_offset, $vertical_offset);
+                    
+                    // Store this game's position
+                    $game_positions[] = [
+                        'start' => $game_start_pos,
+                        'end' => $game_end_pos,
+                        'offset' => $vertical_offset
+                    ];
+                }
+            }
+            
+            // Calculate required height: base padding + (max_offset * 60px spacing) + 50px game height + base padding
+            $required_height = 10 + ($max_offset * 60) + 50 + 10;
+            ?>
+            
             <div class="timeline-row">
                 <!-- Table label -->
                 <div class="timeline-table-label">
                     <?php echo t('table'); ?> <?php echo $table_data['table']['table_number']; ?>
                 </div>
                 
-                <!-- Games track -->
-                <div class="timeline-games">
+                <!-- Games track with dynamic height -->
+                <div class="timeline-games" style="min-height: <?php echo $required_height; ?>px;">
                     <?php 
-                    // Track game positions to detect overlaps
+                    // Second pass: Render games with calculated positions
                     $game_positions = [];
                     
                     foreach ($table_data['games'] as $game): 
@@ -141,7 +188,7 @@ $end_hour = ceil($end_with_extension / 60);
                             ];
                             
                             // Calculate top position (60px per row)
-                            $top_position = $vertical_offset * 60;
+                            $top_position = 10 + ($vertical_offset * 60);
                         ?>
                             <div class="timeline-game <?php echo $fill_class; ?>" 
                                  data-game-id="<?php echo $game['id']; ?>"
