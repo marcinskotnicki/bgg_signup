@@ -128,7 +128,7 @@ $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <button class="btn-sm btn-restore" onclick="restoreGame(<?php echo $game['id']; ?>)">
                         ↩️ <?php echo t('restore'); ?>
                     </button>
-                    <?php if ($config['allow_full_deletion'] === 'yes' || $config['allow_full_deletion'] === true): ?>
+                    <?php if (isset($config['allow_full_deletion']) && ($config['allow_full_deletion'] === 'yes' || $config['allow_full_deletion'] === true)): ?>
                         <button class="btn-sm btn-delete-permanent" onclick="fullyDeleteGame(<?php echo $game['id']; ?>)">
                             🗑️ <?php echo t('fully_delete'); ?>
                         </button>

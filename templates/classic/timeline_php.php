@@ -106,10 +106,14 @@ $end_hour = ceil($end_with_extension / 60);
                         
                         $game_start_pos = (($game_start - $start_minutes) / ($actual_end - $start_minutes)) * 100;
                         $game_end_pos = (($game_end - $start_minutes) / ($actual_end - $start_minutes)) * 100;
-                        $game_width = $game_end_pos - $game_start_pos;
+                        
+                        // Clip to visible range [0, 100]
+                        $display_left = max(0, $game_start_pos);
+                        $display_right = min(100, $game_end_pos);
+                        $display_width = $display_right - $display_left;
                         
                         // Only show if visible in timeline
-                        if ($game_end_pos > 0 && $game_start_pos < 100):
+                        if ($display_right > 0 && $display_left < 100 && $display_width > 0):
                             // Count active players
                             $active_players = count(array_filter($game['players'], function($p) { 
                                 return $p['is_reserve'] == 0; 
@@ -141,7 +145,7 @@ $end_hour = ceil($end_with_extension / 60);
                         ?>
                             <div class="timeline-game <?php echo $fill_class; ?>" 
                                  data-game-id="<?php echo $game['id']; ?>"
-                                 style="left: <?php echo max(0, $game_start_pos); ?>%; width: <?php echo min(100 - max(0, $game_start_pos), $game_width); ?>%; top: <?php echo $top_position; ?>px;"
+                                 style="left: <?php echo $display_left; ?>%; width: <?php echo $display_width; ?>%; top: <?php echo $top_position; ?>px;"
                                  title="<?php echo htmlspecialchars($game['name']); ?> (<?php echo $active_players; ?>/<?php echo $game['max_players']; ?>)">
                                 <div class="timeline-game-content">
                                     <div class="timeline-game-name"><?php echo htmlspecialchars($game['name']); ?></div>
