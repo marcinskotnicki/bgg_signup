@@ -103,8 +103,9 @@ if ($current_user) {
                         $details[] = $option['min_players'] . '-' . $option['max_players'] . ' ' . t('players');
                     }
                     if ($option['difficulty']) $details[] = '⚙️ ' . number_format($option['difficulty'], 1) . '/5';
+                    ?>
                     
-                    if (!empty($details)): ?>
+                    <?php if (!empty($details)): ?>
                         <div class="poll-option-details">
                             <?php echo implode(' • ', $details); ?>
                         </div>

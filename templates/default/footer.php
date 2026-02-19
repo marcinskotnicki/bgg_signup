@@ -45,6 +45,83 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
             }, 200);
         }
         
+        // Game actions
+        function joinGame(gameId, isReserve) {
+            $.get('ajax/join_game_form.php', { game_id: gameId, is_reserve: isReserve }, function(html) {
+                openModal(html);
+            });
+        }
+        
+        function editGame(gameId) {
+            $.get('ajax/edit_game_form.php', { game_id: gameId }, function(html) {
+                openModal(html);
+            });
+        }
+        
+        function deleteGame(gameId) {
+            if (confirm('<?php echo t('confirm_delete_game'); ?>')) {
+                $.post('ajax/delete_game.php', { game_id: gameId }, function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message || '<?php echo t('error_occurred'); ?>');
+                    }
+                }, 'json');
+            }
+        }
+        
+        function restoreGame(gameId) {
+            $.get('ajax/restore_game_form.php', { game_id: gameId }, function(html) {
+                openModal(html);
+            });
+        }
+        
+        function resignFromGame(gameId, playerId) {
+            if (confirm('<?php echo t('confirm_resign'); ?>')) {
+                $.post('ajax/resign_player.php', { game_id: gameId, player_id: playerId }, function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message || '<?php echo t('error_occurred'); ?>');
+                    }
+                }, 'json');
+            }
+        }
+        
+        function loadComments(gameId) {
+            $.get('ajax/load_comments.php', { game_id: gameId }, function(html) {
+                openModal(html);
+            });
+        }
+        
+        function addTable(eventDayId) {
+            $.post('ajax/add_table.php', { event_day_id: eventDayId }, function(response) {
+                if (response.success) {
+                    location.reload();
+                } else {
+                    alert(response.message || '<?php echo t('error_adding_table'); ?>');
+                }
+            }, 'json');
+        }
+        
+        function addGameToTable(tableId) {
+            $.get('ajax/add_game_form.php', { table_id: tableId }, function(html) {
+                openModal(html);
+            });
+        }
+        
+        function createPoll(tableId) {
+            $.get('ajax/create_poll_form.php', { table_id: tableId }, function(html) {
+                openModal(html);
+            });
+        }
+        
+        function loadVoteForm(optionId, pollId) {
+            $.get('ajax/vote_form.php', { option_id: optionId, poll_id: pollId }, function(html) {
+                openModal(html);
+            });
+        }
+        
         // Close modal when clicking outside or on close button
         $(document).ready(function() {
             $('.modal-close').click(closeModal);

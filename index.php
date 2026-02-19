@@ -352,7 +352,9 @@ include $template_dir . '/header.php';
             <!-- Timeline -->
             <div class="timeline-container">
                 <h2><?php echo t('timeline'); ?></h2>
-                <div id="timeline" class="timeline"></div>
+                <div id="timeline" class="timeline">
+                    <?php include __DIR__ . '/templates/timeline_php.php'; ?>
+                </div>
             </div>
         <?php endif; ?>
     <?php endif; ?>
@@ -678,54 +680,6 @@ function parseTime(timeStr) {
     const parts = timeStr.split(':');
     return parseInt(parts[0]) * 60 + parseInt(parts[1]);
 }
-
-// Timeline configuration data
-const TIMELINE_CONFIG = {
-    startTime: '<?php echo $selected_day['start_time']; ?>',
-    endTime: '<?php echo $selected_day['end_time']; ?>',
-    extension: <?php echo $config['timeline_extension']; ?>,
-    tableLabel: '<?php echo t('table'); ?>',
-    playersLabel: '<?php echo t('players'); ?>',
-    tables: [
-        <?php foreach ($tables_with_games as $index => $table_data): ?>
-        {
-            table_number: <?php echo $table_data['table']['table_number']; ?>,
-            games: [
-                <?php foreach ($table_data['games'] as $game): ?>
-                <?php
-                // Calculate end time for this game
-                $start_timestamp = strtotime($game['start_time']);
-                $end_timestamp = $start_timestamp + ($game['play_time'] * 60);
-                $end_time_formatted = date('H:i', $end_timestamp);
-                
-                // Count active players (non-reserve)
-                $active_players = count(array_filter($game['players'], function($p) { return $p['is_reserve'] == 0; }));
-                ?>
-                {
-                    id: <?php echo $game['id']; ?>,
-                    name: <?php echo json_encode($game['name']); ?>,
-                    start_time: '<?php echo $game['start_time']; ?>',
-                    end_time: '<?php echo $end_time_formatted; ?>',
-                    play_time: <?php echo $game['play_time']; ?>,
-                    active_players: <?php echo $active_players; ?>,
-                    max_players: <?php echo $game['max_players']; ?>
-                }<?php echo ($game === end($table_data['games'])) ? '' : ','; ?>
-                <?php endforeach; ?>
-            ]
-        }<?php echo ($index === count($tables_with_games) - 1) ? '' : ','; ?>
-        <?php endforeach; ?>
-    ]
-};
-</script>
-
-<!-- Include timeline template -->
-<script src="<?php echo $template_dir; ?>/timeline.js?v=<?php echo defined('CACHE_VERSION') ? CACHE_VERSION : '1.0.0'; ?>"></script>
-
-<script>
-// Initialize timeline on page load
-$(document).ready(function() {
-    initTimeline();
-});
 </script>
 
 <?php
