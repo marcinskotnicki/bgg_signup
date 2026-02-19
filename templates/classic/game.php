@@ -78,13 +78,29 @@ $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     👥 <?php echo $game['min_players']; ?>-<?php echo $game['max_players']; ?>
                 </span>
                 <span class="meta-item">
-                    🗣 <?php echo htmlspecialchars($game['language']); ?>
+                    🗣 <?php 
+                    // Translate language if it's a known value
+                    $language_display = $game['language'];
+                    if ($game['language'] === 'Language Independent') {
+                        $language_display = t('language_independent');
+                    }
+                    echo htmlspecialchars($language_display); 
+                    ?>
                 </span>
                 <span class="meta-item" title="<?php echo t('difficulty'); ?>: <?php echo number_format($game['difficulty'], 1); ?>">
                     ⚙️ <?php echo number_format($game['difficulty'], 1); ?>/5
                 </span>
                 <span class="meta-item">
-                    📋 <?php echo htmlspecialchars($game['rules_explanation']); ?>
+                    📋 <?php 
+                    // Translate rules explanation
+                    $rules_display = $game['rules_explanation'];
+                    if ($game['rules_explanation'] === 'Rules will be explained') {
+                        $rules_display = t('rules_will_be_explained');
+                    } elseif ($game['rules_explanation'] === 'All players should know the rules') {
+                        $rules_display = t('rules_knowledge_required');
+                    }
+                    echo htmlspecialchars($rules_display); 
+                    ?>
                 </span>
             </div>
             
@@ -104,6 +120,18 @@ $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php if ($can_modify): ?>
                         <button class="btn-sm btn-edit" onclick="editGame(<?php echo $game['id']; ?>)">✏️ <?php echo t('edit'); ?></button>
                         <button class="btn-sm btn-delete" onclick="deleteGame(<?php echo $game['id']; ?>)">🗑️ <?php echo t('delete'); ?></button>
+                    <?php endif; ?>
+                </div>
+            <?php else: ?>
+                <!-- Inactive game actions -->
+                <div class="game-actions">
+                    <button class="btn-sm btn-restore" onclick="restoreGame(<?php echo $game['id']; ?>)">
+                        ↩️ <?php echo t('restore'); ?>
+                    </button>
+                    <?php if ($config['allow_full_deletion'] === 'yes' || $config['allow_full_deletion'] === true): ?>
+                        <button class="btn-sm btn-delete-permanent" onclick="fullyDeleteGame(<?php echo $game['id']; ?>)">
+                            🗑️ <?php echo t('fully_delete'); ?>
+                        </button>
                     <?php endif; ?>
                 </div>
             <?php endif; ?>

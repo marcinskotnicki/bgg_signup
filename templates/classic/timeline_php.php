@@ -92,8 +92,14 @@ $end_hour = ceil($end_with_extension / 60);
                 
                 <!-- Games track -->
                 <div class="timeline-track">
-                    <?php foreach ($table_data['games'] as $game): ?>
-                        <?php
+                    <?php 
+                    // Track game positions to detect overlaps
+                    $game_positions = [];
+                    
+                    foreach ($table_data['games'] as $game): 
+                        // Skip soft-deleted games in timeline
+                        if ($game['is_active'] == 0) continue;
+                        
                         // Calculate game positioning
                         $game_start = time_to_minutes($game['start_time']);
                         $game_end = $game_start + $game['play_time'];
@@ -112,10 +118,30 @@ $end_hour = ceil($end_with_extension / 60);
                             // Determine if game is full
                             $is_full = $active_players >= $game['max_players'];
                             $fill_class = $is_full ? 'timeline-game-full' : 'timeline-game-open';
+                            
+                            // Check for overlaps with previous games
+                            $vertical_offset = 0;
+                            foreach ($game_positions as $pos) {
+                                // Check if this game overlaps with existing game
+                                if ($game_start_pos < $pos['end'] && $game_end_pos > $pos['start']) {
+                                    // Overlaps! Move down
+                                    $vertical_offset = max($vertical_offset, $pos['offset'] + 1);
+                                }
+                            }
+                            
+                            // Store this game's position for future overlap checks
+                            $game_positions[] = [
+                                'start' => $game_start_pos,
+                                'end' => $game_end_pos,
+                                'offset' => $vertical_offset
+                            ];
+                            
+                            // Calculate top position (60px per row)
+                            $top_position = $vertical_offset * 60;
                         ?>
                             <div class="timeline-game <?php echo $fill_class; ?>" 
                                  data-game-id="<?php echo $game['id']; ?>"
-                                 style="left: <?php echo max(0, $game_start_pos); ?>%; width: <?php echo min(100 - max(0, $game_start_pos), $game_width); ?>%;"
+                                 style="left: <?php echo max(0, $game_start_pos); ?>%; width: <?php echo min(100 - max(0, $game_start_pos), $game_width); ?>%; top: <?php echo $top_position; ?>px;"
                                  title="<?php echo htmlspecialchars($game['name']); ?> (<?php echo $active_players; ?>/<?php echo $game['max_players']; ?>)">
                                 <div class="timeline-game-content">
                                     <div class="timeline-game-name"><?php echo htmlspecialchars($game['name']); ?></div>

@@ -76,6 +76,18 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
             });
         }
         
+        function fullyDeleteGame(gameId) {
+            if (confirm('<?php echo t('confirm_fully_delete'); ?>')) {
+                $.post('ajax/fully_delete_game.php', { game_id: gameId }, function(response) {
+                    if (response.success) {
+                        location.reload();
+                    } else {
+                        alert(response.message || '<?php echo t('error_occurred'); ?>');
+                    }
+                }, 'json');
+            }
+        }
+        
         function resignFromGame(gameId, playerId) {
             if (confirm('<?php echo t('confirm_resign'); ?>')) {
                 $.post('ajax/resign_player.php', { game_id: gameId, player_id: playerId }, function(response) {
@@ -92,6 +104,11 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
             $.get('ajax/load_comments.php', { game_id: gameId }, function(html) {
                 openModal(html);
             });
+        }
+        
+        // Alias for loadComments (used in classic template)
+        function addComment(gameId) {
+            loadComments(gameId);
         }
         
         function addTable(eventDayId) {
