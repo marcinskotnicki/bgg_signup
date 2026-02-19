@@ -671,7 +671,6 @@ a:hover {
     margin-bottom: 15px;
 }
 
-/* (Timeline styles continue as in default template) */
 
 /* ===== FOOTER ===== */
 .site-footer {
@@ -773,3 +772,214 @@ a:hover {
         font-size: 11px;
     }
 }
+.timeline-container {
+    background: white;
+    border-radius: 8px;
+    padding: 30px;
+    margin-bottom: 40px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.timeline-container h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.timeline {
+    min-height: 200px;
+}
+
+.timeline-container-inner {
+    position: relative;
+}
+
+.timeline-hours {
+    display: flex;
+    margin-bottom: 10px;
+}
+
+.timeline-table-label-spacer {
+    width: 100px;
+    flex-shrink: 0;
+}
+
+.timeline-hours-bar {
+    flex: 1;
+    position: relative;
+    height: 30px;
+    background: #ecf0f1;
+    border-radius: 4px;
+}
+
+.timeline-hour-marker {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    padding-left: 5px;
+    font-size: 12px;
+    font-weight: bold;
+    color: #2c3e50;
+    border-left: 2px solid #95a5a6;
+}
+
+.timeline-hour-marker.timeline-final-marker {
+    /* Final vertical line at the end - minimal visible content */
+    font-size: 0;
+    color: transparent;
+    padding: 0;
+}
+
+.timeline-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    position: relative;
+}
+
+.timeline-hour-stripes {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 100px;
+    right: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.timeline-hour-stripe-even,
+.timeline-hour-stripe-odd {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    border-left: 1px solid #d0d0d0;
+}
+
+.timeline-hour-stripe-even {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.timeline-hour-stripe-odd {
+    background: rgba(230, 230, 230, 0.5);
+}
+
+.timeline-row {
+    display: flex;
+    align-items: stretch;
+    min-height: 70px;
+    position: relative;
+    z-index: 1;
+}
+
+.timeline-table-label {
+    width: 100px;
+    padding: 10px;
+    background: #34495e;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 4px 0 0 4px;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.timeline-games {
+    flex: 1;
+    position: relative;
+    background: transparent;
+    border: 1px solid #ecf0f1;
+    border-radius: 0 4px 4px 0;
+}
+
+.timeline-game {
+    position: absolute;
+    top: 5px;
+    bottom: 5px;
+    background: #3498db;
+    color: white;
+    border-radius: 4px;
+    padding: 8px 10px;
+    cursor: pointer;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    transition: all 0.3s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-size: 12px;
+    line-height: 1.3;
+}
+
+.timeline-game:hover {
+    background: #2980b9;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    z-index: 10;
+}
+
+.timeline-game-name {
+    font-size: 13px;
+    font-weight: bold;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.timeline-game-players {
+    font-size: 11px;
+    opacity: 0.9;
+    white-space: nowrap;
+}
+
+.timeline-game-time {
+    font-size: 10px;
+    opacity: 0.85;
+    white-space: nowrap;
+}
+/* Comments Section */
+.game-comments-section {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 2px solid #ecf0f1;
+}
+
+.comments-header {
+    font-size: 13px;
+    color: #95a5a6;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.comment-count {
+    font-size: 12px;
+    color: #95a5a6;
+    font-weight: normal;
+}
+
+.comments-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.comment-item {
+    background: #f8f9fa;
+    padding: 8px;
+    border-radius: 4px;
+    border-left: 2px solid #bdc3c7;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;

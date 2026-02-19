@@ -112,7 +112,7 @@ if ($current_user) {
                     <?php endif; ?>
                     
                     <div class="poll-progress-bar">
-                        <div class="poll-progress-fill" style="width: <?php echo $percentage; %>%"></div>
+                        <div class="poll-progress-fill" style="width: <?php echo $percentage . '%'; ?>"></div>
                     </div>
                     
                     <?php if (!$is_closed): ?>
