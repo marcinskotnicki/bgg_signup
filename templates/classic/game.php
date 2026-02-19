@@ -79,11 +79,16 @@ $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </span>
                 <span class="meta-item">
                     🗣 <?php 
-                    // Database stores short codes, map to translation keys
-                    if ($game['language'] === 'independent') {
+                    // Handle both old and new database values
+                    $lang = $game['language'];
+                    if ($lang === 'independent' || $lang === 'language_independent') {
                         echo t('language_independent');
+                    } elseif ($lang === 'en') {
+                        echo 'English';
+                    } elseif ($lang === 'pl') {
+                        echo 'Polski';
                     } else {
-                        echo htmlspecialchars($game['language']);
+                        echo htmlspecialchars($lang);
                     }
                     ?>
                 </span>
@@ -92,13 +97,14 @@ $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </span>
                 <span class="meta-item">
                     📋 <?php 
-                    // Database stores short codes, map to translation keys
-                    if ($game['rules_explanation'] === 'explained') {
+                    // Handle both old and new database values
+                    $rules = $game['rules_explanation'];
+                    if ($rules === 'explained' || $rules === 'will_explain') {
                         echo t('rules_will_be_explained');
-                    } elseif ($game['rules_explanation'] === 'required') {
+                    } elseif ($rules === 'required' || $rules === 'knowledge_required') {
                         echo t('rules_knowledge_required');
                     } else {
-                        echo htmlspecialchars($game['rules_explanation']);
+                        echo htmlspecialchars($rules);
                     }
                     ?>
                 </span>

@@ -103,8 +103,13 @@ $is_inactive = $game['is_active'] == 0;
         <!-- Language -->
         <div class="game_language">
             <?php 
-            if ($game['language'] === 'independent') {
+            // Handle both old and new values
+            if ($game['language'] === 'independent' || $game['language'] === 'language_independent') {
                 echo t('language_independent');
+            } elseif ($game['language'] === 'en') {
+                echo 'English';
+            } elseif ($game['language'] === 'pl') {
+                echo 'Polski';
             } else {
                 echo htmlspecialchars($game['language']);
             }
@@ -114,11 +119,15 @@ $is_inactive = $game['is_active'] == 0;
         <!-- Rules Explanation -->
         <div class="game_rules">
             <?php 
-            if ($game['rules_explanation'] === 'explained') {
+            // Handle both old and new values
+            if ($game['rules_explanation'] === 'explained' || $game['rules_explanation'] === 'will_explain') {
                 echo t('rules_will_be_explained');
-            } else {
+            } elseif ($game['rules_explanation'] === 'required' || $game['rules_explanation'] === 'knowledge_required') {
                 echo t('rules_knowledge_required');
+            } else {
+                echo htmlspecialchars($game['rules_explanation']);
             }
+            ?>
             ?>
         </div>
         

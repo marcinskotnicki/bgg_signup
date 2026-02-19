@@ -68,11 +68,13 @@ if (!$can_edit) {
 // Get custom thumbnails (function is in includes/bgg_api.php)
 $custom_thumbnails = get_custom_thumbnails();
 
-// Get available languages
+// Get available languages (matching add form)
 $available_languages = [
-    'en' => 'English',
-    'pl' => 'Polski',
-    'language_independent' => t('language_independent')
+    'independent' => t('language_independent'),
+    'English' => 'English',
+    'Polish' => 'Polski',
+    'German' => 'Deutsch',
+    'French' => 'Français'
 ];
 ?>
 
@@ -134,10 +136,10 @@ $available_languages = [
         <div class="form-group">
             <label><?php echo t('rules_explanation'); ?>:</label>
             <select name="rules_explanation" required>
-                <option value="will_explain" <?php echo $game['rules_explanation'] === 'will_explain' ? 'selected' : ''; ?>>
+                <option value="explained" <?php echo $game['rules_explanation'] === 'explained' || $game['rules_explanation'] === 'will_explain' ? 'selected' : ''; ?>>
                     <?php echo t('rules_will_be_explained'); ?>
                 </option>
-                <option value="knowledge_required" <?php echo $game['rules_explanation'] === 'knowledge_required' ? 'selected' : ''; ?>>
+                <option value="required" <?php echo $game['rules_explanation'] === 'required' || $game['rules_explanation'] === 'knowledge_required' ? 'selected' : ''; ?>>
                     <?php echo t('rules_knowledge_required'); ?>
                 </option>
             </select>
