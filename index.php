@@ -353,7 +353,7 @@ include $template_dir . '/header.php';
             <div class="timeline-container">
                 <h2><?php echo t('timeline'); ?></h2>
                 <div id="timeline" class="timeline">
-                    <?php include __DIR__ . '/templates/timeline_php.php'; ?>
+                    <?php include $template_dir . '/timeline_php.php'; ?>
                 </div>
             </div>
         <?php endif; ?>
