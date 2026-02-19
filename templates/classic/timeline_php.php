@@ -91,7 +91,7 @@ $end_hour = ceil($end_with_extension / 60);
                 </div>
                 
                 <!-- Games track -->
-                <div class="timeline-track">
+                <div class="timeline-games">
                     <?php 
                     // Track game positions to detect overlaps
                     $game_positions = [];

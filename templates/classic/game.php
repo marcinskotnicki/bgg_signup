@@ -81,7 +81,8 @@ $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     🗣 <?php 
                     // Translate language if it's a known value
                     $language_display = $game['language'];
-                    if ($game['language'] === 'Language Independent') {
+                    $language_lower = strtolower(trim($game['language']));
+                    if ($language_lower === 'language independent' || $language_lower === 'language-independent') {
                         $language_display = t('language_independent');
                     }
                     echo htmlspecialchars($language_display); 
@@ -94,9 +95,10 @@ $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     📋 <?php 
                     // Translate rules explanation
                     $rules_display = $game['rules_explanation'];
-                    if ($game['rules_explanation'] === 'Rules will be explained') {
+                    $rules_lower = strtolower(trim($game['rules_explanation']));
+                    if (strpos($rules_lower, 'will be explained') !== false || strpos($rules_lower, 'explained') !== false && strpos($rules_lower, 'will') !== false) {
                         $rules_display = t('rules_will_be_explained');
-                    } elseif ($game['rules_explanation'] === 'All players should know the rules') {
+                    } elseif (strpos($rules_lower, 'should know') !== false || strpos($rules_lower, 'knowledge required') !== false) {
                         $rules_display = t('rules_knowledge_required');
                     }
                     echo htmlspecialchars($rules_display); 
