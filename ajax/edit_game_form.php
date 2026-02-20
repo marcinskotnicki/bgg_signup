@@ -149,7 +149,7 @@ $available_languages = [
         <?php if (empty($game['bgg_id'])): ?>
         <div class="form-group">
             <label><?php echo t('select_thumbnail'); ?>:</label>
-            <div class="thumbnail-selector">
+            <div class="thumbnail-grid">
                 <?php if ($game['thumbnail']): ?>
                     <div class="thumbnail-option selected" data-thumbnail="<?php echo htmlspecialchars($game['thumbnail']); ?>">
                         <img src="<?php echo htmlspecialchars($game['thumbnail']); ?>" alt="Current thumbnail">
@@ -160,11 +160,14 @@ $available_languages = [
                 <?php foreach ($custom_thumbnails as $thumb): ?>
                     <?php 
                     $thumb_url = 'thumbnails/' . $thumb;
-                    $is_selected = ($game['thumbnail'] === $thumb_url);
+                    // Skip if this is the current thumbnail (already shown above)
+                    if ($game['thumbnail'] === $thumb_url) {
+                        continue;
+                    }
                     ?>
-                    <div class="thumbnail-option <?php echo $is_selected ? 'selected' : ''; ?>" data-thumbnail="<?php echo $thumb_url; ?>">
+                    <div class="thumbnail-option" data-thumbnail="<?php echo $thumb_url; ?>">
                         <img src="../<?php echo $thumb_url; ?>" alt="<?php echo $thumb; ?>">
-                        <input type="radio" name="thumbnail" value="<?php echo $thumb_url; ?>" <?php echo $is_selected ? 'checked' : ''; ?>>
+                        <input type="radio" name="thumbnail" value="<?php echo $thumb_url; ?>">
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -201,68 +204,6 @@ $available_languages = [
     </form>
 </div>
 
-<style>
-/* Thumbnail Grid Layout */
-.thumbnail-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-/* Thumbnail Option - Base Styles */
-.thumbnail-option {
-    border: 3px solid #ddd !important;
-    border-radius: 4px;
-    padding: 5px;
-    cursor: pointer !important;
-    transition: all 0.2s ease;
-    background: white !important;
-    position: relative;
-}
-
-/* Thumbnail Option - Hover State */
-.thumbnail-option:hover {
-    border-color: #3498db !important;
-    transform: scale(1.05);
-    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
-}
-
-/* Thumbnail Option - Selected State */
-.thumbnail-option.selected {
-    border-color: #2ecc71 !important;
-    background: #e8f8f5 !important;
-    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
-}
-
-/* Selected Indicator */
-.thumbnail-option.selected::after {
-    content: '✓';
-    position: absolute;
-    top: -8px;
-    right: -8px;
-    background: #2ecc71;
-    color: white;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 14px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* Thumbnail Image */
-.thumbnail-option img {
-    display: block;
-    height: 100px;
-    width: auto;
-    object-fit: contain;
-    pointer-events: none; /* Ensure clicks go to parent div */
-}
-</style>
 
 <script>
 // Thumbnail selection
