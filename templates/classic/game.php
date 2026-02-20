@@ -37,10 +37,9 @@ $difficulty_info = format_difficulty($game['difficulty']);
 // Determine if game is inactive
 $is_inactive = $game['is_active'] == 0;
 
-// Get comments
-$stmt = $db->prepare("SELECT * FROM comments WHERE game_id = ? ORDER BY created_at ASC");
-$stmt->execute([$game['id']]);
-$comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// Use pre-loaded comments (loaded in index.php)
+// This eliminates duplicate database query
+$comments = $game['comments'];
 ?>
 
 <div class="game-card <?php echo $is_inactive ? 'game-inactive' : ''; ?>" data-game-id="<?php echo $game['id']; ?>">
