@@ -554,10 +554,7 @@ $(document).ready(function() {
         }
     });
     
-    // Initialize timeline
-    <?php if ($selected_day && !empty($tables_with_games)): ?>
-        initTimeline();
-    <?php endif; ?>
+    // Timeline is server-side rendered (no JS initialization needed)
 });
 
 // Load Add Game Form
