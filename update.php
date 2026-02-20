@@ -17,6 +17,13 @@ if (!defined('ADMIN_PANEL')) {
     die('Direct access not allowed. Use admin panel to run updates.');
 }
 
+// Load helper functions
+require_once __DIR__ . '/includes/http_helper.php';
+require_once __DIR__ . '/includes/log_helper.php';
+require_once __DIR__ . '/includes/file_helper.php';
+require_once __DIR__ . '/includes/schema_helper.php';
+
+
 /**
  * Delete all previous backups
  */
@@ -107,35 +114,6 @@ function create_backup() {
     return true;
 }
 
-/**
- * Get current database schema
- */
-function get_current_schema() {
-    try {
-        $db = new PDO('sqlite:' . DB_FILE);
-        $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
-        $tables = [];
-        $result = $db->query("SELECT name FROM sqlite_master WHERE type='table' ORDER BY name");
-        
-        foreach ($result as $row) {
-            $table_name = $row['name'];
-            $tables[$table_name] = [];
-            
-            // Get columns for this table
-            $pragma = $db->query("PRAGMA table_info($table_name)");
-            foreach ($pragma as $column) {
-                $tables[$table_name][$column['name']] = $column['type'];
-            }
-        }
-        
-        return $tables;
-        
-    } catch (PDOException $e) {
-        log_update_message("ERROR: Could not read database schema: " . $e->getMessage());
-        return false;
-    }
-}
 
 /**
  * Update database schema
@@ -336,146 +314,9 @@ function update_database_schema() {
     }
 }
 
-/**
- * Fetch URL content - tries cURL first, then file_get_contents
- */
-function fetch_url($url) {
-    // Try cURL first
-    if (function_exists('curl_init')) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'BGG-Signup-Updater');
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60); // Increased timeout for ZIP download
-        
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        curl_close($ch);
-        
-        if ($response !== false && $http_code === 200) {
-            return $response;
-        }
-        
-        log_update_message("cURL failed: HTTP $http_code - $error");
-    }
-    
-    // Fall back to file_get_contents
-    if (ini_get('allow_url_fopen')) {
-        $context = stream_context_create([
-            'http' => [
-                'method' => 'GET',
-                'header' => 'User-Agent: BGG-Signup-Updater',
-                'timeout' => 60
-            ],
-            'ssl' => [
-                'verify_peer' => true,
-                'verify_peer_name' => true
-            ]
-        ]);
-        
-        $response = @file_get_contents($url, false, $context);
-        
-        if ($response !== false) {
-            return $response;
-        }
-        
-        $error = error_get_last();
-        log_update_message("file_get_contents failed: " . ($error['message'] ?? 'Unknown error'));
-    } else {
-        log_update_message("allow_url_fopen is disabled in php.ini");
-    }
-    
-    return false;
-}
 
-/**
- * Copy directory contents recursively, skipping certain files
- */
-function copy_directory_contents($source, $dest) {
-    $files_copied = 0;
-    $files_skipped = 0;
-    
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
-        RecursiveIteratorIterator::SELF_FIRST
-    );
-    
-    foreach ($iterator as $item) {
-        // Get relative path
-        $relative_path = substr($item->getPathname(), strlen($source) + 1);
-        
-        // Skip install.php, update.php, config.php, and database files
-        $basename = basename($relative_path);
-        if (in_array($basename, ['install.php', 'update.php', 'config.php']) || 
-            strpos($relative_path, '.db') !== false ||
-            strpos($relative_path, '.git') !== false) {
-            $files_skipped++;
-            continue;
-        }
-        
-        $dest_path = $dest . '/' . $relative_path;
-        
-        if ($item->isDir()) {
-            // Create directory
-            if (!is_dir($dest_path)) {
-                mkdir($dest_path, 0755, true);
-            }
-        } else {
-            // Check if file needs updating
-            $needs_update = true;
-            if (file_exists($dest_path)) {
-                $current_content = file_get_contents($dest_path);
-                $new_content = file_get_contents($item->getPathname());
-                if ($current_content === $new_content) {
-                    $needs_update = false;
-                    $files_skipped++;
-                }
-            }
-            
-            if ($needs_update) {
-                // Copy file
-                $dest_dir = dirname($dest_path);
-                if (!is_dir($dest_dir)) {
-                    mkdir($dest_dir, 0755, true);
-                }
-                
-                if (copy($item->getPathname(), $dest_path)) {
-                    log_update_message("Updated: $relative_path");
-                    $files_copied++;
-                } else {
-                    log_update_message("WARNING: Could not copy: $relative_path");
-                }
-            }
-        }
-    }
-    
-    log_update_message("Files: $files_copied updated, $files_skipped skipped/unchanged");
-    return $files_copied;
-}
 
-/**
- * Delete directory recursively
- */
-function delete_directory($dir) {
-    if (!is_dir($dir)) {
-        return;
-    }
-    
-    $files = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
-        RecursiveIteratorIterator::CHILD_FIRST
-    );
-    
-    foreach ($files as $fileinfo) {
-        $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
-        @$todo($fileinfo->getRealPath());
-    }
-    
-    @rmdir($dir);
-}
+
 
 /**
  * Download and extract files from GitHub repository ZIP

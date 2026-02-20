@@ -16,6 +16,11 @@ define('GITHUB_REPO', 'https://github.com/marcinskotnicki/bgg_signup');
 define('DB_FILE', 'boardgame_events.db');
 define('INSTALL_LOG', 'install_log.txt');
 
+require_once __DIR__ . '/includes/http_helper.php';
+require_once __DIR__ . '/includes/log_helper.php';
+require_once __DIR__ . '/includes/file_helper.php';
+
+
 // Start output buffering for better error handling
 ob_start();
 
@@ -277,73 +282,8 @@ function download_from_github() {
     return true;
 }
 
-/**
- * Copy directory contents recursively, skipping install.php and .db files
- */
-function copy_directory_contents($source, $dest) {
-    $files_copied = 0;
-    
-    $iterator = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($source, RecursiveDirectoryIterator::SKIP_DOTS),
-        RecursiveIteratorIterator::SELF_FIRST
-    );
-    
-    foreach ($iterator as $item) {
-        // Get relative path
-        $relative_path = substr($item->getPathname(), strlen($source) + 1);
-        
-        // Skip install.php and database files
-        if (basename($relative_path) === 'install.php' || 
-            strpos($relative_path, '.db') !== false ||
-            strpos($relative_path, '.git') !== false) {
-            continue;
-        }
-        
-        $dest_path = $dest . '/' . $relative_path;
-        
-        if ($item->isDir()) {
-            // Create directory
-            if (!is_dir($dest_path)) {
-                mkdir($dest_path, 0755, true);
-            }
-        } else {
-            // Copy file
-            $dest_dir = dirname($dest_path);
-            if (!is_dir($dest_dir)) {
-                mkdir($dest_dir, 0755, true);
-            }
-            
-            if (copy($item->getPathname(), $dest_path)) {
-                $files_copied++;
-            } else {
-                log_message("WARNING: Could not copy: $relative_path");
-            }
-        }
-    }
-    
-    return $files_copied;
-}
 
-/**
- * Delete directory recursively
- */
-function delete_directory($dir) {
-    if (!is_dir($dir)) {
-        return;
-    }
-    
-    $files = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS),
-        RecursiveIteratorIterator::CHILD_FIRST
-    );
-    
-    foreach ($files as $fileinfo) {
-        $todo = ($fileinfo->isDir() ? 'rmdir' : 'unlink');
-        @$todo($fileinfo->getRealPath());
-    }
-    
-    @rmdir($dir);
-}
+
 
 /**
  * Update config.php with installation settings
@@ -376,60 +316,7 @@ function update_config_file($default_language, $bgg_api_token) {
     return true;
 }
 
-/**
- * Fetch URL content - tries cURL first, then file_get_contents
- */
-function fetch_url($url) {
-    // Try cURL first
-    if (function_exists('curl_init')) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'BGG-Signup-Installer');
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 60); // Increased timeout for ZIP download
-        
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $error = curl_error($ch);
-        curl_close($ch);
-        
-        if ($response !== false && $http_code === 200) {
-            return $response;
-        }
-        
-        log_message("cURL failed: HTTP $http_code - $error");
-    }
-    
-    // Fall back to file_get_contents
-    if (ini_get('allow_url_fopen')) {
-        $context = stream_context_create([
-            'http' => [
-                'method' => 'GET',
-                'header' => 'User-Agent: BGG-Signup-Installer',
-                'timeout' => 60
-            ],
-            'ssl' => [
-                'verify_peer' => true,
-                'verify_peer_name' => true
-            ]
-        ]);
-        
-        $response = @file_get_contents($url, false, $context);
-        
-        if ($response !== false) {
-            return $response;
-        }
-        
-        $error = error_get_last();
-        log_message("file_get_contents failed: " . ($error['message'] ?? 'Unknown error'));
-    } else {
-        log_message("allow_url_fopen is disabled in php.ini");
-    }
-    
-    return false;
-}
+
 
 /**
  * Show installation form

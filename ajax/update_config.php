@@ -12,6 +12,10 @@ $config = require_once '../config.php';
 // Load auth helper
 require_once '../includes/auth.php';
 
+// Load helper functions
+require_once '../includes/http_helper.php';
+require_once '../includes/log_helper.php';
+
 // Database connection
 try {
     $db = new PDO('sqlite:../' . DB_FILE);
@@ -42,62 +46,6 @@ define('UPDATE_LOG_DIR', '../logs');
 
 $log = [];
 
-/**
- * Add log entry
- */
-function add_log($message, $level = 'INFO') {
-    global $log;
-    $log[] = [
-        'level' => $level,
-        'message' => $message,
-        'timestamp' => date('Y-m-d H:i:s')
-    ];
-    
-    // Also log to file
-    if (!is_dir(UPDATE_LOG_DIR)) {
-        mkdir(UPDATE_LOG_DIR, 0755, true);
-    }
-    $log_file = UPDATE_LOG_DIR . '/config_update.log';
-    $log_entry = "[" . date('Y-m-d H:i:s') . "] [$level] $message\n";
-    file_put_contents($log_file, $log_entry, FILE_APPEND);
-}
-
-/**
- * Fetch URL with error handling
- */
-function fetch_url($url) {
-    if (function_exists('curl_init')) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'BGG-Signup-Config-Update');
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        
-        $response = curl_exec($ch);
-        $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        curl_close($ch);
-        
-        if ($response !== false && $http_code === 200) {
-            return $response;
-        }
-    }
-    
-    if (ini_get('allow_url_fopen')) {
-        $context = stream_context_create([
-            'http' => [
-                'method' => 'GET',
-                'header' => 'User-Agent: BGG-Signup-Config-Update',
-                'timeout' => 30
-            ]
-        ]);
-        
-        return @file_get_contents($url, false, $context);
-    }
-    
-    return false;
-}
 
 /**
  * Parse config file to extract define() constants

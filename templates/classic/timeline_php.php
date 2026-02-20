@@ -8,6 +8,9 @@
  * - $config: Configuration array
  */
 
+// Load timeline helper
+require_once __DIR__ . '/../../includes/timeline_helper.php';
+
 if (empty($selected_day) || empty($tables_with_games)) {
     echo '<p>' . t('no_games_yet') . '</p>';
     return;
@@ -18,11 +21,6 @@ $start_time = $selected_day['start_time'];
 $end_time = $selected_day['end_time'];
 $extension = $config['timeline_extension'];
 
-// Parse times to minutes
-function time_to_minutes($time) {
-    list($h, $m) = explode(':', $time);
-    return (int)$h * 60 + (int)$m;
-}
 
 $start_minutes = time_to_minutes($start_time);
 $end_minutes = time_to_minutes($end_time);
