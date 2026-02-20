@@ -122,6 +122,12 @@ function loadVoteForm(optionId, pollId) {
     });
 }
 
+function editPoll(pollId) {
+    $.get('ajax/edit_poll_form.php', { poll_id: pollId }, function(html) {
+        openModal(html);
+    });
+}
+
 function deletePoll(pollId) {
     if (confirm('Are you sure you want to delete this poll?')) {
         $.post('ajax/delete_poll.php', { poll_id: pollId }, function(response) {

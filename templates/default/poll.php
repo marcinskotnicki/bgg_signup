@@ -130,8 +130,9 @@ if ($current_user) {
     </div>
 </div>
 
-
 <script>
+// Event handlers for poll buttons
+// Note: Functions (loadVoteForm, editPoll, deletePoll) are all in common.js
 $(document).on('click', '.btn-vote', function() {
     const optionId = $(this).data('option-id');
     const pollId = $(this).data('poll-id');
@@ -140,21 +141,11 @@ $(document).on('click', '.btn-vote', function() {
 
 $(document).on('click', '.btn-edit-poll', function() {
     const pollId = $(this).data('poll-id');
-    loadEditPollForm(pollId);
+    editPoll(pollId);  // Uses common.js function
 });
 
 $(document).on('click', '.btn-delete-poll', function() {
     const pollId = $(this).data('poll-id');
-    deletePoll(pollId);
+    deletePoll(pollId);  // Uses common.js function
 });
-
-
-
-function loadEditPollForm(pollId) {
-    $.get('../ajax/edit_poll_form.php', { poll_id: pollId }, function(html) {
-        openModal(html);
-    });
-}
-
-
 </script>
