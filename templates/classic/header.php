@@ -23,7 +23,7 @@ $page_title = isset($page_title) ? $page_title : '';
     <link rel="stylesheet" href="<?php echo TEMPLATES_DIR . '/' . (isset($active_template) ? $active_template : $config['active_template']); ?>/css/style.css?v=<?php echo defined('CACHE_VERSION') ? CACHE_VERSION : '1.0.0'; ?>">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<!-- Shared JavaScript functions -->
-	<script src="templates/shared/js/common.js"></script>
+	<script src="js/common.js"></script>
 </head>
 <body>
     <header class="site-header">

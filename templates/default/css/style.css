@@ -1090,7 +1090,14 @@ a:hover {
 }
 
 .timeline-container-inner {
-    min-width: 800px; /* Minimum width for timeline */
+    /* No min-width on desktop - timeline fits naturally */
+}
+
+/* Only force min-width on mobile/tablet screens */
+@media (max-width: 1200px) {
+    .timeline-container-inner {
+        min-width: 800px; /* Forces horizontal scroll on smaller screens */
+    }
 }
 
 /* Soft-deleted game styling */
