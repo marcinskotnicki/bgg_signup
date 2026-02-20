@@ -38,20 +38,34 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
         $(document).ready(function() {
             $('.modal-close').click(closeModal);
             
-            // Track where mouse down started to prevent closing during text selection
+            // Track mouse events to prevent closing during text selection or dragging
             let mouseDownTarget = null;
+            let mouseDownX = 0;
+            let mouseDownY = 0;
             
             $('#modal-overlay').on('mousedown', function(e) {
                 mouseDownTarget = e.target;
+                mouseDownX = e.clientX;
+                mouseDownY = e.clientY;
             });
             
-            $('#modal-overlay').on('click', function(e) {
+            $('#modal-overlay').on('mouseup', function(e) {
+                // Calculate if mouse moved (indicating drag/selection)
+                const moveThreshold = 5; // pixels
+                const movedX = Math.abs(e.clientX - mouseDownX);
+                const movedY = Math.abs(e.clientY - mouseDownY);
+                const hasMoved = movedX > moveThreshold || movedY > moveThreshold;
+                
                 // Only close if:
-                // 1. Click target is the overlay itself (not modal content)
-                // 2. Mouse down also started on the overlay (not during text selection)
-                if (e.target.id === 'modal-overlay' && mouseDownTarget === e.target) {
+                // 1. Mouseup target is the overlay itself (not modal content)
+                // 2. Mousedown also started on the overlay
+                // 3. Mouse hasn't moved significantly (not a drag/selection)
+                if (e.target.id === 'modal-overlay' && 
+                    mouseDownTarget && mouseDownTarget.id === 'modal-overlay' &&
+                    !hasMoved) {
                     closeModal();
                 }
+                
                 // Reset tracking
                 mouseDownTarget = null;
             });

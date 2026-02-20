@@ -465,7 +465,7 @@ $(document).ready(function() {
     $(document).on('click', '.edit-game-btn', function(e) {
         e.preventDefault();
         const gameId = $(this).data('game-id');
-        loadEditGameForm(gameId);
+        editGame(gameId); // Function defined in common.js
     });
     
     // Delete Game Button
@@ -554,7 +554,10 @@ $(document).ready(function() {
         }
     });
     
-    // Timeline is server-side rendered (no JS initialization needed)
+    // Initialize timeline
+    <?php if ($selected_day && !empty($tables_with_games)): ?>
+        initTimeline();
+    <?php endif; ?>
 });
 
 // Load Add Game Form
