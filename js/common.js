@@ -118,6 +118,12 @@ function createPoll(tableId) {
     });
 }
 
+function editPoll(pollId) {
+    $.get('ajax/edit_poll_form.php', { poll_id: pollId }, function(html) {
+        openModal(html);
+    });
+}
+
 function loadVoteForm(optionId, pollId) {
     $.get('ajax/vote_form.php', { 
         option_id: optionId, 
