@@ -171,6 +171,15 @@ return [
     'delete' => 'Delete',
     'restore' => 'Restore',
     'fully_delete' => 'Fully Delete',
+    'delete_game' => 'Delete Game',
+    'choose_deletion_type' => 'How would you like to delete this game?',
+    'soft_delete' => 'Soft Delete (Hide)',
+    'soft_delete_description' => 'Game will be hidden but can be restored later. Players will see it as cancelled.',
+    'hard_delete' => 'Hard Delete (Permanent)',
+    'hard_delete_description' => 'Game will be permanently deleted. This cannot be undone.',
+    'confirm_delete' => 'Confirm Delete',
+    'confirm_soft_delete_only' => 'This will hide the game (soft delete). It can be restored later.',
+    'confirm_hard_delete_only' => 'This will permanently delete the game. This cannot be undone.',
     
     // Frontend - Add Game
     'search_bgg' => 'Search BoardGameGeek',

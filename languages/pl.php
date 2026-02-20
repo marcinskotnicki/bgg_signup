@@ -171,6 +171,15 @@ return [
     'delete' => 'Usuń',
     'restore' => 'Przywróć',
     'fully_delete' => 'Usuń Całkowicie',
+    'delete_game' => 'Usuń Grę',
+    'choose_deletion_type' => 'Jak chcesz usunąć tę grę?',
+    'soft_delete' => 'Miękkie Usunięcie (Ukryj)',
+    'soft_delete_description' => 'Gra zostanie ukryta, ale można ją przywrócić później. Gracze zobaczą ją jako odwołaną.',
+    'hard_delete' => 'Twarde Usunięcie (Trwałe)',
+    'hard_delete_description' => 'Gra zostanie trwale usunięta. Nie można tego cofnąć.',
+    'confirm_delete' => 'Potwierdź Usunięcie',
+    'confirm_soft_delete_only' => 'To ukryje grę (miękkie usunięcie). Można ją przywrócić później.',
+    'confirm_hard_delete_only' => 'To trwale usunie grę. Nie można tego cofnąć.',
     
     // Frontend - Add Game
     'search_bgg' => 'Szukaj na BoardGameGeek',

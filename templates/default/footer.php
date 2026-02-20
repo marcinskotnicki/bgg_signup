@@ -59,15 +59,10 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
         }
         
         function deleteGame(gameId) {
-            if (confirm('<?php echo t('confirm_delete_game'); ?>')) {
-                $.post('ajax/delete_game.php', { game_id: gameId }, function(response) {
-                    if (response.success) {
-                        location.reload();
-                    } else {
-                        alert(response.message || '<?php echo t('error_occurred'); ?>');
-                    }
-                }, 'json');
-            }
+            // Load delete choice dialog
+            $.get('ajax/delete_game_choice.php', { game_id: gameId }, function(html) {
+                openModal(html);
+            });
         }
         
         function restoreGame(gameId) {
