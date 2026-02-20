@@ -202,6 +202,7 @@ $available_languages = [
 </div>
 
 <style>
+/* Thumbnail Grid Layout */
 .thumbnail-grid {
     display: flex;
     flex-wrap: wrap;
@@ -209,30 +210,57 @@ $available_languages = [
     margin-top: 10px;
 }
 
+/* Thumbnail Option - Base Styles */
 .thumbnail-option {
-    border: 2px solid #ddd;
+    border: 3px solid #ddd !important;
     border-radius: 4px;
     padding: 5px;
-    cursor: pointer;
+    cursor: pointer !important;
     transition: all 0.2s ease;
-    background: white;
+    background: white !important;
+    position: relative;
 }
 
+/* Thumbnail Option - Hover State */
 .thumbnail-option:hover {
-    border-color: #3498db;
+    border-color: #3498db !important;
     transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
 }
 
+/* Thumbnail Option - Selected State */
 .thumbnail-option.selected {
-    border-color: #2ecc71;
-    background: #e8f8f5;
+    border-color: #2ecc71 !important;
+    background: #e8f8f5 !important;
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.2);
 }
 
+/* Selected Indicator */
+.thumbnail-option.selected::after {
+    content: '✓';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #2ecc71;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Thumbnail Image */
 .thumbnail-option img {
     display: block;
     height: 100px;
     width: auto;
     object-fit: contain;
+    pointer-events: none; /* Ensure clicks go to parent div */
 }
 </style>
 
