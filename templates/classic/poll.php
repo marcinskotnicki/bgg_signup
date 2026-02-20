@@ -92,7 +92,7 @@ if ($current_user) {
                     <?php endif; ?>
                     
                     <div class="poll-progress">
-                        <div class="poll-progress-bar" style="width: <?php echo $percentage; %>%"></div>
+                        <div class="poll-progress-bar" style="width: <?php echo $percentage; ?>%;"></div>
                     </div>
                     
                     <?php if (!$is_closed): ?>
@@ -114,6 +114,6 @@ if ($current_user) {
 </div>
 
 <script>
-// Note: All poll functions (loadVoteForm, editPoll, deletePoll) are now in common.js
+// All functions (loadVoteForm, editPoll, deletePoll) are now defined in common.js
 // No need to redefine them here
 </script>
