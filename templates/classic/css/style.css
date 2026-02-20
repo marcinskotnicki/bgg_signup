@@ -771,13 +771,17 @@ a:hover {
 .modal-content div,
 .modal-content span,
 .modal-content .poll-info,
-.modal-content .vote-info {
-    color: #ecf0f1;
+.modal-content .vote-info,
+.modal-content .vote-form-container h3,
+.modal-content .game-info,
+.modal-content .existing-comments {
+    color: #ecf0f1 !important;
 }
 
 /* Form elements inside modal - light text on dark background */
-.modal-content .form-group label {
-    color: #ecf0f1;
+.modal-content .form-group label,
+.modal-content label {
+    color: #ecf0f1 !important;
 }
 
 .modal-content input[type="text"],
@@ -786,17 +790,19 @@ a:hover {
 .modal-content input[type="email"],
 .modal-content input[type="password"],
 .modal-content select,
-.modal-content textarea {
-    background: #34495e;
-    color: #ecf0f1;
-    border: 1px solid #4a5f7f;
+.modal-content textarea,
+.modal-content .form-control {
+    background: #34495e !important;
+    color: #ecf0f1 !important;
+    border: 1px solid #4a5f7f !important;
 }
 
 .modal-content input:focus,
 .modal-content select:focus,
-.modal-content textarea:focus {
-    border-color: #3498db;
-    background: #3d5570;
+.modal-content textarea:focus,
+.modal-content .form-control:focus {
+    border-color: #3498db !important;
+    background: #3d5570 !important;
 }
 
 .modal-content small {
@@ -814,6 +820,230 @@ a:hover {
 
 .modal-close:hover {
     color: #ecf0f1;
+}
+
+/* ===== MODAL FORMS (Classic/Dark Theme) ===== */
+
+/* Vote Form */
+.modal-content .vote-form-container {
+    padding: 20px;
+}
+
+.modal-content .vote-form-container h3 {
+    margin-top: 0;
+    color: #ecf0f1;
+    font-size: 20px;
+}
+
+.modal-content .vote-info {
+    background: rgba(52, 152, 219, 0.2);
+    padding: 12px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    color: #ecf0f1;
+}
+
+/* Comment Form */
+.modal-content .add-comment-form {
+    max-width: 600px;
+}
+
+.modal-content .add-comment-form h2 {
+    color: #ecf0f1;
+}
+
+.modal-content .game-info {
+    background: rgba(52, 152, 219, 0.2);
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border-left: 4px solid #3498db;
+}
+
+.modal-content .game-info h3 {
+    margin: 0 0 5px 0;
+    color: #ecf0f1;
+}
+
+.modal-content .game-info p {
+    margin: 0;
+    color: #bdc3c7;
+}
+
+.modal-content .existing-comments {
+    margin-bottom: 20px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: rgba(52, 73, 94, 0.3);
+    padding: 15px;
+    border-radius: 4px;
+}
+
+.modal-content .existing-comments h3 {
+    margin-top: 0;
+    font-size: 16px;
+    color: #ecf0f1;
+}
+
+.modal-content .comment-item {
+    padding: 10px;
+    border-left: 3px solid #4a5f7f;
+    margin-bottom: 10px;
+    background: rgba(52, 73, 94, 0.5);
+}
+
+.modal-content .comment-author {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 5px;
+    color: #ecf0f1;
+}
+
+.modal-content .comment-date {
+    font-size: 12px;
+    color: #95a5a6;
+}
+
+.modal-content .comment-text {
+    color: #ecf0f1;
+    font-size: 14px;
+}
+
+/* Poll Form */
+.modal-content .create-poll-form {
+    max-width: 700px;
+}
+
+.modal-content .poll-info {
+    background: rgba(52, 152, 219, 0.2);
+    padding: 15px;
+    border-radius: 4px;
+    margin-bottom: 20px;
+    border-left: 4px solid #2196f3;
+    color: #ecf0f1;
+}
+
+/* Generic Form Elements */
+.modal-content .form-step {
+    margin-bottom: 20px;
+}
+
+.modal-content .form-group {
+    margin-bottom: 20px;
+}
+
+.modal-content .form-group label,
+.modal-content .modal-form .form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #ecf0f1;
+}
+
+.modal-content .required {
+    color: #e74c3c;
+}
+
+.modal-content .form-control,
+.modal-content .modal-form .form-control,
+.modal-content input[type="text"],
+.modal-content input[type="number"],
+.modal-content input[type="time"],
+.modal-content input[type="email"],
+.modal-content input[type="password"],
+.modal-content select,
+.modal-content textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #4a5f7f;
+    border-radius: 4px;
+    font-size: 14px;
+    box-sizing: border-box;
+    background: #34495e;
+    color: #ecf0f1;
+}
+
+.modal-content .form-control:focus,
+.modal-content .modal-form .form-control:focus,
+.modal-content input:focus,
+.modal-content select:focus,
+.modal-content textarea:focus {
+    outline: none;
+    border-color: #3498db;
+    background: #3d5570;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.modal-content .form-control[readonly],
+.modal-content .modal-form .form-control[readonly] {
+    background: #2c3e50;
+    cursor: not-allowed;
+}
+
+.modal-content .modal-form small,
+.modal-content small {
+    display: block;
+    margin-top: 5px;
+    color: #bdc3c7;
+    font-size: 12px;
+}
+
+.modal-content .form-actions,
+.modal-content .modal-form .form-actions {
+    margin-top: 25px;
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+}
+
+.modal-content .btn,
+.modal-content .modal-form .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: background 0.3s;
+}
+
+.modal-content .btn-primary,
+.modal-content .modal-form .btn-primary {
+    background: #27ae60;
+    color: white;
+}
+
+.modal-content .btn-primary:hover,
+.modal-content .modal-form .btn-primary:hover {
+    background: #229954;
+}
+
+.modal-content .btn-primary:disabled,
+.modal-content .modal-form .btn-primary:disabled {
+    background: #95a5a6;
+    cursor: not-allowed;
+}
+
+.modal-content .btn-secondary,
+.modal-content .modal-form .btn-secondary {
+    background: #95a5a6;
+    color: white;
+}
+
+.modal-content .btn-secondary:hover,
+.modal-content .modal-form .btn-secondary:hover {
+    background: #7f8c8d;
+}
+
+.modal-content .form-row {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.modal-content .form-col {
+    flex: 1;
+    margin-bottom: 0;
 }
 
 /* ===== RESPONSIVE ===== */
