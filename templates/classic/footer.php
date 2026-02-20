@@ -31,9 +31,6 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
         </div>
     </div>
     
-    <!-- Timeline JavaScript -->
-    <script src="templates/classic/timeline.js"></script>
-    
     <script>
      
         
