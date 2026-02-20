@@ -297,18 +297,18 @@ $(document).on('click', '.timeline-game', function() {
     const pollId = $(this).data('poll-id');
     
     if (itemType === 'game' && gameId) {
-        // Find the game card (not the timeline item)
-        const gameCard = $('.game-card[data-game-id="' + gameId + '"]').first();
-        if (gameCard.length) {
+        // Find the game item in the table view (not the timeline item)
+        const gameItem = $('.gameitem[data-game-id="' + gameId + '"]').first();
+        if (gameItem.length) {
             // Scroll to game
             $('html, body').animate({
-                scrollTop: gameCard.offset().top - 100
+                scrollTop: gameItem.offset().top - 100
             }, 500);
             
             // Add glow highlight
-            gameCard.addClass('timeline-highlight-glow');
+            gameItem.addClass('timeline-highlight-glow');
             setTimeout(function() {
-                gameCard.removeClass('timeline-highlight-glow');
+                gameItem.removeClass('timeline-highlight-glow');
             }, 3000);
         }
     } else if (itemType === 'poll' && pollId) {

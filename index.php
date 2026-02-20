@@ -468,46 +468,18 @@ $(document).ready(function() {
         editGame(gameId); // Function defined in common.js
     });
     
-    // Delete Game Button
+    // Delete Game Button - Open modal directly
     $(document).on('click', '.delete-game-btn', function(e) {
         e.preventDefault();
         const gameId = $(this).data('game-id');
-        const deletionMode = '<?php echo $config['deletion_mode']; ?>';
-        
-        if (deletionMode === 'hard_only') {
-            // Hard delete only
-            if (confirm('<?php echo t('confirm_hard_delete_game'); ?>')) {
-                deleteGame(gameId, 'hard');
-            }
-            
-        } else if (deletionMode === 'allow_choice') {
-            // User can choose
-            const deleteChoice = confirm('<?php echo t('confirm_delete_game'); ?>\n\n<?php echo t('delete_choice_prompt'); ?>');
-            
-            if (deleteChoice) {
-                // Soft delete
-                deleteGame(gameId, 'soft');
-            } else {
-                // Ask about hard delete
-                const hardDelete = confirm('<?php echo t('confirm_hard_delete'); ?>');
-                if (hardDelete) {
-                    deleteGame(gameId, 'hard');
-                }
-            }
-            
-        } else {
-            // Soft delete only
-            if (confirm('<?php echo t('confirm_delete_game'); ?>')) {
-                deleteGame(gameId, 'soft');
-            }
-        }
+        deleteGame(gameId); // Function from common.js - opens modal
     });
     
     // Restore Game Button
     $(document).on('click', '.restore-game-btn', function(e) {
         e.preventDefault();
         const gameId = $(this).data('game-id');
-        loadRestoreGameForm(gameId);
+        restoreGame(gameId); // Function from common.js
     });
     
     // Fully Delete Button
