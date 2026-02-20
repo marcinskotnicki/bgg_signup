@@ -34,40 +34,26 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
     <script>
 
         
-        // Close modal when clicking outside or on close button
+        // Close modal - Simple and reliable
         $(document).ready(function() {
             $('.modal-close').click(closeModal);
             
-            // Improved modal closing - prevents closing during text selection
-            let isMouseDownOnOverlay = false;
+            // Track where mousedown occurred
+            let mouseDownOnOverlay = false;
             
             $('#modal-overlay').on('mousedown', function(e) {
-                // Check if mousedown is directly on overlay (not on modal-content or its children)
-                const $modalContent = $('.modal-content');
-                const clickedOnModalContent = $modalContent.is(e.target) || $modalContent.has(e.target).length > 0;
-                
-                isMouseDownOnOverlay = !clickedOnModalContent && e.target.id === 'modal-overlay';
+                // Only flag if mousedown is directly on overlay (not on modal-content)
+                mouseDownOnOverlay = (e.target.id === 'modal-overlay');
             });
             
             $('#modal-overlay').on('mouseup', function(e) {
-                // Check if mouseup is directly on overlay
-                const $modalContent = $('.modal-content');
-                const releasedOnModalContent = $modalContent.is(e.target) || $modalContent.has(e.target).length > 0;
-                const isMouseUpOnOverlay = !releasedOnModalContent && e.target.id === 'modal-overlay';
-                
-                // Only close if BOTH mousedown AND mouseup happened on overlay
-                // This prevents closing during text selection that ends on overlay
-                if (isMouseDownOnOverlay && isMouseUpOnOverlay) {
+                // Only close if BOTH mousedown AND mouseup were on overlay
+                // This prevents closing during text selection or accidental drags
+                if (mouseDownOnOverlay && e.target.id === 'modal-overlay') {
                     closeModal();
                 }
-                
                 // Reset for next interaction
-                isMouseDownOnOverlay = false;
-            });
-            
-            // Prevent clicks on modal content from propagating
-            $(document).on('click', '.modal-content', function(e) {
-                e.stopPropagation();
+                mouseDownOnOverlay = false;
             });
             
             // ESC key to close modal

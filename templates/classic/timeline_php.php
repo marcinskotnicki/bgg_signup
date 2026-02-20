@@ -3,7 +3,7 @@
  * Enhanced Timeline Template - PHP Rendered
  * 
  * Features:
- * - Shows soft-deleted games (25% opacity, red color)
+ * - Shows soft-deleted games (25% opacity, red color)  
  * - Shows polls (different color, 120min duration)
  * - Mobile-friendly with horizontal scroll
  * - Click to scroll with glow highlight
@@ -54,7 +54,7 @@ $end_hour = ceil($end_with_extension / 60);
                     $display_hour = $hour % 24;
                     $hour_str = str_pad($display_hour, 2, '0', STR_PAD_LEFT) . ':00';
                 ?>
-                    <div class="timeline-hour-marker" style="left: <?php echo $position; ?>%;">
+                    <div class="timeline-hour-marker" style="left: <?php echo $position . '%'; ?>;">
                         <?php echo $hour_str; ?>
                     </div>
                 <?php endif; ?>
@@ -83,7 +83,7 @@ $end_hour = ceil($end_with_extension / 60);
                     $is_even = ($hour % 2 == 0);
                 ?>
                     <div class="timeline-hour-stripe <?php echo $is_even ? 'even' : 'odd'; ?>" 
-                         style="left: <?php echo max(0, $stripe_start); ?>%; width: <?php echo min(100 - max(0, $stripe_start), $stripe_width); ?>%;"></div>
+                         style="left: <?php echo max(0, $stripe_start) . '%'; ?>; width: <?php echo min(100 - max(0, $stripe_start), $stripe_width) . '%'; ?>;"></div>
                 <?php endif; ?>
             <?php endfor; ?>
         </div>
@@ -170,7 +170,7 @@ $end_hour = ceil($end_with_extension / 60);
                 </div>
                 
                 <!-- Games track with dynamic height -->
-                <div class="timeline-games" style="min-height: <?php echo $required_height; ?>px;">
+                <div class="timeline-games" style="min-height: <?php echo $required_height . 'px'; ?>;">
                     <?php 
                     // Second pass: Render ALL games and polls
                     $item_positions = [];
@@ -219,7 +219,7 @@ $end_hour = ceil($end_with_extension / 60);
                             <div class="timeline-game timeline-item-game <?php echo $fill_class; ?> <?php echo $deleted_class; ?>" 
                                  data-game-id="<?php echo $game['id']; ?>"
                                  data-item-type="game"
-                                 style="left: <?php echo $display_left; ?>%; width: <?php echo $display_width; ?>%; top: <?php echo $top_position; ?>px;"
+                                 style="left: <?php echo $display_left . '%'; ?>; width: <?php echo $display_width . '%'; ?>; top: <?php echo $top_position . 'px'; ?>;"
                                  title="<?php echo htmlspecialchars($game['name']); ?> (<?php echo $active_players; ?>/<?php echo $game['max_players']; ?>)<?php echo $is_deleted ? ' - ' . t('deleted') : ''; ?>">
                                 <div class="timeline-game-content">
                                     <div class="timeline-game-name"><?php echo htmlspecialchars($game['name']); ?></div>
@@ -272,7 +272,7 @@ $end_hour = ceil($end_with_extension / 60);
                                 <div class="timeline-game timeline-item-poll" 
                                      data-poll-id="<?php echo $poll['id']; ?>"
                                      data-item-type="poll"
-                                     style="left: <?php echo $display_left; ?>%; width: <?php echo $display_width; %>%; top: <?php echo $top_position; ?>px;"
+                                     style="left: <?php echo $display_left . '%'; ?>; width: <?php echo $display_width . '%'; ?>; top: <?php echo $top_position . 'px'; ?>;"
                                      title="<?php echo t('game_poll'); ?> (<?php echo $total_votes; ?> <?php echo t('votes'); ?>)">
                                     <div class="timeline-game-content">
                                         <div class="timeline-game-name">📊 <?php echo t('game_poll'); ?></div>
