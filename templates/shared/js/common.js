@@ -89,6 +89,11 @@ function addComment(gameId) {
     loadComments(gameId);
 }
 
+// Alias for consistency
+function loadAddCommentForm(gameId) {
+    loadComments(gameId);
+}
+
 // Table/Event actions
 function addTable(eventDayId) {
     $.post('ajax/add_table.php', { event_day_id: eventDayId }, function(response) {
@@ -118,12 +123,6 @@ function loadVoteForm(optionId, pollId) {
         option_id: optionId, 
         poll_id: pollId 
     }, function(html) {
-        openModal(html);
-    });
-}
-
-function editPoll(pollId) {
-    $.get('ajax/edit_poll_form.php', { poll_id: pollId }, function(html) {
         openModal(html);
     });
 }
@@ -159,19 +158,9 @@ function parseTime(timeStr) {
 
 // jQuery ready
 $(document).ready(function() {
-    // Close modal when clicking outside or on close button
+    // Close modal only via close button (X) or ESC key
+    // Overlay clicks do NOT close modal (prevents accidental closes)
     $('.modal-close').click(closeModal);
-    
-    $('#modal-overlay').click(function(e) {
-        if (e.target.id === 'modal-overlay') {
-            closeModal();
-        }
-    });
-    
-    // Prevent modal content clicks from closing modal
-    $(document).on('click', '.modal-content', function(e) {
-        e.stopPropagation();
-    });
     
     // ESC key to close modal
     $(document).keyup(function(e) {
