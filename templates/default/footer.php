@@ -31,6 +31,9 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
         </div>
     </div>
     
+    <!-- Timeline JavaScript -->
+    <script src="templates/default/timeline.js"></script>
+    
     <script>
         // Modal functions
         function openModal(content) {
@@ -96,7 +99,7 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
         }
         
         function loadComments(gameId) {
-            $.get('ajax/load_comments.php', { game_id: gameId }, function(html) {
+            $.get('ajax/add_comment_form.php', { game_id: gameId }, function(html) {
                 openModal(html);
             });
         }

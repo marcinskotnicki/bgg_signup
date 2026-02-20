@@ -210,17 +210,24 @@ $default_email = $current_user ? $current_user['email'] : '';
     </div>
 </div>
 
+<?php
+// Get active template for conditional styling
+$active_template = isset($config['active_template']) ? $config['active_template'] : 'default';
+$is_dark_theme = ($active_template === 'classic');
+?>
+
 <style>
 .create-poll-form {
     max-width: 700px;
 }
 
 .poll-info {
-    background: #e3f2fd;
+    background: <?php echo $is_dark_theme ? 'rgba(52, 152, 219, 0.2)' : '#e3f2fd'; ?>;
     padding: 15px;
     border-radius: 4px;
     margin-bottom: 20px;
     border-left: 4px solid #2196f3;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#2c3e50'; ?>;
 }
 
 .form-step {
@@ -235,14 +242,17 @@ $default_email = $current_user ? $current_user['email'] : '';
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#333'; ?>;
 }
 
 .form-control {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid <?php echo $is_dark_theme ? '#4a5f7f' : '#ddd'; ?>;
     border-radius: 4px;
     font-size: 14px;
+    background: <?php echo $is_dark_theme ? '#34495e' : '#fff'; ?>;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#333'; ?>;
 }
 
 .form-control:focus {
@@ -329,18 +339,18 @@ $default_email = $current_user ? $current_user['email'] : '';
 }
 
 .poll-option-details {
-    color: #7f8c8d;
+    color: <?php echo $is_dark_theme ? '#bdc3c7' : '#7f8c8d'; ?>;
     font-size: 12px;
     margin-top: 4px;
 }
 
 .poll-option-name {
     font-weight: bold;
-    color: #2c3e50;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#2c3e50'; ?>;
 }
 
 .poll-option-threshold {
-    color: #7f8c8d;
+    color: <?php echo $is_dark_theme ? '#bdc3c7' : '#7f8c8d'; ?>;
     font-size: 13px;
 }
 

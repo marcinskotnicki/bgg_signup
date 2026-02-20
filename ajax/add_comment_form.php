@@ -125,13 +125,23 @@ $default_email = $current_user ? $current_user['email'] : '';
     </form>
 </div>
 
+<?php
+// Get active template for conditional styling
+$active_template = isset($config['active_template']) ? $config['active_template'] : 'default';
+$is_dark_theme = ($active_template === 'classic');
+?>
+
 <style>
 .add-comment-form {
     max-width: 600px;
 }
 
+.add-comment-form h2 {
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#2c3e50'; ?>;
+}
+
 .game-info {
-    background: #f8f9fa;
+    background: <?php echo $is_dark_theme ? 'rgba(52, 152, 219, 0.2)' : '#f8f9fa'; ?>;
     padding: 15px;
     border-radius: 4px;
     margin-bottom: 20px;
@@ -140,19 +150,19 @@ $default_email = $current_user ? $current_user['email'] : '';
 
 .game-info h3 {
     margin: 0 0 5px 0;
-    color: #2c3e50;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#2c3e50'; ?>;
 }
 
 .game-info p {
     margin: 0;
-    color: #7f8c8d;
+    color: <?php echo $is_dark_theme ? '#bdc3c7' : '#7f8c8d'; ?>;
 }
 
 .existing-comments {
     margin-bottom: 20px;
     max-height: 300px;
     overflow-y: auto;
-    background: #f8f9fa;
+    background: <?php echo $is_dark_theme ? 'rgba(52, 73, 94, 0.3)' : '#f8f9fa'; ?>;
     padding: 15px;
     border-radius: 4px;
 }
@@ -160,29 +170,30 @@ $default_email = $current_user ? $current_user['email'] : '';
 .existing-comments h3 {
     margin-top: 0;
     font-size: 16px;
-    color: #2c3e50;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#2c3e50'; ?>;
 }
 
 .comment-item {
     padding: 10px;
-    border-left: 3px solid #ecf0f1;
+    border-left: 3px solid <?php echo $is_dark_theme ? '#4a5f7f' : '#ecf0f1'; ?>;
     margin-bottom: 10px;
-    background: white;
+    background: <?php echo $is_dark_theme ? 'rgba(52, 73, 94, 0.5)' : 'white'; ?>;
 }
 
 .comment-author {
     display: flex;
     justify-content: space-between;
     margin-bottom: 5px;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#333'; ?>;
 }
 
 .comment-date {
     font-size: 12px;
-    color: #7f8c8d;
+    color: <?php echo $is_dark_theme ? '#95a5a6' : '#7f8c8d'; ?>;
 }
 
 .comment-text {
-    color: #555;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#555'; ?>;
     font-size: 14px;
 }
 
@@ -194,14 +205,18 @@ $default_email = $current_user ? $current_user['email'] : '';
     display: block;
     margin-bottom: 5px;
     font-weight: bold;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#333'; ?>;
 }
 
 .form-control {
     width: 100%;
     padding: 8px;
-    border: 1px solid #ddd;
+    border: 1px solid <?php echo $is_dark_theme ? '#4a5f7f' : '#ddd'; ?>;
     border-radius: 4px;
     font-size: 14px;
+    background: <?php echo $is_dark_theme ? '#34495e' : '#fff'; ?>;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#333'; ?>;
+    box-sizing: border-box;
 }
 
 .form-control:focus {

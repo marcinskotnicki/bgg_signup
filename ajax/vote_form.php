@@ -90,6 +90,12 @@ $voter_email = $current_user ? $current_user['email'] : '';
     </form>
 </div>
 
+<?php
+// Get active template for conditional styling
+$active_template = isset($config['active_template']) ? $config['active_template'] : 'default';
+$is_dark_theme = ($active_template === 'classic');
+?>
+
 <style>
 .vote-form-container {
     padding: 20px;
@@ -97,15 +103,16 @@ $voter_email = $current_user ? $current_user['email'] : '';
 
 .vote-form-container h3 {
     margin-top: 0;
-    color: #2c3e50;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#2c3e50'; ?>;
     font-size: 20px;
 }
 
 .vote-info {
-    background: #e3f2fd;
+    background: <?php echo $is_dark_theme ? 'rgba(52, 152, 219, 0.2)' : '#e3f2fd'; ?>;
     padding: 12px;
     border-radius: 4px;
     margin-bottom: 20px;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#2c3e50'; ?>;
 }
 
 .modal-form .form-group {
@@ -116,7 +123,7 @@ $voter_email = $current_user ? $current_user['email'] : '';
     display: block;
     margin-bottom: 8px;
     font-weight: bold;
-    color: #2c3e50;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#2c3e50'; ?>;
 }
 
 .modal-form .form-group .required {
@@ -126,10 +133,12 @@ $voter_email = $current_user ? $current_user['email'] : '';
 .modal-form .form-control {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid <?php echo $is_dark_theme ? '#4a5f7f' : '#ddd'; ?>;
     border-radius: 4px;
     font-size: 14px;
     box-sizing: border-box;
+    background: <?php echo $is_dark_theme ? '#34495e' : '#fff'; ?>;
+    color: <?php echo $is_dark_theme ? '#ecf0f1' : '#333'; ?>;
 }
 
 .modal-form .form-control:focus {
@@ -139,14 +148,14 @@ $voter_email = $current_user ? $current_user['email'] : '';
 }
 
 .modal-form .form-control[readonly] {
-    background: #f5f5f5;
+    background: <?php echo $is_dark_theme ? '#2c3e50' : '#f5f5f5'; ?>;
     cursor: not-allowed;
 }
 
 .modal-form small {
     display: block;
     margin-top: 5px;
-    color: #7f8c8d;
+    color: <?php echo $is_dark_theme ? '#bdc3c7' : '#7f8c8d'; ?>;
     font-size: 12px;
 }
 
