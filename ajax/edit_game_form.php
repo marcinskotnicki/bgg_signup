@@ -145,7 +145,8 @@ $available_languages = [
             </select>
         </div>
         
-        <!-- Thumbnail -->
+        <!-- Thumbnail (only for non-BGG games) -->
+        <?php if (empty($game['bgg_id'])): ?>
         <div class="form-group">
             <label><?php echo t('select_thumbnail'); ?>:</label>
             <div class="thumbnail-selector">
@@ -169,6 +170,11 @@ $available_languages = [
             </div>
             <input type="hidden" name="selected_thumbnail" id="selected_thumbnail" value="<?php echo htmlspecialchars($game['thumbnail']); ?>">
         </div>
+        <?php else: ?>
+            <!-- BGG game - keep existing thumbnail -->
+            <input type="hidden" name="thumbnail" value="<?php echo htmlspecialchars($game['thumbnail']); ?>">
+            <input type="hidden" name="selected_thumbnail" value="<?php echo htmlspecialchars($game['thumbnail']); ?>">
+        <?php endif; ?>
         
         <!-- Host Information -->
         <div class="form-group">

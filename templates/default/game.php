@@ -103,15 +103,24 @@ $is_inactive = $game['is_active'] == 0;
         <!-- Language -->
         <div class="game_language">
             <?php 
-            // Handle both old and new values
+            // Handle both old and new values, with translated names
             if ($game['language'] === 'independent' || $game['language'] === 'language_independent') {
                 echo t('language_independent');
             } elseif ($game['language'] === 'en') {
-                echo 'English';
+                echo t('lang_English');
             } elseif ($game['language'] === 'pl') {
-                echo 'Polski';
+                echo t('lang_Polish');
             } else {
-                echo htmlspecialchars($game['language']);
+                // Try to translate language name, fall back to raw value
+                $lang_key = 'lang_' . $game['language'];
+                $translated = t($lang_key);
+                // If translation not found, t() returns the key itself
+                if ($translated === $lang_key) {
+                    // No translation - show as-is
+                    echo htmlspecialchars($game['language']);
+                } else {
+                    echo $translated;
+                }
             }
             ?>
         </div>
@@ -127,7 +136,6 @@ $is_inactive = $game['is_active'] == 0;
             } else {
                 echo htmlspecialchars($game['rules_explanation']);
             }
-            ?>
             ?>
         </div>
         

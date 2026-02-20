@@ -7,6 +7,12 @@ return [
     // Language name (displayed in language selector)
     '_language_name' => 'English',
     
+    // Language names (for display in game cards)
+    'lang_English' => 'English',
+    'lang_Polish' => 'Polish',
+    'lang_German' => 'German',
+    'lang_French' => 'French',
+    
     // Admin Panel
     'admin_panel' => 'Admin Panel',
     'admin_login' => 'Admin Login',

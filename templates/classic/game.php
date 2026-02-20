@@ -79,16 +79,25 @@ $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </span>
                 <span class="meta-item">
                     🗣 <?php 
-                    // Handle both old and new database values
+                    // Handle both old and new database values, with translated names
                     $lang = $game['language'];
                     if ($lang === 'independent' || $lang === 'language_independent') {
                         echo t('language_independent');
                     } elseif ($lang === 'en') {
-                        echo 'English';
+                        echo t('lang_English');
                     } elseif ($lang === 'pl') {
-                        echo 'Polski';
+                        echo t('lang_Polish');
                     } else {
-                        echo htmlspecialchars($lang);
+                        // Try to translate language name
+                        $lang_key = 'lang_' . $lang;
+                        $translated = t($lang_key);
+                        // If translation not found, t() returns the key itself
+                        if ($translated === $lang_key) {
+                            // No translation - show as-is
+                            echo htmlspecialchars($lang);
+                        } else {
+                            echo $translated;
+                        }
                     }
                     ?>
                 </span>
