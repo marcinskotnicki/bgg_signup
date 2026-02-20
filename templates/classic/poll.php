@@ -126,17 +126,5 @@ function editPoll(pollId) {
     });
 }
 
-function deletePoll(pollId) {
-    if (!confirm('<?php echo t('confirm_delete_poll'); ?>')) {
-        return;
-    }
-    
-    $.post('ajax/delete_poll.php', { poll_id: pollId }, function(response) {
-        if (response.success) {
-            location.reload();
-        } else {
-            alert(response.error || 'Error deleting poll');
-        }
-    }, 'json');
-}
+
 </script>

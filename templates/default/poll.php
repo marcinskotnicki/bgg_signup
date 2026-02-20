@@ -148,11 +148,7 @@ $(document).on('click', '.btn-delete-poll', function() {
     deletePoll(pollId);
 });
 
-function loadVoteForm(optionId, pollId) {
-    $.get('../ajax/vote_form.php', { option_id: optionId, poll_id: pollId }, function(html) {
-        openModal(html);
-    });
-}
+
 
 function loadEditPollForm(pollId) {
     $.get('../ajax/edit_poll_form.php', { poll_id: pollId }, function(html) {
@@ -160,18 +156,5 @@ function loadEditPollForm(pollId) {
     });
 }
 
-function deletePoll(pollId) {
-    if (!confirm('<?php echo t('confirm_delete_poll'); ?>')) {
-        return;
-    }
-    
-    $.post('../ajax/delete_poll.php', { poll_id: pollId }, function(response) {
-        if (response.success) {
-            alert(response.message || '<?php echo t('poll_deleted_success'); ?>');
-            location.reload();
-        } else {
-            alert(response.error || '<?php echo t('error_occurred'); ?>');
-        }
-    });
-}
+
 </script>
