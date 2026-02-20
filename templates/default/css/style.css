@@ -1078,6 +1078,81 @@ a:hover {
     opacity: 0.85;
     white-space: nowrap;
 }
+
+/* Timeline Enhancements */
+
+/* Mobile-friendly scroll container */
+.timeline-scroll-container {
+    width: 100%;
+    overflow-x: auto;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.timeline-container-inner {
+    min-width: 800px; /* Minimum width for timeline */
+}
+
+/* Soft-deleted game styling */
+.timeline-game-deleted {
+    opacity: 0.25 !important;
+    background: #e74c3c !important; /* Red */
+}
+
+.timeline-game-deleted:hover {
+    opacity: 0.4 !important;
+    background: #c0392b !important;
+}
+
+/* Poll styling */
+.timeline-item-poll {
+    background: #f39c12 !important; /* Orange/yellow for polls */
+}
+
+.timeline-item-poll:hover {
+    background: #e67e22 !important;
+}
+
+/* Full game player count highlighting */
+.player-count-full {
+    font-weight: bold !important;
+    color: #e74c3c !important; /* Red for full */
+    text-shadow: 0 0 3px rgba(231, 76, 60, 0.3);
+}
+
+/* Glow highlight animation for clicked items */
+@keyframes timeline-glow {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(52, 152, 219, 0);
+    }
+    50% {
+        box-shadow: 0 0 30px 10px rgba(52, 152, 219, 0.8);
+    }
+}
+
+.timeline-highlight-glow {
+    animation: timeline-glow 1.5s ease-in-out 2;
+    border: 3px solid #3498db !important;
+}
+
+/* Scrollbar styling for webkit browsers */
+.timeline-scroll-container::-webkit-scrollbar {
+    height: 10px;
+}
+
+.timeline-scroll-container::-webkit-scrollbar-track {
+    background: #ecf0f1;
+    border-radius: 5px;
+}
+
+.timeline-scroll-container::-webkit-scrollbar-thumb {
+    background: #95a5a6;
+    border-radius: 5px;
+}
+
+.timeline-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: #7f8c8d;
+}
 /* Comments Section */
 .game-comments-section {
     margin-top: 25px;
