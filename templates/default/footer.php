@@ -34,27 +34,10 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
     <script>
 
         
-        // Close modal - Simple and reliable
+        // Close modal - Only via X button, Cancel, OK, or ESC key
         $(document).ready(function() {
+            // Close button (X)
             $('.modal-close').click(closeModal);
-            
-            // Track where mousedown occurred
-            let mouseDownOnOverlay = false;
-            
-            $('#modal-overlay').on('mousedown', function(e) {
-                // Only flag if mousedown is directly on overlay (not on modal-content)
-                mouseDownOnOverlay = (e.target.id === 'modal-overlay');
-            });
-            
-            $('#modal-overlay').on('mouseup', function(e) {
-                // Only close if BOTH mousedown AND mouseup were on overlay
-                // This prevents closing during text selection or accidental drags
-                if (mouseDownOnOverlay && e.target.id === 'modal-overlay') {
-                    closeModal();
-                }
-                // Reset for next interaction
-                mouseDownOnOverlay = false;
-            });
             
             // ESC key to close modal
             $(document).keyup(function(e) {
