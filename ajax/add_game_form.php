@@ -217,6 +217,40 @@ $default_email = $current_user ? $current_user['email'] : '';
     </div>
 </div>
 
+<style>
+.thumbnail-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.thumbnail-option {
+    border: 2px solid #ddd;
+    border-radius: 4px;
+    padding: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background: white;
+}
+
+.thumbnail-option:hover {
+    border-color: #3498db;
+    transform: scale(1.05);
+}
+
+.thumbnail-option.selected {
+    border-color: #2ecc71;
+    background: #e8f8f5;
+}
+
+.thumbnail-option img {
+    display: block;
+    height: 100px;
+    width: auto;
+    object-fit: contain;
+}
+</style>
 
 <script>
 $(document).ready(function() {
