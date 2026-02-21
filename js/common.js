@@ -67,19 +67,19 @@ function loadRestoreGameForm(gameId) {
 }
 
 function fullyDeleteGame(gameId) {
-    if (confirm('Are you sure you want to permanently delete this game? This cannot be undone!')) {
+    showConfirm('Are you sure you want to permanently delete this game? This cannot be undone!', function() {
         $.post('ajax/fully_delete_game.php', { game_id: gameId }, function(response) {
             if (response.success) {
                 location.reload();
             } else {
-                alert(response.message || 'Error occurred');
+                showAlert(response.message || 'Error occurred');
             }
         }, 'json');
-    }
+    }, 'Confirm Delete');
 }
 
 function resignFromGame(gameId, playerId) {
-    if (confirm('Are you sure you want to resign from this game?')) {
+    showConfirm('Are you sure you want to resign from this game?', function() {
         $.post('ajax/resign_player.php', { 
             game_id: gameId, 
             player_id: playerId 
@@ -87,10 +87,10 @@ function resignFromGame(gameId, playerId) {
             if (response.success) {
                 location.reload();
             } else {
-                alert(response.message || 'Error occurred');
+                showAlert(response.message || 'Error occurred');
             }
         }, 'json');
-    }
+    }, 'Confirm Resignation');
 }
 
 // Comment functions
@@ -115,7 +115,7 @@ function addTable(eventDayId) {
         if (response.success) {
             location.reload();
         } else {
-            alert(response.message || 'Error adding table');
+            showAlert(response.message || 'Error adding table');
         }
     }, 'json');
 }
@@ -164,15 +164,15 @@ function voteOption(optionId, pollId) {
 }
 
 function deletePoll(pollId) {
-    if (confirm('Are you sure you want to delete this poll?')) {
+    showConfirm('Are you sure you want to delete this poll?', function() {
         $.post('ajax/delete_poll.php', { poll_id: pollId }, function(response) {
             if (response.success) {
                 location.reload();
             } else {
-                alert(response.message || 'Error deleting poll');
+                showAlert(response.message || 'Error deleting poll');
             }
         }, 'json');
-    }
+    }, 'Confirm Delete Poll');
 }
 
 // Private message function
@@ -205,3 +205,98 @@ $(document).ready(function() {
         }
     });
 });
+// Modal confirmation and alert system (replaces browser alerts/confirms)
+
+function showAlert(message, title) {
+    title = title || 'Notice';
+    const html = `
+        <div class="modal-alert">
+            <h3>${title}</h3>
+            <div class="alert-message">${message}</div>
+            <button type="button" class="btn btn-primary" onclick="closeModal()">OK</button>
+        </div>
+    `;
+    openModal(html);
+}
+
+function showConfirm(message, onConfirm, title) {
+    title = title || 'Confirm';
+    const confirmId = 'confirm_' + Date.now();
+    
+    const html = `
+        <div class="modal-confirm">
+            <h3>${title}</h3>
+            <div class="confirm-message">${message}</div>
+            <div class="confirm-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" id="${confirmId}">OK</button>
+            </div>
+        </div>
+    `;
+    
+    openModal(html);
+    
+    // Attach confirm handler
+    $('#' + confirmId).one('click', function() {
+        closeModal();
+        if (onConfirm && typeof onConfirm === 'function') {
+            onConfirm();
+        }
+    });
+}
+
+// Email verification prompt
+function showEmailVerification(message, onVerify, title) {
+    title = title || 'Email Verification Required';
+    const verifyId = 'verify_' + Date.now();
+    const emailId = 'email_' + Date.now();
+    
+    const html = `
+        <div class="modal-verify">
+            <h3>${title}</h3>
+            <div class="verify-message">${message}</div>
+            <div class="form-group">
+                <label>Email Address:</label>
+                <input type="email" id="${emailId}" class="form-control" placeholder="Enter your email" required>
+            </div>
+            <div class="verify-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+                <button type="button" class="btn btn-primary" id="${verifyId}">Verify</button>
+            </div>
+        </div>
+    `;
+    
+    openModal(html);
+    
+    // Focus on email input
+    $('#' + emailId).focus();
+    
+    // Attach verify handler
+    $('#' + verifyId).on('click', function() {
+        const email = $('#' + emailId).val().trim();
+        if (!email) {
+            showAlert('Please enter an email address');
+            return;
+        }
+        if (!isValidEmail(email)) {
+            showAlert('Please enter a valid email address');
+            return;
+        }
+        closeModal();
+        if (onVerify && typeof onVerify === 'function') {
+            onVerify(email);
+        }
+    });
+    
+    // Allow Enter key to submit
+    $('#' + emailId).on('keypress', function(e) {
+        if (e.key === 'Enter') {
+            $('#' + verifyId).click();
+        }
+    });
+}
+
+// Email validation helper
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
