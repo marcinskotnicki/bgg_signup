@@ -36,8 +36,11 @@ $current_user = get_current_user($db);
 $player_id = isset($_POST['player_id']) ? intval($_POST['player_id']) : 0;
 $game_id = isset($_POST['game_id']) ? intval($_POST['game_id']) : 0;
 
+// Debug logging
+error_log("Resign attempt - player_id: $player_id, game_id: $game_id");
+
 if (!$player_id || !$game_id) {
-    echo json_encode(['success' => false, 'error' => 'Invalid parameters']);
+    echo json_encode(['success' => false, 'error' => 'Invalid parameters', 'debug' => ['player_id' => $player_id, 'game_id' => $game_id]]);
     exit;
 }
 

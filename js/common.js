@@ -178,18 +178,25 @@ function fullyDeleteGame(gameId) {
 }
 
 function resignFromGame(gameId, playerId) {
+    console.log('resignFromGame called with gameId:', gameId, 'playerId:', playerId);
+    
     // Inner function to actually resign
     function doResign() {
+        console.log('Resigning from game:', gameId, 'player:', playerId);
         $.post('ajax/resign_player.php', { 
             game_id: gameId, 
             player_id: playerId 
         }, function(response) {
+            console.log('Resign response:', response);
             if (response.success) {
                 reloadAndScrollToGame(gameId);
             } else {
-                showAlert(response.message || 'Error occurred');
+                showAlert(response.error || response.message || 'Error occurred');
             }
-        }, 'json');
+        }, 'json').fail(function(xhr) {
+            console.error('Resign failed:', xhr.responseText);
+            showAlert('Failed to resign. Please try again.');
+        });
     }
     
     // Check if user is logged in or admin
