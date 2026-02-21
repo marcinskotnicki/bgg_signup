@@ -457,9 +457,8 @@ $(document).ready(function() {
         const playerId = $(this).data('player-id');
         const gameId = $(this).data('game-id');
         
-        if (confirm('<?php echo t('confirm_resign'); ?>')) {
-            resignFromGame(playerId, gameId);
-        }
+        // resignFromGame handles confirmation and email verification
+        resignFromGame(gameId, playerId);
     });
     
     // Edit Game Button

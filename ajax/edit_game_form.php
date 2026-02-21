@@ -149,7 +149,7 @@ $available_languages = [
         <?php if (empty($game['bgg_id'])): ?>
         <div class="form-group">
             <label><?php echo t('select_thumbnail'); ?>:</label>
-            <div class="thumbnail-grid">
+            <div class="thumbnail-selector">
                 <?php if ($game['thumbnail']): ?>
                     <div class="thumbnail-option selected" data-thumbnail="<?php echo htmlspecialchars($game['thumbnail']); ?>">
                         <img src="<?php echo htmlspecialchars($game['thumbnail']); ?>" alt="Current thumbnail">
@@ -160,14 +160,11 @@ $available_languages = [
                 <?php foreach ($custom_thumbnails as $thumb): ?>
                     <?php 
                     $thumb_url = 'thumbnails/' . $thumb;
-                    // Skip if this is the current thumbnail (already shown above)
-                    if ($game['thumbnail'] === $thumb_url) {
-                        continue;
-                    }
+                    $is_selected = ($game['thumbnail'] === $thumb_url);
                     ?>
-                    <div class="thumbnail-option" data-thumbnail="<?php echo $thumb_url; ?>">
+                    <div class="thumbnail-option <?php echo $is_selected ? 'selected' : ''; ?>" data-thumbnail="<?php echo $thumb_url; ?>">
                         <img src="../<?php echo $thumb_url; ?>" alt="<?php echo $thumb; ?>">
-                        <input type="radio" name="thumbnail" value="<?php echo $thumb_url; ?>">
+                        <input type="radio" name="thumbnail" value="<?php echo $thumb_url; ?>" <?php echo $is_selected ? 'checked' : ''; ?>>
                     </div>
                 <?php endforeach; ?>
             </div>
@@ -226,14 +223,14 @@ $('#edit-game-submit-form').submit(function(e) {
         success: function(response) {
             if (response.success) {
                 closeModal();
-                // Force page reload with cache busting
-                window.location.href = window.location.href.split('?')[0] + '?' + new Date().getTime();
+                // Reload and scroll to the edited game
+                reloadAndScrollToGame(<?php echo $game_id; ?>);
             } else {
-                alert(response.error || '<?php echo t('error_occurred'); ?>');
+                showAlert(response.error || '<?php echo t('error_occurred'); ?>');
             }
         },
         error: function() {
-            alert('<?php echo t('error_occurred'); ?>');
+            showAlert('<?php echo t('error_occurred'); ?>');
         }
     });
 });

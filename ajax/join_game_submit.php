@@ -88,7 +88,7 @@ try {
         $existing = $stmt->fetchColumn();
         
         if ($existing > 0) {
-            echo json_encode(['success' => false, 'error' => 'You have already signed up for this game']);
+            echo json_encode(['success' => false, 'error' => t('already_signed_up')]);
             exit;
         }
     } elseif ($player_email) {
@@ -98,7 +98,7 @@ try {
         $existing = $stmt->fetchColumn();
         
         if ($existing > 0) {
-            echo json_encode(['success' => false, 'error' => 'This email address has already signed up for this game']);
+            echo json_encode(['success' => false, 'error' => t('email_already_signed_up')]);
             exit;
         }
     }

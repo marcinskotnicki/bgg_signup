@@ -22,6 +22,38 @@ function closeModal() {
     }, 200);
 }
 
+// Helper function to reload page and scroll to a specific game
+function reloadAndScrollToGame(gameId) {
+    if (gameId) {
+        window.location.href = window.location.pathname + '#game-' + gameId;
+        location.reload();
+    } else {
+        location.reload();
+    }
+}
+
+// On page load, scroll to game if hash is present
+$(document).ready(function() {
+    if (window.location.hash && window.location.hash.startsWith('#game-')) {
+        const gameId = window.location.hash.replace('#game-', '');
+        const gameElement = $('.gameitem[data-game-id="' + gameId + '"]').first();
+        if (gameElement.length) {
+            setTimeout(function() {
+                $('html, body').animate({
+                    scrollTop: gameElement.offset().top - 100
+                }, 500);
+                // Add highlight
+                gameElement.addClass('timeline-highlight-glow');
+                setTimeout(function() {
+                    gameElement.removeClass('timeline-highlight-glow');
+                }, 3000);
+                // Clear hash after scrolling
+                history.replaceState(null, null, window.location.pathname);
+            }, 100);
+        }
+    }
+});
+
 // Game actions
 function joinGame(gameId, isReserve) {
     $.get('ajax/join_game_form.php', { 
@@ -153,7 +185,7 @@ function resignFromGame(gameId, playerId) {
             player_id: playerId 
         }, function(response) {
             if (response.success) {
-                location.reload();
+                reloadAndScrollToGame(gameId);
             } else {
                 showAlert(response.message || 'Error occurred');
             }

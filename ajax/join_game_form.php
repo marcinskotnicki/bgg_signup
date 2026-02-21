@@ -221,10 +221,10 @@ $(document).ready(function() {
             success: function(response) {
                 if (response.success) {
                     closeModal();
-                    // Force page reload with cache busting
-                    window.location.href = window.location.href.split('?')[0] + '?' + new Date().getTime();
+                    // Reload and scroll to this game
+                    reloadAndScrollToGame(<?php echo $game_id; ?>);
                 } else {
-                    alert(response.error || '<?php echo t('error_occurred'); ?>');
+                    showAlert(response.error || '<?php echo t('error_occurred'); ?>');
                     $('#submit-join').prop('disabled', false).text('<?php echo t('sign_up'); ?>');
                 }
             },

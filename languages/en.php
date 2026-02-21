@@ -523,5 +523,9 @@ return [
     'make_user' => 'Make User',
     'enter_new_password_for_user' => 'Enter new password for this user',
     'confirm_delete_user' => 'Are you sure you want to delete this user? This cannot be undone!',
+    
+    // Signup errors
+    'already_signed_up' => 'You have already signed up for this game',
+    'email_already_signed_up' => 'This email address has already signed up for this game',
 ];
 ?>

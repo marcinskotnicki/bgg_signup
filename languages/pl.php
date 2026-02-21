@@ -523,5 +523,9 @@ return [
     'make_user' => 'Zrób Użytkownikiem',
     'enter_new_password_for_user' => 'Wpisz nowe hasło dla użytkownika',
     'confirm_delete_user' => 'Czy na pewno chcesz usunąć tego użytkownika? Nie można tego cofnąć!',
+    
+    // Signup errors
+    'already_signed_up' => 'Zapisałeś się już do tej gry',
+    'email_already_signed_up' => 'Ten adres email jest już zapisany do tej gry',
 ];
 ?>
