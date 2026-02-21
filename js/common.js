@@ -32,10 +32,20 @@ function joinGame(gameId, isReserve) {
     });
 }
 
+// Alias for index.php compatibility
+function loadJoinGameForm(gameId, isReserve) {
+    joinGame(gameId, isReserve);
+}
+
 function editGame(gameId) {
     $.get('ajax/edit_game_form.php', { game_id: gameId }, function(html) {
         openModal(html);
     });
+}
+
+// Alias for index.php compatibility
+function loadEditGameForm(gameId) {
+    editGame(gameId);
 }
 
 function deleteGame(gameId) {
@@ -49,6 +59,11 @@ function restoreGame(gameId) {
     $.get('ajax/restore_game_form.php', { game_id: gameId }, function(html) {
         openModal(html);
     });
+}
+
+// Alias for index.php compatibility
+function loadRestoreGameForm(gameId) {
+    restoreGame(gameId);
 }
 
 function fullyDeleteGame(gameId) {
@@ -111,11 +126,21 @@ function addGameToTable(tableId) {
     });
 }
 
+// Alias for index.php compatibility
+function loadAddGameForm(tableId) {
+    addGameToTable(tableId);
+}
+
 // Poll functions
 function createPoll(tableId) {
     $.get('ajax/create_poll_form.php', { table_id: tableId }, function(html) {
         openModal(html);
     });
+}
+
+// Alias for index.php compatibility
+function loadCreatePollForm(tableId) {
+    createPoll(tableId);
 }
 
 function editPoll(pollId) {
@@ -131,6 +156,11 @@ function loadVoteForm(optionId, pollId) {
     }, function(html) {
         openModal(html);
     });
+}
+
+// Alias for template compatibility
+function voteOption(optionId, pollId) {
+    loadVoteForm(optionId, pollId);
 }
 
 function deletePoll(pollId) {
