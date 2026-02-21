@@ -365,6 +365,7 @@ include $template_dir . '/header.php';
 const CONFIG = {
     allowLoggedIn: '<?php echo $config['allow_logged_in']; ?>',
     requireEmails: <?php echo $config['require_emails'] ? 'true' : 'false'; ?>,
+    verificationMethod: '<?php echo $config['verification_method'] ?? 'email'; ?>',
     isLoggedIn: <?php echo $current_user ? 'true' : 'false'; ?>,
     userId: <?php echo $current_user ? $current_user['id'] : 'null'; ?>,
     isAdmin: <?php echo ($current_user && $current_user['is_admin']) ? 'true' : 'false'; ?>
