@@ -63,16 +63,22 @@ try {
         if ($current_user['is_admin'] == 1 || ($player['user_id'] && $player['user_id'] == $current_user['id'])) {
             $can_delete = true;
         }
-    }
-    
-    // If no user_id, anyone can delete (but may require verification based on config)
-    if (!$player['user_id']) {
-        // TODO: Implement verification if needed
-        $can_delete = true;
+    } else {
+        // Not logged in - check verification
+        if ($config['verification_method'] === 'email' && isset($_POST['verified_email'])) {
+            // Verify the email matches the player's email
+            $verified_email = trim($_POST['verified_email']);
+            if ($player['player_email'] && strcasecmp($player['player_email'], $verified_email) === 0) {
+                $can_delete = true;
+            }
+        } elseif ($config['verification_method'] !== 'email' && !$player['user_id']) {
+            // No verification required and no user_id - allow deletion
+            $can_delete = true;
+        }
     }
     
     if (!$can_delete) {
-        echo json_encode(['success' => false, 'error' => 'Permission denied']);
+        echo json_encode(['success' => false, 'error' => 'Permission denied. Please verify your email.']);
         exit;
     }
     

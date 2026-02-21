@@ -181,12 +181,20 @@ function resignFromGame(gameId, playerId) {
     console.log('resignFromGame called with gameId:', gameId, 'playerId:', playerId);
     
     // Inner function to actually resign
-    function doResign() {
-        console.log('Resigning from game:', gameId, 'player:', playerId);
-        $.post('ajax/resign_player.php', { 
+    function doResign(verifiedEmail) {
+        console.log('Resigning from game:', gameId, 'player:', playerId, 'verifiedEmail:', verifiedEmail);
+        
+        var postData = { 
             game_id: gameId, 
             player_id: playerId 
-        }, function(response) {
+        };
+        
+        // Add verified email if provided
+        if (verifiedEmail) {
+            postData.verified_email = verifiedEmail;
+        }
+        
+        $.post('ajax/resign_player.php', postData, function(response) {
             console.log('Resign response:', response);
             if (response.success) {
                 reloadAndScrollToGame(gameId);
@@ -203,7 +211,7 @@ function resignFromGame(gameId, playerId) {
     if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
         // Logged in users can resign
         showConfirm('Are you sure you want to resign from this game?', function() {
-            doResign();
+            doResign(); // No verified email needed
         }, 'Confirm Resignation');
         return;
     }
@@ -219,9 +227,9 @@ function resignFromGame(gameId, playerId) {
                 action: 'resign_player'
             }, function(response) {
                 if (response.verified) {
-                    // Email matches - confirm resignation
+                    // Email matches - confirm resignation and pass verified email
                     showConfirm('Are you sure you want to resign from this game?', function() {
-                        doResign();
+                        doResign(email); // Pass the verified email
                     }, 'Confirm Resignation');
                 } else {
                     showAlert(response.message || 'Email does not match. You can only resign from games you joined.');
@@ -233,7 +241,7 @@ function resignFromGame(gameId, playerId) {
     } else {
         // No verification required
         showConfirm('Are you sure you want to resign from this game?', function() {
-            doResign();
+            doResign(); // No verified email needed
         }, 'Confirm Resignation');
     }
 }
