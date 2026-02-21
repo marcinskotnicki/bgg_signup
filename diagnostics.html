@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>BGG Signup - Diagnostics</title>
+</head>
+<body>
+    <h1>BGG Signup System Diagnostics</h1>
+    
+    <h2>Test Results:</h2>
+    <div id="results"></div>
+    
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="js/common.js"></script>
+    
+    <script>
+        const results = [];
+        
+        // Test 1: jQuery loaded?
+        results.push('jQuery loaded: ' + (typeof $ !== 'undefined' ? 'YES ✓' : 'NO ✗'));
+        
+        // Test 2: common.js functions exist?
+        results.push('resignFromGame exists: ' + (typeof resignFromGame !== 'undefined' ? 'YES ✓' : 'NO ✗'));
+        results.push('showAlert exists: ' + (typeof showAlert !== 'undefined' ? 'YES ✓' : 'NO ✗'));
+        results.push('showConfirm exists: ' + (typeof showConfirm !== 'undefined' ? 'YES ✓' : 'NO ✗'));
+        results.push('reloadAndScrollToGame exists: ' + (typeof reloadAndScrollToGame !== 'undefined' ? 'YES ✓' : 'NO ✗'));
+        
+        // Test 3: CONFIG exists?
+        results.push('CONFIG exists: ' + (typeof CONFIG !== 'undefined' ? 'YES ✓' : 'NO ✗'));
+        if (typeof CONFIG !== 'undefined') {
+            results.push('CONFIG.verificationMethod: ' + CONFIG.verificationMethod);
+            results.push('CONFIG.isLoggedIn: ' + CONFIG.isLoggedIn);
+        }
+        
+        // Display results
+        document.getElementById('results').innerHTML = '<pre>' + results.join('\n') + '</pre>';
+        
+        // Test button
+        document.write('<h2>Test Resign Function:</h2>');
+        document.write('<button onclick="testResign()">Click to Test resignFromGame(123, 456)</button>');
+        document.write('<div id="test-output"></div>');
+        
+        function testResign() {
+            document.getElementById('test-output').innerHTML = '<p>Calling resignFromGame(123, 456)...</p>';
+            console.log('TEST: Calling resignFromGame(123, 456)');
+            
+            if (typeof resignFromGame !== 'undefined') {
+                resignFromGame(123, 456);
+            } else {
+                document.getElementById('test-output').innerHTML = '<p style="color:red">ERROR: resignFromGame is not defined!</p>';
+            }
+        }
+    </script>
+</body>
+</html>
