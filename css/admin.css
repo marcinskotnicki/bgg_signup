@@ -1,5 +1,85 @@
 /* Admin Panel Styles */
 
+/* Default Button Styling - applies to ALL buttons */
+button,
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+.btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    background: #f5f5f5;
+    color: #333;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+button:hover,
+input[type="submit"]:hover,
+input[type="button"]:hover,
+input[type="reset"]:hover,
+.btn:hover {
+    background: #e0e0e0;
+    border-color: #ccc;
+}
+
+button:active,
+input[type="submit"]:active,
+input[type="button"]:active,
+.btn:active {
+    background: #d0d0d0;
+}
+
+button:disabled,
+input[type="submit"]:disabled,
+input[type="button"]:disabled,
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Primary button style */
+button[type="submit"],
+.btn-primary {
+    background: #4CAF50;
+    color: white;
+    border-color: #4CAF50;
+}
+
+button[type="submit"]:hover,
+.btn-primary:hover {
+    background: #45a049;
+    border-color: #45a049;
+}
+
+/* Secondary button style */
+.btn-secondary {
+    background: #6c757d;
+    color: white;
+    border-color: #6c757d;
+}
+
+.btn-secondary:hover {
+    background: #5a6268;
+    border-color: #5a6268;
+}
+
+/* Danger button style */
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+    border-color: #e74c3c;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+    border-color: #c0392b;
+}
+
 /* Admin Login Page */
 body.admin-login { 
     font-family: Arial, sans-serif; 
@@ -40,18 +120,9 @@ body.admin-login h1 {
 
 .login-form button { 
     width: 100%; 
-    padding: 12px; 
-    background: #4CAF50; 
-    color: white; 
-    border: none; 
-    border-radius: 4px; 
-    cursor: pointer; 
-    font-size: 16px; 
+    padding: 12px;
 }
 
-.login-form button:hover { 
-    background: #45a049; 
-}
 
 .login-form .error { 
     color: red; 
@@ -206,18 +277,10 @@ body.admin-panel {
 }
 
 button[type="submit"] { 
-    background: #4CAF50; 
-    color: white; 
-    padding: 12px 30px; 
-    border: none; 
-    border-radius: 4px; 
-    cursor: pointer; 
-    font-size: 16px; 
+    /* Uses default button styling defined at top */
+    min-width: 120px;
 }
 
-button[type="submit"]:hover { 
-    background: #45a049; 
-}
 
 /* Day Configuration */
 .day-config { 

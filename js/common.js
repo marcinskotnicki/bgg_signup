@@ -273,8 +273,6 @@ function resignFromGame(gameId, playerId) {
                     });
                     showAlert(t.verification_failed || 'Verification failed. Please try again. Error: ' + textStatus);
                 });
-                    showAlert(t.verification_failed || 'Verification failed. Please try again.');
-                });
             }, 
             t.email_verification_required || 'Verify Email'
         );
