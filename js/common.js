@@ -11,11 +11,14 @@
 
 // Modal functions
 function openModal(content) {
+    console.log('openModal called with content length:', content.length, 'first 100 chars:', content.substring(0, 100));
     $('#modal-body').html(content);
     $('#modal-overlay').fadeIn(200);
 }
 
 function closeModal() {
+    console.log('closeModal called');
+    console.trace('closeModal call stack'); // Show where it was called from
     $('#modal-overlay').fadeOut(200);
     setTimeout(function() {
         $('#modal-body').html('');
@@ -532,13 +535,16 @@ function showConfirm(message, onConfirm, title) {
     
     openModal(html);
     
-    // Attach confirm handler
-    $('#' + confirmId).one('click', function() {
-        closeModal();
-        if (onConfirm && typeof onConfirm === 'function') {
-            onConfirm();
-        }
-    });
+    // Prevent any lingering Enter key events from triggering the confirm button
+    setTimeout(function() {
+        // Attach confirm handler after a tiny delay
+        $('#' + confirmId).one('click', function() {
+            closeModal();
+            if (onConfirm && typeof onConfirm === 'function') {
+                onConfirm();
+            }
+        });
+    }, 100);
 }
 
 // Email verification prompt
@@ -588,6 +594,8 @@ function showEmailVerification(message, onVerify, title) {
     // Allow Enter key to submit
     $('#' + emailId).on('keypress', function(e) {
         if (e.key === 'Enter') {
+            e.preventDefault(); // Prevent any default behavior
+            e.stopPropagation(); // Stop event from bubbling
             $('#' + verifyId).click();
         }
     });

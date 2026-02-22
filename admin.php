@@ -25,12 +25,7 @@ if (!isset($config['deletion_mode'])) {
 require_once 'includes/translations.php';
 
 // Database connection
-try {
-    $db = new PDO('sqlite:' . DB_FILE);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
+require_once 'includes/db.php';
 
 // Check authentication using cookies (1 year duration)
 $is_logged_in = false;

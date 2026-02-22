@@ -43,12 +43,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
 require_once 'includes/bgg_api.php';
 
 // Database connection
-try {
-    $db = new PDO('sqlite:' . DB_FILE);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die("Database connection failed: " . $e->getMessage());
-}
+require_once 'includes/db.php';
 
 // Get current user
 $current_user = get_current_user($db);
