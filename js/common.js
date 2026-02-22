@@ -241,6 +241,7 @@ function resignFromGame(gameId, playerId) {
         showEmailVerification(
             t.enter_email_for_joining || 'Enter the email address you used when joining this game', 
             function(email) {
+                console.log('Email entered:', email, 'Calling verify_email.php...');
                 // Verify email with backend
                 $.post('ajax/verify_email.php', {
                     player_id: playerId,
@@ -262,7 +263,16 @@ function resignFromGame(gameId, playerId) {
                         console.log('Email not verified, showing error');
                         showAlert(response.message || t.email_does_not_match || 'Email does not match. You can only resign from games you joined.');
                     }
-                }, 'json').fail(function() {
+                }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX call failed!', {
+                        status: jqXHR.status,
+                        statusText: jqXHR.statusText,
+                        textStatus: textStatus,
+                        errorThrown: errorThrown,
+                        responseText: jqXHR.responseText
+                    });
+                    showAlert(t.verification_failed || 'Verification failed. Please try again. Error: ' + textStatus);
+                });
                     showAlert(t.verification_failed || 'Verification failed. Please try again.');
                 });
             }, 

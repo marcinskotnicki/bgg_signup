@@ -104,7 +104,6 @@ if (!$is_admin) {
         <link rel="stylesheet" href="css/admin.css">
     </head>
     <body class="admin-login">
-    <body class="admin-panel">
         <h1><?php echo t('admin_login'); ?></h1>
         <div class="login-form">
             <?php if (isset($login_error)): ?>
@@ -473,7 +472,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
     <title><?php echo t('admin_panel'); ?> - <?php echo htmlspecialchars($config['venue_name']); ?></title>
     <link rel="stylesheet" href="css/admin.css">
 </head>
-    <body class="admin-login">
 <body class="admin-panel">
     <div class="header">
         <h1><?php echo t('admin_panel'); ?></h1>
