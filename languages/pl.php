@@ -527,5 +527,22 @@ return [
     // Signup errors
     'already_signed_up' => 'Zapisałeś się już do tej gry',
     'email_already_signed_up' => 'Ten adres email jest już zapisany do tej gry',
+    
+    // Modal messages and verification
+    'confirm_resign' => 'Czy na pewno chcesz zrezygnować z tej gry?',
+    'confirm_delete_game' => 'Wybierz, jak usunąć tę grę:',
+    'confirm_delete_poll' => 'Czy na pewno chcesz usunąć tę ankietę?',
+    'enter_email_for_joining' => 'Wpisz adres email, którego użyłeś przy zapisywaniu się do tej gry',
+    'enter_email_for_creating' => 'Wpisz adres email, którego użyłeś przy tworzeniu tej gry',
+    'enter_email_for_poll' => 'Wpisz adres email, którego użyłeś przy tworzeniu tej ankiety',
+    'email_verification_required' => 'Wymagana weryfikacja email',
+    'email_does_not_match' => 'Email się nie zgadza. Możesz modyfikować tylko swoje pozycje.',
+    'verification_failed' => 'Weryfikacja nie powiodła się. Spróbuj ponownie.',
+    'confirm_resignation' => 'Potwierdź rezygnację',
+    'confirm_delete' => 'Potwierdź usunięcie',
+    'notice' => 'Uwaga',
+    'error_occurred' => 'Wystąpił błąd',
+    'enter_valid_email' => 'Wpisz poprawny adres email',
+    'enter_email' => 'Wpisz adres email',
 ];
 ?>

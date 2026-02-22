@@ -44,11 +44,11 @@ switch ($action) {
     case 'edit_game':
     case 'delete_game':
         if ($game_id) {
-            $stmt = $db->prepare("SELECT host_email FROM games WHERE id = ?");
+            $stmt = $db->prepare("SELECT creator_email FROM games WHERE id = ?");
             $stmt->execute([$game_id]);
             $game = $stmt->fetch(PDO::FETCH_ASSOC);
             
-            if ($game && strcasecmp($game['host_email'], $email) === 0) {
+            if ($game && strcasecmp($game['creator_email'], $email) === 0) {
                 $verified = true;
             }
         }
@@ -56,7 +56,7 @@ switch ($action) {
         
     case 'resign_player':
         if ($player_id) {
-            $stmt = $db->prepare("SELECT player_email FROM players WHERE id = ?");
+            $stmt = $db->prepare("SELECT player_email FROM signups WHERE id = ?");
             $stmt->execute([$player_id]);
             $player = $stmt->fetch(PDO::FETCH_ASSOC);
             

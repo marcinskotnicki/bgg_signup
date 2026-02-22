@@ -338,7 +338,23 @@ const CONFIG = {
         login_required_to_add_game: '<?php echo t('login_required_to_add_game'); ?>',
         login_required_to_add_table: '<?php echo t('login_required_to_add_table'); ?>',
         login_required_to_join: '<?php echo t('login_required_to_join'); ?>',
-        error_adding_table: '<?php echo t('error_adding_table'); ?>'
+        error_adding_table: '<?php echo t('error_adding_table'); ?>',
+        confirm_resign: '<?php echo t('confirm_resign'); ?>',
+        confirm_delete_game: '<?php echo t('confirm_delete_game'); ?>',
+        confirm_delete_poll: '<?php echo t('confirm_delete_poll'); ?>',
+        enter_email_for_joining: '<?php echo t('enter_email_for_joining'); ?>',
+        enter_email_for_creating: '<?php echo t('enter_email_for_creating'); ?>',
+        enter_email_for_poll: '<?php echo t('enter_email_for_poll'); ?>',
+        email_verification_required: '<?php echo t('email_verification_required'); ?>',
+        email_does_not_match: '<?php echo t('email_does_not_match'); ?>',
+        verification_failed: '<?php echo t('verification_failed'); ?>',
+        confirm_resignation: '<?php echo t('confirm_resignation'); ?>',
+        confirm_delete: '<?php echo t('confirm_delete'); ?>',
+        notice: '<?php echo t('notice'); ?>',
+        error_occurred: '<?php echo t('error_occurred'); ?>',
+        enter_valid_email: '<?php echo t('enter_valid_email'); ?>',
+        enter_email: '<?php echo t('enter_email'); ?>',
+        confirm_delete_user: '<?php echo t('confirm_delete_user'); ?>'
     }
 };
 </script>

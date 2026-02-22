@@ -527,5 +527,22 @@ return [
     // Signup errors
     'already_signed_up' => 'You have already signed up for this game',
     'email_already_signed_up' => 'This email address has already signed up for this game',
+    
+    // Modal messages and verification
+    'confirm_resign' => 'Are you sure you want to resign from this game?',
+    'confirm_delete_game' => 'Choose how to delete this game:',
+    'confirm_delete_poll' => 'Are you sure you want to delete this poll?',
+    'enter_email_for_joining' => 'Enter the email address you used when joining this game',
+    'enter_email_for_creating' => 'Enter the email address you used when creating this game',
+    'enter_email_for_poll' => 'Enter the email address you used when creating this poll',
+    'email_verification_required' => 'Email Verification Required',
+    'email_does_not_match' => 'Email does not match. You can only modify items you created.',
+    'verification_failed' => 'Verification failed. Please try again.',
+    'confirm_resignation' => 'Confirm Resignation',
+    'confirm_delete' => 'Confirm Delete',
+    'notice' => 'Notice',
+    'error_occurred' => 'An error occurred',
+    'enter_valid_email' => 'Please enter a valid email address',
+    'enter_email' => 'Please enter an email address',
 ];
 ?>
