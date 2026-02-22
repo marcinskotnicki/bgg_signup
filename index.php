@@ -361,174 +361,21 @@ include $template_dir . '/header.php';
 </div>
 
 <script>
-// Configuration passed to JavaScript
+// Configuration and translations passed to JavaScript
 const CONFIG = {
     allowLoggedIn: '<?php echo $config['allow_logged_in']; ?>',
     requireEmails: <?php echo $config['require_emails'] ? 'true' : 'false'; ?>,
     verificationMethod: '<?php echo $config['verification_method'] ?? 'email'; ?>',
     isLoggedIn: <?php echo $current_user ? 'true' : 'false'; ?>,
     userId: <?php echo $current_user ? $current_user['id'] : 'null'; ?>,
-    isAdmin: <?php echo ($current_user && $current_user['is_admin']) ? 'true' : 'false'; ?>
+    isAdmin: <?php echo ($current_user && $current_user['is_admin']) ? 'true' : 'false'; ?>,
+    translations: {
+        login_required_to_add_game: '<?php echo t('login_required_to_add_game'); ?>',
+        login_required_to_add_table: '<?php echo t('login_required_to_add_table'); ?>',
+        login_required_to_join: '<?php echo t('login_required_to_join'); ?>',
+        error_adding_table: '<?php echo t('error_adding_table'); ?>'
+    }
 };
-
-$(document).ready(function() {
-    
-    // Add Game Button
-    $('.btn-add-game').click(function() {
-        const tableId = $(this).data('table-id');
-        
-        // Check login requirement
-        if ((CONFIG.allowLoggedIn === 'required_games' || CONFIG.allowLoggedIn === 'required_all') && !CONFIG.isLoggedIn) {
-            alert('<?php echo t('login_required_to_add_game'); ?>');
-            window.location.href = 'login.php?redirect=' + encodeURIComponent(window.location.href);
-            return;
-        }
-        
-        loadAddGameForm(tableId);
-    });
-    
-    // Create Poll Button
-    $('.btn-create-poll').click(function() {
-        const tableId = $(this).data('table-id');
-        
-        // Check login requirement
-        if ((CONFIG.allowLoggedIn === 'required_games' || CONFIG.allowLoggedIn === 'required_all') && !CONFIG.isLoggedIn) {
-            alert('<?php echo t('login_required_to_add_game'); ?>');
-            window.location.href = 'login.php?redirect=' + encodeURIComponent(window.location.href);
-            return;
-        }
-        
-        loadCreatePollForm(tableId);
-    });
-    
-    // Add Table Button
-    $('.btn-add-table').click(function() {
-        const dayId = $(this).data('day-id');
-        
-        // Check login requirement
-        if ((CONFIG.allowLoggedIn === 'required_games' || CONFIG.allowLoggedIn === 'required_all') && !CONFIG.isLoggedIn) {
-            alert('<?php echo t('login_required_to_add_table'); ?>');
-            window.location.href = 'login.php?redirect=' + encodeURIComponent(window.location.href);
-            return;
-        }
-        
-        $.post('ajax/add_table.php', { day_id: dayId }, function(response) {
-            if (response.success) {
-                location.reload();
-            } else {
-                alert(response.error || '<?php echo t('error_adding_table'); ?>');
-            }
-        });
-    });
-    
-    // Join Game Button
-    $(document).on('click', '.join-game-btn', function(e) {
-        e.preventDefault();
-        const gameId = $(this).data('game-id');
-        
-        // Check login requirement
-        if (CONFIG.allowLoggedIn === 'required_all' && !CONFIG.isLoggedIn) {
-            alert('<?php echo t('login_required_to_join'); ?>');
-            window.location.href = 'login.php?redirect=' + encodeURIComponent(window.location.href);
-            return;
-        }
-        
-        loadJoinGameForm(gameId, false);
-    });
-    
-    // Join Reserve Button
-    $(document).on('click', '.join-reserve-btn', function(e) {
-        e.preventDefault();
-        const gameId = $(this).data('game-id');
-        
-        // Check login requirement
-        if (CONFIG.allowLoggedIn === 'required_all' && !CONFIG.isLoggedIn) {
-            alert('<?php echo t('login_required_to_join'); ?>');
-            window.location.href = 'login.php?redirect=' + encodeURIComponent(window.location.href);
-            return;
-        }
-        
-        loadJoinGameForm(gameId, true);
-    });
-    
-    // Resign Button
-    $(document).on('click', '.resign-btn', function(e) {
-        e.preventDefault();
-        const playerId = $(this).data('player-id');
-        const gameId = $(this).data('game-id');
-        
-        // resignFromGame handles confirmation and email verification
-        resignFromGame(gameId, playerId);
-    });
-    
-    // Edit Game Button
-    $(document).on('click', '.edit-game-btn', function(e) {
-        e.preventDefault();
-        const gameId = $(this).data('game-id');
-        editGame(gameId); // Function defined in common.js
-    });
-    
-    // Delete Game Button - Open modal directly
-    $(document).on('click', '.delete-game-btn', function(e) {
-        e.preventDefault();
-        const gameId = $(this).data('game-id');
-        deleteGame(gameId); // Function from common.js - opens modal
-    });
-    
-    // Restore Game Button
-    $(document).on('click', '.restore-game-btn', function(e) {
-        e.preventDefault();
-        const gameId = $(this).data('game-id');
-        restoreGame(gameId); // Function from common.js
-    });
-    
-    // Fully Delete Button
-    $(document).on('click', '.fully-delete-btn', function(e) {
-        e.preventDefault();
-        const gameId = $(this).data('game-id');
-        
-        if (confirm('<?php echo t('confirm_fully_delete'); ?>')) {
-            fullyDeleteGame(gameId);
-        }
-    });
-    
-    // Add Comment Button
-    $(document).on('click', '.add-comment-btn, .btn-add-comment', function(e) {
-        e.preventDefault();
-        const gameId = $(this).data('game-id');
-        loadAddCommentForm(gameId);
-    });
-    
-    // Mail Icon - Player
-    $(document).on('click', '.mail-icon[data-player-id]', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const playerId = $(this).data('player-id');
-        loadPrivateMessageForm(playerId, null);
-    });
-    
-    // Mail Icon - Game (all players)
-    $(document).on('click', '.mail-icon[data-game-id]', function(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        const gameId = $(this).data('game-id');
-        loadPrivateMessageForm(null, gameId);
-    });
-    
-    // Timeline: scroll to game when clicked
-    $(document).on('click', '.timeline-game', function() {
-        const gameId = $(this).data('game-id');
-        const gameElement = $('#game_' + gameId);
-        if (gameElement.length) {
-            $('html, body').animate({
-                scrollTop: gameElement.offset().top - 100
-            }, 500);
-        }
-    });
-    
-    // Timeline is server-side rendered (no JS initialization needed)
-});
-
 </script>
 
 <?php
