@@ -130,22 +130,4 @@ if ($current_user) {
     </div>
 </div>
 
-<script>
-// Event handlers for poll buttons
-// Note: Functions (loadVoteForm, editPoll, deletePoll) are all in common.js
-$(document).on('click', '.btn-vote', function() {
-    const optionId = $(this).data('option-id');
-    const pollId = $(this).data('poll-id');
-    loadVoteForm(optionId, pollId);
-});
 
-$(document).on('click', '.btn-edit-poll', function() {
-    const pollId = $(this).data('poll-id');
-    editPoll(pollId);  // Uses common.js function
-});
-
-$(document).on('click', '.btn-delete-poll', function() {
-    const pollId = $(this).data('poll-id');
-    deletePoll(pollId);  // Uses common.js function
-});
-</script>

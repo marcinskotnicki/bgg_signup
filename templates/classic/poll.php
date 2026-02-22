@@ -92,11 +92,11 @@ if ($current_user) {
                     <?php endif; ?>
                     
                     <div class="poll-progress">
-                        <div class="poll-progress-bar" style="width: <?php echo $percentage; ?>%;"></div>
+                        <div class="poll-progress-bar" style="width: <?php echo $percentage; ?>%"></div>
                     </div>
                     
                     <?php if (!$is_closed): ?>
-                        <button class="btn-sm btn-vote" onclick="loadVoteForm(<?php echo $option['id']; ?>, <?php echo $poll['id']; ?>)">
+                        <button class="btn-sm btn-vote" onclick="voteOption(<?php echo $option['id']; ?>, <?php echo $poll['id']; ?>)">
                             <?php echo t('vote_for_this'); ?>
                         </button>
                     <?php endif; ?>
@@ -113,7 +113,3 @@ if ($current_user) {
     <?php endif; ?>
 </div>
 
-<script>
-// All functions (loadVoteForm, editPoll, deletePoll) are now defined in common.js
-// No need to redefine them here
-</script>

@@ -688,4 +688,24 @@ $(document).ready(function() {
             }, 500);
         }
     });
+    
+    // Poll button handlers (moved from poll.php templates)
+    $(document).on('click', '.btn-vote', function(e) {
+        e.preventDefault();
+        const optionId = $(this).data('option-id');
+        const pollId = $(this).data('poll-id');
+        voteOption(optionId, pollId);
+    });
+    
+    $(document).on('click', '.btn-edit-poll', function(e) {
+        e.preventDefault();
+        const pollId = $(this).data('poll-id');
+        editPoll(pollId);
+    });
+    
+    $(document).on('click', '.btn-delete-poll', function(e) {
+        e.preventDefault();
+        const pollId = $(this).data('poll-id');
+        deletePoll(pollId);
+    });
 });
