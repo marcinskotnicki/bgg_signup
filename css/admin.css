@@ -9,11 +9,11 @@ input[type="reset"],
     padding: 10px 20px;
     font-size: 14px;
     font-weight: 500;
-    border: 1px solid #ddd;
+    border: 1px solid #4CAF50;
     border-radius: 4px;
     cursor: pointer;
-    background: #f5f5f5;
-    color: #333;
+    background: #4CAF50;
+    color: white;
     transition: all 0.2s;
     font-family: inherit;
 }
@@ -23,15 +23,15 @@ input[type="submit"]:hover,
 input[type="button"]:hover,
 input[type="reset"]:hover,
 .btn:hover {
-    background: #e0e0e0;
-    border-color: #ccc;
+    background: #45a049;
+    border-color: #45a049;
 }
 
 button:active,
 input[type="submit"]:active,
 input[type="button"]:active,
 .btn:active {
-    background: #d0d0d0;
+    background: #3d8b40;
 }
 
 button:disabled,
@@ -42,7 +42,7 @@ input[type="button"]:disabled,
     cursor: not-allowed;
 }
 
-/* Primary button style */
+/* Primary button style - matches site theme */
 button[type="submit"],
 .btn-primary {
     background: #4CAF50;
@@ -54,6 +54,11 @@ button[type="submit"]:hover,
 .btn-primary:hover {
     background: #45a049;
     border-color: #45a049;
+}
+
+button[type="submit"]:active,
+.btn-primary:active {
+    background: #3d8b40;
 }
 
 /* Secondary button style */

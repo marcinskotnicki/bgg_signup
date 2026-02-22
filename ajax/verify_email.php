@@ -56,7 +56,7 @@ switch ($action) {
         
     case 'resign_player':
         if ($player_id) {
-            $stmt = $db->prepare("SELECT player_email FROM signups WHERE id = ?");
+            $stmt = $db->prepare("SELECT player_email FROM players WHERE id = ?");
             $stmt->execute([$player_id]);
             $player = $stmt->fetch(PDO::FETCH_ASSOC);
             
