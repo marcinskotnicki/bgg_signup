@@ -529,42 +529,6 @@ $(document).ready(function() {
     // Timeline is server-side rendered (no JS initialization needed)
 });
 
-// Load Add Game Form
-function loadAddGameForm(tableId) {
-    $.get('ajax/add_game_form.php', { table_id: tableId }, function(html) {
-        openModal(html);
-    });
-}
-
-// Load Join Game Form
-function loadJoinGameForm(gameId, isReserve) {
-    $.get('ajax/join_game_form.php', { game_id: gameId, is_reserve: isReserve ? 1 : 0 }, function(html) {
-        openModal(html);
-    });
-}
-
-// Resign from Game
-function resignFromGame(playerId, gameId) {
-    $.ajax({
-        url: 'ajax/resign_player.php',
-        method: 'POST',
-        data: { player_id: playerId, game_id: gameId },
-        dataType: 'json',
-        success: function(response) {
-            if (response.success) {
-                location.reload();
-            } else {
-                alert(response.error || '<?php echo t('error_occurred'); ?>');
-            }
-        },
-        error: function(xhr) {
-            console.error('Resign error:', xhr.responseText);
-            alert('<?php echo t('error_occurred'); ?>');
-        }
-    });
-}
-
-
 </script>
 
 <?php
