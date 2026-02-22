@@ -208,41 +208,6 @@ include $template_dir . '/header.php';
         <a href="index.php" class="btn-current-event"><?php echo t('view_current_event'); ?></a>
     </div>
 </div>
-<style>
-.archive-banner {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 0;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-.archive-banner-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-.archive-icon {
-    font-size: 24px;
-}
-.archive-text {
-    flex: 1;
-    font-size: 16px;
-}
-.btn-current-event {
-    background: white;
-    color: #667eea;
-    padding: 8px 16px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: bold;
-    white-space: nowrap;
-}
-.btn-current-event:hover {
-    background: #f0f0f0;
-}
 </style>
 <?php endif; ?>
 

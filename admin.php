@@ -101,19 +101,10 @@ if (!$is_admin) {
     <head>
         <meta charset="UTF-8">
         <title><?php echo t('admin_login'); ?> - <?php echo htmlspecialchars($config['venue_name']); ?></title>
-        <style>
-            body { font-family: Arial, sans-serif; max-width: 400px; margin: 100px auto; padding: 20px; }
-            h1 { color: #333; text-align: center; }
-            .login-form { background: #f5f5f5; padding: 30px; border-radius: 8px; }
-            .form-group { margin-bottom: 20px; }
-            .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-            input[type="email"], input[type="password"] { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
-            button { width: 100%; padding: 12px; background: #4CAF50; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-            button:hover { background: #45a049; }
-            .error { color: red; background: #ffebee; padding: 10px; border-radius: 4px; text-align: center; margin-bottom: 15px; }
-        </style>
+        <link rel="stylesheet" href="css/admin.css">
     </head>
-    <body>
+    <body class="admin-login">
+    <body class="admin-panel">
         <h1><?php echo t('admin_login'); ?></h1>
         <div class="login-form">
             <?php if (isset($login_error)): ?>
@@ -480,65 +471,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
 <head>
     <meta charset="UTF-8">
     <title><?php echo t('admin_panel'); ?> - <?php echo htmlspecialchars($config['venue_name']); ?></title>
-    <style>
-        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
-        .header { background: #2c3e50; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-        .header h1 { margin: 0; font-size: 24px; }
-        .header-right { display: flex; align-items: center; gap: 10px; }
-        .header-right span { margin-right: 10px; }
-        .header-right a { color: white; text-decoration: none; padding: 8px 15px; border-radius: 4px; }
-        .header-right a.view-site { background: #3498db; }
-        .header-right a.view-site:hover { background: #2980b9; }
-        .logout { background: #e74c3c !important; }
-        .logout:hover { background: #c0392b !important; }
-        .tabs { background: #34495e; overflow: hidden; }
-        .tab-button { background: inherit; float: left; border: none; outline: none; cursor: pointer; padding: 14px 20px; transition: 0.3s; color: white; font-size: 16px; }
-        .tab-button:hover { background: #4a6278; }
-        .tab-button.active { background: #4CAF50; }
-        .tab-content { display: none; padding: 30px; max-width: 1200px; margin: 0 auto; }
-        .tab-content.active { display: block; }
-        .message { padding: 15px; margin: 20px 30px; border-radius: 4px; max-width: 1200px; margin-left: auto; margin-right: auto; }
-        .message.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .message.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
-        .form-group input[type="text"],
-        .form-group input[type="number"],
-        .form-group input[type="date"],
-        .form-group input[type="time"],
-        .form-group input[type="password"],
-        .form-group select,
-        .form-group textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 4px; }
-        .form-group textarea { min-height: 100px; }
-        button[type="submit"] { background: #4CAF50; color: white; padding: 12px 30px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-        button[type="submit"]:hover { background: #45a049; }
-        .day-config { background: #f5f5f5; padding: 15px; margin: 10px 0; border-radius: 4px; }
-        .day-config h4 { margin-top: 0; }
-        .log-viewer { background: #f5f5f5; padding: 20px; border-radius: 4px; max-height: 700px; overflow-y: auto; }
-        .log-entry { padding: 5px 0; border-bottom: 1px solid #ddd; }
-        .log-controls { background: #fff; padding: 20px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ddd; }
-        .log-filter-form { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
-        .log-filter-form label { font-weight: bold; margin: 0; }
-        .log-filter-form select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; min-width: 200px; }
-        .log-stats { background: #e3f2fd; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
-        .log-stats p { margin: 0; color: #1976d2; }
-        .log-table { width: 100%; border-collapse: collapse; background: white; font-size: 13px; }
-        .log-table thead { background: #34495e; color: white; position: sticky; top: 0; }
-        .log-table th { padding: 12px 8px; text-align: left; font-weight: bold; border-bottom: 2px solid #2c3e50; }
-        .log-table td { padding: 10px 8px; border-bottom: 1px solid #ecf0f1; vertical-align: top; }
-        .log-row:hover { background: #f8f9fa; }
-        .log-timestamp { white-space: nowrap; color: #7f8c8d; font-family: monospace; min-width: 150px; }
-        .log-user { color: #2c3e50; font-weight: 500; min-width: 120px; }
-        .log-ip { font-family: monospace; color: #e74c3c; min-width: 120px; }
-        .log-action { color: #27ae60; font-weight: 500; min-width: 100px; }
-        .log-details { color: #34495e; max-width: 400px; word-wrap: break-word; }
-        .update-info { background: #fff3cd; padding: 15px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #ffc107; }
-        #num_days { max-width: 100px; }
-        h2 { color: #2c3e50; margin-top: 0; }
-        h3 { color: #34495e; margin-top: 30px; border-bottom: 2px solid #ecf0f1; padding-bottom: 10px; }
-    </style>
+    <link rel="stylesheet" href="css/admin.css">
 </head>
-<body>
+    <body class="admin-login">
+<body class="admin-panel">
     <div class="header">
         <h1><?php echo t('admin_panel'); ?></h1>
         <div class="header-right">
@@ -994,19 +930,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             </tbody>
         </table>
         
-        <style>
-        .users-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .users-table th, .users-table td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
-        .users-table th { background: #34495e; color: white; font-weight: bold; }
-        .users-table tr:hover { background: #f5f5f5; }
-        .badge-admin { background: #e74c3c; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px; }
-        .badge-user { background: #3498db; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px; }
-        .user-actions { white-space: nowrap; }
-        .btn-small { padding: 6px 12px; margin: 0 4px; font-size: 13px; cursor: pointer; border: none; border-radius: 3px; background: #3498db; color: white; }
-        .btn-small:hover { background: #2980b9; }
-        .btn-danger { background: #e74c3c; }
-        .btn-danger:hover { background: #c0392b; }
-        </style>
     </div>
     
     
@@ -1100,64 +1023,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             </div>
         <?php endif; ?>
         
-        <style>
-        .update-section { 
-            background: #f8f9fa; 
-            padding: 20px; 
-            margin: 20px 0; 
-            border-left: 4px solid #3498db; 
-            border-radius: 4px; 
-        }
-        .update-section h3 { 
-            margin-top: 0; 
-            color: #2c3e50; 
-        }
-        .update-features { 
-            margin: 10px 0; 
-        }
-        .update-features li { 
-            margin: 5px 0; 
-            color: #27ae60; 
-        }
-        .btn-update, .btn-update-schema { 
-            background: #27ae60; 
-            color: white; 
-            padding: 12px 24px; 
-            border: none;
-            border-radius: 4px; 
-            font-weight: bold; 
-            cursor: pointer; 
-            font-size: 14px;
-        }
-        .btn-update:hover, .btn-update-schema:hover { 
-            background: #229954; 
-        }
-        .btn-update { 
-            background: #3498db; 
-        }
-        .btn-update:hover { 
-            background: #2980b9; 
-        }
-        #schema-update-log {
-            background: #fff;
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 4px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-        .schema-log-entry {
-            padding: 5px 0;
-            border-bottom: 1px solid #f0f0f0;
-        }
-        .schema-log-entry:last-child {
-            border-bottom: none;
-        }
-        .schema-log-success { color: #27ae60; }
-        .schema-log-error { color: #e74c3c; }
-        .schema-log-info { color: #3498db; }
-        .schema-log-warning { color: #f39c12; }
-        </style>
     </div>
     
     <!-- Tab 6: Thumbnails -->
@@ -1187,71 +1052,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         <h3><?php echo t('existing_thumbnails'); ?> (<span id="thumbnail-count">0</span>)</h3>
         <div id="thumbnails-grid" class="thumbnails-grid"></div>
         
-        <style>
-        #thumbnail-file {
-            border: 2px dashed #3498db;
-            border-radius: 4px;
-            padding: 15px;
-            background: #f8f9fa;
-            cursor: pointer;
-            transition: all 0.3s;
-        }
-        #thumbnail-file:hover {
-            border-color: #2980b9;
-            background: #e9ecef;
-        }
-        .thumbnails-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        }
-        .thumbnail-item {
-            background: #f8f9fa;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-        }
-        .thumbnail-item img {
-            width: 100%;
-            height: 150px;
-            object-fit: contain;
-            border-radius: 4px;
-            background: white;
-            padding: 5px;
-        }
-        .thumbnail-name {
-            margin: 10px 0;
-            font-size: 13px;
-            color: #2c3e50;
-            word-break: break-all;
-        }
-        .thumbnail-actions {
-            display: flex;
-            gap: 5px;
-            margin-top: 10px;
-        }
-        .btn-delete-thumb {
-            flex: 1;
-            background: #e74c3c;
-            color: white;
-            padding: 8px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: bold;
-        }
-        .btn-delete-thumb:hover {
-            background: #c0392b;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 40px;
-            color: #95a5a6;
-        }
-        </style>
     </div>
     
     <!-- Tab 7: Archives -->
@@ -1262,83 +1062,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
             <p><?php echo t('loading'); ?>...</p>
         </div>
         
-        <style>
-        .events-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        .events-table th {
-            background: #34495e;
-            color: white;
-            padding: 12px;
-            text-align: left;
-            font-weight: bold;
-        }
-        .events-table td {
-            padding: 12px;
-            border-bottom: 1px solid #ecf0f1;
-        }
-        .events-table tr:hover {
-            background: #f8f9fa;
-        }
-        .event-active {
-            background: #d5f4e6 !important;
-        }
-        .event-stats {
-            font-size: 13px;
-            color: #7f8c8d;
-        }
-        .event-stats span {
-            margin-right: 15px;
-        }
-        .btn-view {
-            background: #3498db;
-            color: white;
-            padding: 6px 12px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-size: 13px;
-            display: inline-block;
-            margin-right: 5px;
-        }
-        .btn-view:hover {
-            background: #2980b9;
-        }
-        .btn-delete {
-            background: #e74c3c;
-            color: white;
-            padding: 6px 12px;
-            border: none;
-            border-radius: 4px;
-            font-size: 13px;
-            cursor: pointer;
-            display: inline-block;
-            margin-right: 5px;
-        }
-        .btn-delete:hover {
-            background: #c0392b;
-        }
-        .btn-delete:disabled {
-            background: #bdc3c7;
-            cursor: not-allowed;
-        }
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 12px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-        .badge-active {
-            background: #27ae60;
-            color: white;
-        }
-        .badge-archived {
-            background: #95a5a6;
-            color: white;
-        }
-        </style>
     </div>
     
     <script>
