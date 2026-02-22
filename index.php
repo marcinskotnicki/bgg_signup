@@ -354,6 +354,11 @@ const CONFIG = {
         error_occurred: '<?php echo t('error_occurred'); ?>',
         enter_valid_email: '<?php echo t('enter_valid_email'); ?>',
         enter_email: '<?php echo t('enter_email'); ?>',
+        email_address: '<?php echo t('email_address'); ?>',
+        enter_your_email: '<?php echo t('enter_your_email'); ?>',
+        verify: '<?php echo t('verify'); ?>',
+        cancel: '<?php echo t('cancel'); ?>',
+        ok: '<?php echo t('ok'); ?>',
         confirm_delete_user: '<?php echo t('confirm_delete_user'); ?>'
     }
 };

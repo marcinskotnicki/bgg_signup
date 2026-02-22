@@ -544,5 +544,12 @@ return [
     'error_occurred' => 'Wystąpił błąd',
     'enter_valid_email' => 'Wpisz poprawny adres email',
     'enter_email' => 'Wpisz adres email',
+    
+    // Modal form labels and buttons
+    'email_address' => 'Adres email',
+    'enter_your_email' => 'Wpisz swój email',
+    'verify' => 'Weryfikuj',
+    'cancel' => 'Anuluj',
+    'ok' => 'OK',
 ];
 ?>

@@ -247,8 +247,10 @@ function resignFromGame(gameId, playerId) {
                     email: email,
                     action: 'resign_player'
                 }, function(response) {
+                    console.log('Email verification response:', response);
                     if (response.verified) {
                         // Email matches - confirm resignation and pass verified email
+                        console.log('Email verified, showing confirmation with message:', t.confirm_resign);
                         showConfirm(
                             t.confirm_resign || 'Are you sure you want to resign from this game?', 
                             function() {
@@ -257,6 +259,7 @@ function resignFromGame(gameId, playerId) {
                             t.confirm_resignation || 'Confirm Resignation'
                         );
                     } else {
+                        console.log('Email not verified, showing error');
                         showAlert(response.message || t.email_does_not_match || 'Email does not match. You can only resign from games you joined.');
                     }
                 }, 'json').fail(function() {
@@ -495,23 +498,26 @@ function showAlert(message, title) {
         <div class="modal-alert">
             <h3>${title}</h3>
             <div class="alert-message">${message}</div>
-            <button type="button" class="btn btn-primary" onclick="closeModal()">OK</button>
+            <button type="button" class="btn btn-primary" onclick="closeModal()">${t.ok || 'OK'}</button>
         </div>
     `;
     openModal(html);
 }
 
 function showConfirm(message, onConfirm, title) {
-    title = title || 'Confirm';
+    const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
+    title = title || t.confirm_delete || 'Confirm';
     const confirmId = 'confirm_' + Date.now();
+    
+    console.log('showConfirm called with:', {message, title, hasTranslations: !!t});
     
     const html = `
         <div class="modal-confirm">
             <h3>${title}</h3>
             <div class="confirm-message">${message}</div>
             <div class="confirm-buttons">
-                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                <button type="button" class="btn btn-primary" id="${confirmId}">OK</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">${t.cancel || 'Cancel'}</button>
+                <button type="button" class="btn btn-primary" id="${confirmId}">${t.ok || 'OK'}</button>
             </div>
         </div>
     `;
@@ -539,12 +545,12 @@ function showEmailVerification(message, onVerify, title) {
             <h3>${title}</h3>
             <div class="verify-message">${message}</div>
             <div class="form-group">
-                <label>Email Address:</label>
-                <input type="email" id="${emailId}" class="form-control" placeholder="Enter your email" required>
+                <label>${t.email_address || 'Email Address'}:</label>
+                <input type="email" id="${emailId}" class="form-control" placeholder="${t.enter_your_email || 'Enter your email'}" required>
             </div>
             <div class="verify-buttons">
-                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-                <button type="button" class="btn btn-primary" id="${verifyId}">Verify</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">${t.cancel || 'Cancel'}</button>
+                <button type="button" class="btn btn-primary" id="${verifyId}">${t.verify || 'Verify'}</button>
             </div>
         </div>
     `;
