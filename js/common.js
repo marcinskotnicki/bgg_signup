@@ -10,8 +10,18 @@
  */
 
 // Modal functions
+let modalClearTimeout = null;  // Track the timeout so we can cancel it
+
 function openModal(content) {
     console.log('openModal called with content length:', content.length, 'first 100 chars:', content.substring(0, 100));
+    
+    // Cancel any pending content clear from previous closeModal
+    if (modalClearTimeout) {
+        clearTimeout(modalClearTimeout);
+        modalClearTimeout = null;
+        console.log('Cancelled pending modal content clear');
+    }
+    
     $('#modal-body').html(content);
     $('#modal-overlay').fadeIn(200);
 }
@@ -20,8 +30,12 @@ function closeModal() {
     console.log('closeModal called');
     console.trace('closeModal call stack'); // Show where it was called from
     $('#modal-overlay').fadeOut(200);
-    setTimeout(function() {
+    
+    // Schedule content clear, but track it so openModal can cancel if needed
+    modalClearTimeout = setTimeout(function() {
         $('#modal-body').html('');
+        modalClearTimeout = null;
+        console.log('Modal content cleared after fadeOut');
     }, 200);
 }
 

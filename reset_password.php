@@ -14,11 +14,7 @@ require_once 'includes/translations.php';
 require_once 'includes/auth.php';
 
 // Database connection
-try {
-    $db = new PDO('sqlite:' . DB_FILE);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die('Database connection failed');
+require_once 'includes/db.php';
 }
 
 // If already logged in, redirect to index

@@ -37,9 +37,10 @@ $difficulty_info = format_difficulty($game['difficulty']);
 // Determine if game is inactive
 $is_inactive = $game['is_active'] == 0;
 
-// Use pre-loaded comments (loaded in index.php)
-// This eliminates duplicate database query
-$comments = $game['comments'];
+// Get comments
+$stmt = $db->prepare("SELECT * FROM comments WHERE game_id = ? ORDER BY created_at ASC");
+$stmt->execute([$game['id']]);
+$comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
 <div class="game-card <?php echo $is_inactive ? 'game-inactive' : ''; ?>" data-game-id="<?php echo $game['id']; ?>">
@@ -165,6 +166,27 @@ $comments = $game['comments'];
                         <?php if ($player['knows_rules'] === 'yes'): ?>
                             <span class="player-badge">✓</span>
                         <?php endif; ?>
+                        
+                        <?php
+                        // Resign button logic
+                        $can_delete_player = false;
+                        if ($current_user) {
+                            if ($current_user['is_admin'] == 1) {
+                                $can_delete_player = true;
+                            } elseif ($player['user_id'] && $player['user_id'] == $current_user['id']) {
+                                $can_delete_player = true;
+                            }
+                        }
+                        if (!$player['user_id']) {
+                            $can_delete_player = true; // Anyone can delete if no user_id (needs verification)
+                        }
+                        ?>
+                        
+                        <?php if ($can_delete_player && !$is_inactive): ?>
+                            <a href="#" class="resign-btn" data-player-id="<?php echo $player['id']; ?>" data-game-id="<?php echo $game['id']; ?>">
+                                <?php echo t('resign'); ?>
+                            </a>
+                        <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
                 
@@ -181,6 +203,27 @@ $comments = $game['comments'];
                     <?php foreach ($reserve_players as $player): ?>
                         <div class="player-item reserve">
                             <span class="player-name"><?php echo htmlspecialchars($player['player_name']); ?></span>
+                            
+                            <?php
+                            // Resign button logic for reserve players
+                            $can_delete_player = false;
+                            if ($current_user) {
+                                if ($current_user['is_admin'] == 1) {
+                                    $can_delete_player = true;
+                                } elseif ($player['user_id'] && $player['user_id'] == $current_user['id']) {
+                                    $can_delete_player = true;
+                                }
+                            }
+                            if (!$player['user_id']) {
+                                $can_delete_player = true; // Anyone can delete if no user_id (needs verification)
+                            }
+                            ?>
+                            
+                            <?php if ($can_delete_player && !$is_inactive): ?>
+                                <a href="#" class="resign-btn" data-player-id="<?php echo $player['id']; ?>" data-game-id="<?php echo $game['id']; ?>">
+                                    <?php echo t('resign'); ?>
+                                </a>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
