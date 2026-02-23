@@ -553,6 +553,12 @@ return [
     'code_does_not_match' => 'Invalid verification code. Please try again.',
     'enter_verification_code' => 'Enter the 6-digit code from your email',
     
+    // Email verification code messages
+    'email_verification_code_subject' => 'Your Verification Code',
+    'email_verification_code_body' => 'Your verification code is',
+    'email_verification_code_context' => 'You requested this code to resign from',
+    'email_verification_code_ignore' => 'If you did not request this code, please ignore this email.',
+    
     // Modal form labels and buttons
     'email_address' => 'Email Address',
     'enter_your_email' => 'Enter your email',

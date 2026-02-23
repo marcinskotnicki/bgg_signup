@@ -19,7 +19,11 @@ if (!defined('DB_FILE')) {
 
 // Create database connection
 try {
-    $db = new PDO('sqlite:' . DB_FILE);
+    // Determine the correct path based on where this is being included from
+    // For AJAX files in /ajax/, use ../ to go up one level
+    $db_path = 'sqlite:' . (file_exists(DB_FILE) ? DB_FILE : '../' . DB_FILE);
+    
+    $db = new PDO($db_path);
     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     
     // Set timeout to 10 seconds (prevents immediate failure on locks)

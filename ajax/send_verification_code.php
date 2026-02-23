@@ -4,13 +4,25 @@
  * Sends the verification code to user's email when they try to resign
  */
 
+// Start output buffering
+ob_start();
+
 header('Content-Type: application/json');
 
 // Load configuration
-require_once '../config.php';
+$config = require_once '../config.php';
+
+// Load translations
+require_once '../includes/translations.php';
 
 // Database connection
-require_once '../includes/db.php';
+try {
+    $db = new PDO('sqlite:../' . DB_FILE);
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    echo json_encode(['success' => false, 'error' => 'Database connection failed']);
+    exit;
+}
 
 // Get parameters
 $player_id = intval($_POST['player_id'] ?? 0);
@@ -90,20 +102,37 @@ try {
         exit;
     }
     
+    // Check if email exists
+    if (!$email) {
+        echo json_encode([
+            'success' => false,
+            'error' => 'No email address on record. Cannot send verification code.'
+        ]);
+        exit;
+    }
+    
     $email_sent = false;
     
-    // Try to send email if configured and email exists
-    if ($email && defined('SEND_EMAILS') && SEND_EMAILS === 'yes') {
-        require_once '../includes/email_helper.php';
+    // Try to send email if configured
+    if (!empty($config['send_emails'])) {
+        require_once '../includes/email.php';
         
         try {
-            $subject = 'Your Verification Code';
-            $message = "Your verification code is: $code\n\n";
-            $message .= "You requested this code to resign from $context.\n\n";
-            $message .= "If you did not request this code, please ignore this email.";
+            $subject = t('email_verification_code_subject');
+            $message = t('email_verification_code_body') . ": $code\n\n";
+            $message .= t('email_verification_code_context') . " $context.\n\n";
+            $message .= t('email_verification_code_ignore');
             
-            if (send_email($email, $subject, $message)) {
+            if (send_email($email, $subject, $message, $config)) {
                 $email_sent = true;
+            } else {
+                // Email sending failed
+                echo json_encode([
+                    'success' => false,
+                    'error' => 'Failed to send verification code email. Please contact the administrator.',
+                    'email_error' => true
+                ]);
+                exit;
             }
         } catch (Exception $e) {
             error_log("Failed to send verification code email: " . $e->getMessage());
@@ -116,27 +145,40 @@ try {
             exit;
         }
     } else {
-        // Email not configured or no email address
+        // Email not configured
         echo json_encode([
             'success' => false,
-            'error' => 'Email verification is not configured. Please contact the administrator.',
+            'error' => 'Email sending is not enabled. Please contact the administrator to enable email verification.',
             'config_error' => true
         ]);
         exit;
     }
     
     // Email sent successfully
+    ob_end_clean();
     echo json_encode([
         'success' => true,
-        'email_sent' => $email_sent,
+        'email_sent' => true,
         'email' => $email ? substr($email, 0, 3) . '***' . substr($email, -10) : null
         // Never send the code to the frontend!
     ]);
     
 } catch (PDOException $e) {
-    error_log('Send verification code error: ' . $e->getMessage());
+    error_log('Send verification code database error: ' . $e->getMessage());
+    ob_end_clean();
     echo json_encode([
         'success' => false,
-        'error' => 'Database error occurred'
+        'error' => 'Database error occurred: ' . $e->getMessage(),
+        'debug' => [
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ]
+    ]);
+} catch (Exception $e) {
+    error_log('Send verification code error: ' . $e->getMessage());
+    ob_end_clean();
+    echo json_encode([
+        'success' => false,
+        'error' => 'Error occurred: ' . $e->getMessage()
     ]);
 }

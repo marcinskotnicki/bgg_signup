@@ -938,3 +938,5 @@ $(document).ready(function() {
                 scrollTop: gameElement.offset().top - 100
             }, 500);
         }
+    });
+});

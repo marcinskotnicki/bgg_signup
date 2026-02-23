@@ -553,6 +553,12 @@ return [
     'code_does_not_match' => 'Niepoprawny kod weryfikacyjny. Spróbuj ponownie.',
     'enter_verification_code' => 'Wpisz 6-cyfrowy kod z emaila',
     
+    // Email verification code messages
+    'email_verification_code_subject' => 'Twój kod weryfikacyjny',
+    'email_verification_code_body' => 'Twój kod weryfikacyjny to',
+    'email_verification_code_context' => 'Zażądałeś tego kodu, aby zrezygnować z',
+    'email_verification_code_ignore' => 'Jeśli nie prosiłeś o ten kod, zignoruj tę wiadomość.',
+    
     // Modal form labels and buttons
     'email_address' => 'Adres email',
     'enter_your_email' => 'Wpisz swój email',
