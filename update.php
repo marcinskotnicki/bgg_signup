@@ -129,133 +129,12 @@ function update_database_schema() {
         $current_schema = get_current_schema();
         $updates_made = 0;
         
-        // Define expected tables and their creation SQL
-        $expected_tables = [
-            'events' => "CREATE TABLE IF NOT EXISTS events (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                is_active INTEGER DEFAULT 1,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )",
-            'event_days' => "CREATE TABLE IF NOT EXISTS event_days (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                event_id INTEGER NOT NULL,
-                day_number INTEGER NOT NULL,
-                date DATE NOT NULL,
-                start_time TIME NOT NULL,
-                end_time TIME NOT NULL,
-                max_tables INTEGER NOT NULL,
-                FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-            )",
-            'tables' => "CREATE TABLE IF NOT EXISTS tables (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                event_day_id INTEGER NOT NULL,
-                table_number INTEGER NOT NULL,
-                FOREIGN KEY (event_day_id) REFERENCES event_days(id) ON DELETE CASCADE
-            )",
-            'games' => "CREATE TABLE IF NOT EXISTS games (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                table_id INTEGER NOT NULL,
-                bgg_id INTEGER,
-                bgg_url TEXT,
-                name TEXT NOT NULL,
-                thumbnail TEXT,
-                play_time INTEGER NOT NULL,
-                min_players INTEGER NOT NULL,
-                max_players INTEGER NOT NULL,
-                difficulty REAL,
-                start_time TIME NOT NULL,
-                host_name TEXT NOT NULL,
-                host_email TEXT,
-                language TEXT NOT NULL,
-                rules_explanation TEXT NOT NULL,
-                initial_comment TEXT,
-                is_active INTEGER DEFAULT 1,
-                created_by_user_id INTEGER,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE
-            )",
-            'players' => "CREATE TABLE IF NOT EXISTS players (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                game_id INTEGER NOT NULL,
-                player_name TEXT NOT NULL,
-                player_email TEXT,
-                knows_rules TEXT,
-                comment TEXT,
-                is_reserve INTEGER DEFAULT 0,
-                position INTEGER NOT NULL,
-                user_id INTEGER,
-                verification_code TEXT,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
-            )",
-            'comments' => "CREATE TABLE IF NOT EXISTS comments (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                game_id INTEGER NOT NULL,
-                author_name TEXT NOT NULL,
-                author_email TEXT,
-                comment TEXT NOT NULL,
-                user_id INTEGER,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
-            )",
-            'users' => "CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT UNIQUE NOT NULL,
-                password_hash TEXT NOT NULL,
-                is_admin INTEGER DEFAULT 0,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )",
-            'options' => "CREATE TABLE IF NOT EXISTS options (
-                option_key TEXT PRIMARY KEY,
-                option_value TEXT
-            )",
-            'bgg_cache' => "CREATE TABLE IF NOT EXISTS bgg_cache (
-                cache_key TEXT PRIMARY KEY,
-                cache_data TEXT NOT NULL,
-                cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            )",
-            'polls' => "CREATE TABLE IF NOT EXISTS polls (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                table_id INTEGER NOT NULL,
-                creator_name TEXT NOT NULL,
-                creator_email TEXT,
-                comment TEXT,
-                created_by_user_id INTEGER,
-                start_time TIME,
-                verification_code TEXT,
-                is_active INTEGER DEFAULT 1,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                closed_at DATETIME,
-                FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE
-            )",
-            'poll_options' => "CREATE TABLE IF NOT EXISTS poll_options (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                poll_id INTEGER NOT NULL,
-                bgg_id INTEGER,
-                bgg_url TEXT,
-                game_name TEXT NOT NULL,
-                thumbnail TEXT,
-                play_time INTEGER,
-                min_players INTEGER,
-                max_players INTEGER,
-                difficulty REAL,
-                vote_threshold INTEGER NOT NULL,
-                display_order INTEGER NOT NULL,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE CASCADE
-            )",
-            'poll_votes' => "CREATE TABLE IF NOT EXISTS poll_votes (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                poll_option_id INTEGER NOT NULL,
-                voter_name TEXT NOT NULL,
-                voter_email TEXT NOT NULL,
-                user_id INTEGER,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                FOREIGN KEY (poll_option_id) REFERENCES poll_options(id) ON DELETE CASCADE
-            )"
-        ];
+        
+        // Load schema from centralized file
+        define('SCHEMA_ACCESS', true);
+        require_once __DIR__ . '/schema.php';
+        
+        $expected_tables = get_database_schema();
         
         // Check and create missing tables
         foreach ($expected_tables as $table_name => $create_sql) {
@@ -267,56 +146,7 @@ function update_database_schema() {
         }
         
         // Check and add missing columns to existing tables
-        $expected_columns = [
-            'players' => [
-                'verification_code' => "ALTER TABLE players ADD COLUMN verification_code TEXT"
-            ],
-            'polls' => [
-                'start_time' => "ALTER TABLE polls ADD COLUMN start_time TIME",
-                'comment' => "ALTER TABLE polls ADD COLUMN comment TEXT",
-                'verification_code' => "ALTER TABLE polls ADD COLUMN verification_code TEXT"
-            ],
-            'games' => [
-                'creator_email' => "ALTER TABLE games ADD COLUMN creator_email TEXT"
-            ]
-        ];
-        
-        foreach ($expected_columns as $table_name => $columns) {
-            if (isset($current_schema[$table_name])) {
-                $existing_columns = array_keys($current_schema[$table_name]['columns']);
-                
-                foreach ($columns as $column_name => $alter_sql) {
-                    if (!in_array($column_name, $existing_columns)) {
-                        try {
-                            $db->exec($alter_sql);
-                            log_update_message("Added column '$column_name' to table '$table_name'");
-                            
-                            // Generate verification codes for existing records without user_id
-                            if ($column_name === 'verification_code') {
-                                if ($table_name === 'players') {
-                                    $stmt = $db->query("SELECT id FROM players WHERE user_id IS NULL AND (verification_code IS NULL OR verification_code = '')");
-                                    $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                    
-                                    if (count($records) > 0) {
-                                        $update = $db->prepare("UPDATE players SET verification_code = ? WHERE id = ?");
-                                        foreach ($records as $record) {
-                                            $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-                                            $update->execute([$code, $record['id']]);
-                                        }
-                                        log_update_message("Generated verification codes for " . count($records) . " players");
-                                    }
-                                } elseif ($table_name === 'polls') {
-                                    $stmt = $db->query("SELECT id FROM polls WHERE created_by_user_id IS NULL AND (verification_code IS NULL OR verification_code = '')");
-                                    $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
-                                    
-                                    if (count($records) > 0) {
-                                        $update = $db->prepare("UPDATE polls SET verification_code = ? WHERE id = ?");
-                                        foreach ($records as $record) {
-                                            $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-                                            $update->execute([$code, $record['id']]);
-                                        }
-                                        log_update_message("Generated verification codes for " . count($records) . " polls");
-                                    }
+        $expected_columns = get_schema_migrations();
                                 }
                             }
                             
@@ -448,7 +278,14 @@ function update_files_from_github() {
     log_update_message("Found extracted folder: $source_dir");
     
     // Copy files from extracted folder to current directory
+    log_update_message("Copying updated files...");
     $files_copied = copy_directory_contents($source_dir, '.');
+    
+    // SECURITY: Remove install.php if it exists (should not be on production)
+    if (file_exists('install.php')) {
+        @unlink('install.php');
+        log_update_message("SECURITY: Removed install.php (installer should not be on production server)");
+    }
     
     // Clean up
     @unlink($zip_file);

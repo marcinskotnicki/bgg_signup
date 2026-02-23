@@ -36,6 +36,9 @@ function log_message($message) {
 /**
  * Create the SQLite database with all necessary tables
  */
+/**
+ * Create the SQLite database with all necessary tables
+ */
 function create_database($admin_name, $admin_email, $admin_password) {
     log_message("Creating database...");
     
@@ -43,212 +46,54 @@ function create_database($admin_name, $admin_email, $admin_password) {
         $db = new PDO('sqlite:' . DB_FILE);
         $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
         
-        // Events table
-        $db->exec("CREATE TABLE IF NOT EXISTS events (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            is_active INTEGER DEFAULT 1,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )");
+        // Load schema from centralized file
+        define('SCHEMA_ACCESS', true);
+        require_once __DIR__ . '/schema.php';
         
-        // Event days table (for multi-day events)
-        $db->exec("CREATE TABLE IF NOT EXISTS event_days (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event_id INTEGER NOT NULL,
-            day_number INTEGER NOT NULL,
-            date DATE NOT NULL,
-            start_time TIME NOT NULL,
-            end_time TIME NOT NULL,
-            max_tables INTEGER NOT NULL,
-            FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
-        )");
+        $tables = get_database_schema();
         
-        // Tables (physical tables at venue)
-        $db->exec("CREATE TABLE IF NOT EXISTS tables (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event_day_id INTEGER NOT NULL,
-            table_number INTEGER NOT NULL,
-            FOREIGN KEY (event_day_id) REFERENCES event_days(id) ON DELETE CASCADE
-        )");
+        log_message("Creating " . count($tables) . " tables...");
         
-        // Board games
-        $db->exec("CREATE TABLE IF NOT EXISTS games (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            table_id INTEGER NOT NULL,
-            bgg_id INTEGER,
-            bgg_url TEXT,
-            name TEXT NOT NULL,
-            thumbnail TEXT,
-            play_time INTEGER NOT NULL,
-            min_players INTEGER NOT NULL,
-            max_players INTEGER NOT NULL,
-            difficulty REAL,
-            start_time TIME NOT NULL,
-            host_name TEXT NOT NULL,
-            host_email TEXT,
-            language TEXT NOT NULL,
-            rules_explanation TEXT NOT NULL,
-            initial_comment TEXT,
-            is_active INTEGER DEFAULT 1,
-            created_by_user_id INTEGER,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE
-        )");
+        // Create all tables
+        foreach ($tables as $table_name => $create_sql) {
+            $db->exec($create_sql);
+            log_message("Created table: $table_name");
+        }
         
-        // Players signed up for games
-        $db->exec("CREATE TABLE IF NOT EXISTS players (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            game_id INTEGER NOT NULL,
-            player_name TEXT NOT NULL,
-            player_email TEXT,
-            knows_rules TEXT,
-            comment TEXT,
-            is_reserve INTEGER DEFAULT 0,
-            position INTEGER NOT NULL,
-            user_id INTEGER,
-            verification_code TEXT,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
-        )");
+        log_message("All tables created successfully");
         
-        // Comments on games
-        $db->exec("CREATE TABLE IF NOT EXISTS comments (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            game_id INTEGER NOT NULL,
-            author_name TEXT NOT NULL,
-            author_email TEXT,
-            comment TEXT NOT NULL,
-            user_id INTEGER,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
-        )");
+        // Insert default options
+        log_message("Setting up default options...");
         
-        // Users table (for login functionality)
-        $db->exec("CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL,
-            email TEXT UNIQUE NOT NULL,
-            password_hash TEXT NOT NULL,
-            is_admin INTEGER DEFAULT 0,
-            preferred_template TEXT DEFAULT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )");
+        $default_options = get_default_options();
         
-        // Password reset tokens
-        $db->exec("CREATE TABLE IF NOT EXISTS password_resets (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NOT NULL,
-            token TEXT NOT NULL UNIQUE,
-            expires_at DATETIME NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-        )");
+        // Set admin password
+        $default_options['admin_password'] = password_hash($admin_password, PASSWORD_DEFAULT);
         
-        // BGG API cache
-        $db->exec("CREATE TABLE IF NOT EXISTS bgg_cache (
-            cache_key TEXT PRIMARY KEY,
-            cache_data TEXT NOT NULL,
-            cached_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )");
+        $stmt = $db->prepare("INSERT INTO options (option_key, option_value) VALUES (?, ?)");
+        foreach ($default_options as $key => $value) {
+            $stmt->execute([$key, $value]);
+        }
         
-        // Polls (game selection polls)
-        $db->exec("CREATE TABLE IF NOT EXISTS polls (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            table_id INTEGER NOT NULL,
-            creator_name TEXT NOT NULL,
-            creator_email TEXT,
-            comment TEXT,
-            created_by_user_id INTEGER,
-            start_time TIME,
-            verification_code TEXT,
-            is_active INTEGER DEFAULT 1,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            closed_at DATETIME,
-            FOREIGN KEY (table_id) REFERENCES tables(id) ON DELETE CASCADE
-        )");
-        
-        // Poll options (game choices in a poll)
-        $db->exec("CREATE TABLE IF NOT EXISTS poll_options (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            poll_id INTEGER NOT NULL,
-            bgg_id INTEGER,
-            bgg_url TEXT,
-            game_name TEXT NOT NULL,
-            thumbnail TEXT,
-            play_time INTEGER,
-            min_players INTEGER,
-            max_players INTEGER,
-            difficulty REAL,
-            vote_threshold INTEGER NOT NULL,
-            display_order INTEGER NOT NULL,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (poll_id) REFERENCES polls(id) ON DELETE CASCADE
-        )");
-        
-        // Poll votes
-        $db->exec("CREATE TABLE IF NOT EXISTS poll_votes (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            poll_option_id INTEGER NOT NULL,
-            voter_name TEXT NOT NULL,
-            voter_email TEXT NOT NULL,
-            user_id INTEGER,
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (poll_option_id) REFERENCES poll_options(id) ON DELETE CASCADE
-        )");
+        log_message("Default options inserted");
         
         // Create admin user
+        log_message("Creating admin user...");
+        
         $password_hash = password_hash($admin_password, PASSWORD_DEFAULT);
         $stmt = $db->prepare("INSERT INTO users (name, email, password_hash, is_admin) VALUES (?, ?, ?, 1)");
         $stmt->execute([$admin_name, $admin_email, $password_hash]);
         
-        log_message("Database created successfully!");
         log_message("Admin user created: $admin_email");
+        
+        log_message("Database setup complete!");
         return true;
         
     } catch (PDOException $e) {
-        log_message("Database creation failed: " . $e->getMessage());
+        log_message("Database error: " . $e->getMessage());
         return false;
     }
 }
-
-/**
- * Download and extract files from GitHub repository ZIP
- */
-function download_from_github() {
-    log_message("Downloading files from GitHub...");
-    
-    // GitHub ZIP URL - no API needed, no rate limits!
-    $zip_url = GITHUB_REPO . '/archive/refs/heads/main.zip';
-    $zip_file = 'github_download.zip';
-    $extract_dir = 'github_extract';
-    
-    // Download ZIP file
-    log_message("Downloading ZIP from: $zip_url");
-    $zip_content = fetch_url($zip_url);
-    
-    if ($zip_content === false) {
-        log_message("Failed to download ZIP file from GitHub");
-        return false;
-    }
-    
-    // Save ZIP file
-    file_put_contents($zip_file, $zip_content);
-    log_message("ZIP file downloaded (" . number_format(strlen($zip_content)) . " bytes)");
-    
-    // Extract ZIP file
-    if (!class_exists('ZipArchive')) {
-        log_message("ERROR: ZipArchive extension not available. Trying PharData...");
-        
-        // Try using PharData as fallback
-        try {
-            $phar = new PharData($zip_file);
-            $phar->extractTo($extract_dir, null, true);
-            log_message("ZIP extracted using PharData");
-        } catch (Exception $e) {
-            log_message("ERROR: Could not extract ZIP: " . $e->getMessage());
-            @unlink($zip_file);
-            return false;
-        }
     } else {
         $zip = new ZipArchive;
         if ($zip->open($zip_file) === TRUE) {
