@@ -90,18 +90,26 @@ try {
     
     $db->beginTransaction();
     
+    // Generate verification code for non-logged-in users
+    $game_verification_code = null;
+    if (!$current_user) {
+        $game_verification_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    }
+    
     // Insert game
     $stmt = $db->prepare("INSERT INTO games (
         table_id, bgg_id, bgg_url, name, thumbnail, play_time, 
         min_players, max_players, difficulty, start_time, 
-        host_name, host_email, language, rules_explanation, 
+        host_name, host_email, creator_email, verification_code,
+        language, rules_explanation, 
         initial_comment, is_active, created_by_user_id, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, CURRENT_TIMESTAMP)");
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, CURRENT_TIMESTAMP)");
     
     $stmt->execute([
         $table_id, $bgg_id, $bgg_url, $name, $thumbnail, $play_time,
         $min_players, $max_players, $difficulty, $start_time,
-        $host_name, $host_email, $language, $rules_explanation,
+        $host_name, $host_email, $host_email, $game_verification_code, // creator_email = host_email
+        $language, $rules_explanation,
         $initial_comment, $current_user ? $current_user['id'] : null
     ]);
     

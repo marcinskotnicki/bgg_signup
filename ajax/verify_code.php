@@ -58,14 +58,41 @@ try {
         case 'edit_game':
         case 'delete_game':
             if ($game_id) {
-                // Games are verified by email, not code (game creators aren't tracked as players)
-                ob_end_clean();
-                echo json_encode([
-                    'success' => true,
-                    'verified' => false,
-                    'message' => 'Please use email verification for games.'
-                ]);
-                exit;
+                // Get game's verification code
+                $stmt = $db->prepare("SELECT verification_code, created_by_user_id FROM games WHERE id = ?");
+                $stmt->execute([$game_id]);
+                $game = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if (!$game) {
+                    ob_end_clean();
+                    echo json_encode([
+                        'success' => true,
+                        'verified' => false,
+                        'message' => 'Game not found.'
+                    ]);
+                    exit;
+                }
+                
+                // If game has created_by_user_id, creator was logged in
+                if ($game['created_by_user_id']) {
+                    ob_end_clean();
+                    echo json_encode([
+                        'success' => true,
+                        'verified' => false,
+                        'message' => 'Please log in to edit or delete this game.'
+                    ]);
+                    exit;
+                }
+                
+                // Check if code matches
+                if ($game['verification_code'] && $game['verification_code'] === $code) {
+                    $verified = true;
+                    
+                    // Regenerate verification code after successful verification
+                    $new_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                    $update = $db->prepare("UPDATE games SET verification_code = ? WHERE id = ?");
+                    $update->execute([$new_code, $game_id]);
+                }
             }
             break;
             

@@ -176,7 +176,8 @@ function get_schema_migrations() {
             'verification_code' => "ALTER TABLE polls ADD COLUMN verification_code TEXT"
         ],
         'games' => [
-            'creator_email' => "ALTER TABLE games ADD COLUMN creator_email TEXT"
+            'creator_email' => "ALTER TABLE games ADD COLUMN creator_email TEXT",
+            'verification_code' => "ALTER TABLE games ADD COLUMN verification_code TEXT"
         ]
     ];
 }

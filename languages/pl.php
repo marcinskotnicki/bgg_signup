@@ -267,6 +267,7 @@ return [
     'error_adding_table' => 'Błąd dodawania stołu.',
     'confirm_resign' => 'Czy na pewno chcesz zrezygnować z tej gry?',
     'confirm_delete_game' => 'Czy na pewno chcesz usunąć tę grę?',
+    'confirm_edit_game' => 'Wymagana weryfikacja aby edytować tę grę',
     'confirm_soft_delete' => 'Miękkie usunięcie (możliwe przywrócenie)?',
     'confirm_hard_delete' => 'TRWALE usunąć? Nie można tego cofnąć!',
     'confirm_fully_delete' => 'Czy na pewno chcesz trwale usunąć tę grę? Nie można tego cofnąć!',

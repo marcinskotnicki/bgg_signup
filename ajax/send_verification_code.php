@@ -27,6 +27,7 @@ try {
 // Get parameters
 $player_id = intval($_POST['player_id'] ?? 0);
 $poll_id = intval($_POST['poll_id'] ?? 0);
+$game_id = intval($_POST['game_id'] ?? 0);
 
 try {
     if ($player_id) {
@@ -88,8 +89,37 @@ try {
         $code = $record['verification_code'];
         $context = 'poll';
         
+    } elseif ($game_id) {
+        // Get game details
+        $stmt = $db->prepare("
+            SELECT g.creator_email, g.verification_code, g.created_by_user_id, g.name as game_name
+            FROM games g
+            WHERE g.id = ?
+        ");
+        $stmt->execute([$game_id]);
+        $record = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$record) {
+            echo json_encode(['success' => false, 'error' => 'Game not found']);
+            exit;
+        }
+        
+        // Logged-in users don't need codes
+        if ($record['created_by_user_id']) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Please log in to edit or delete this game.',
+                'requires_login' => true
+            ]);
+            exit;
+        }
+        
+        $email = $record['creator_email'];
+        $code = $record['verification_code'];
+        $context = 'game: ' . $record['game_name'];
+        
     } else {
-        echo json_encode(['success' => false, 'error' => 'No player_id or poll_id provided']);
+        echo json_encode(['success' => false, 'error' => 'No player_id, poll_id, or game_id provided']);
         exit;
     }
     
@@ -104,9 +134,11 @@ try {
     
     // Check if email exists
     if (!$email) {
+        // No email on record - return success with flag to allow trust-based resignation
         echo json_encode([
-            'success' => false,
-            'error' => 'No email address on record. Cannot send verification code.'
+            'success' => true,
+            'no_email' => true,
+            'message' => 'No email on record. Resignation will be allowed with confirmation only.'
         ]);
         exit;
     }

@@ -272,6 +272,19 @@ function resignFromGame(gameId, playerId) {
                 return;
             }
             
+            // Check if no email on record - allow trust-based resignation
+            if (codeResponse.no_email) {
+                // No email - just show confirmation
+                showConfirm(
+                    t.confirm_resign || 'Are you sure you want to resign from this game?',
+                    function() {
+                        doResign(); // No verification needed
+                    },
+                    t.confirm_resignation || 'Confirm Resignation'
+                );
+                return;
+            }
+            
             // Email sent successfully - show code input
             let message = (t.code_sent_to_email || 'A verification code has been sent to your email');
             if (codeResponse.email) {

@@ -417,28 +417,55 @@ a:hover {
 .modal-content .modal-form .btn-primary {
     background: #27ae60;
     color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .modal-content .btn-primary:hover,
 .modal-content .modal-form .btn-primary:hover {
     background: #229954;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .modal-content .btn-primary:disabled,
 .modal-content .modal-form .btn-primary:disabled {
     background: #95a5a6;
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .modal-content .btn-secondary,
 .modal-content .modal-form .btn-secondary {
     background: #95a5a6;
     color: white;
+    padding: 10px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s ease;
 }
 
 .modal-content .btn-secondary:hover,
 .modal-content .modal-form .btn-secondary:hover {
     background: #7f8c8d;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.modal-content .form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    justify-content: flex-end;
 }
 
 .modal-content .form-row {
@@ -1078,88 +1105,6 @@ a:hover {
     opacity: 0.85;
     white-space: nowrap;
 }
-
-/* Timeline Enhancements */
-
-/* Mobile-friendly scroll container */
-.timeline-scroll-container {
-    width: 100%;
-    overflow-x: auto;
-    overflow-y: visible;
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-}
-
-.timeline-container-inner {
-    /* No min-width on desktop - timeline fits naturally */
-}
-
-/* Only force min-width on mobile/tablet screens */
-@media (max-width: 1200px) {
-    .timeline-container-inner {
-        min-width: 800px; /* Forces horizontal scroll on smaller screens */
-    }
-}
-
-/* Soft-deleted game styling */
-.timeline-game-deleted {
-    opacity: 0.25 !important;
-    background: #e74c3c !important; /* Red */
-}
-
-.timeline-game-deleted:hover {
-    opacity: 0.4 !important;
-    background: #c0392b !important;
-}
-
-/* Poll styling */
-.timeline-item-poll {
-    background: #f39c12 !important; /* Orange/yellow for polls */
-}
-
-.timeline-item-poll:hover {
-    background: #e67e22 !important;
-}
-
-/* Full game player count highlighting */
-.player-count-full {
-    font-weight: bold !important;
-    color: #e74c3c !important; /* Red for full */
-    text-shadow: 0 0 3px rgba(231, 76, 60, 0.3);
-}
-
-/* Glow highlight animation for clicked items */
-@keyframes timeline-glow {
-    0%, 100% {
-        box-shadow: 0 0 0 rgba(52, 152, 219, 0);
-    }
-    50% {
-        box-shadow: 0 0 30px 10px rgba(52, 152, 219, 0.8);
-    }
-}
-
-.timeline-highlight-glow {
-    animation: timeline-glow 1.5s ease-in-out 2;
-    border: 3px solid #3498db !important;
-}
-
-/* Scrollbar styling for webkit browsers */
-.timeline-scroll-container::-webkit-scrollbar {
-    height: 10px;
-}
-
-.timeline-scroll-container::-webkit-scrollbar-track {
-    background: #ecf0f1;
-    border-radius: 5px;
-}
-
-.timeline-scroll-container::-webkit-scrollbar-thumb {
-    background: #95a5a6;
-    border-radius: 5px;
-}
-
-.timeline-scroll-container::-webkit-scrollbar-thumb:hover {
-    background: #7f8c8d;
-}
 /* Comments Section */
 .game-comments-section {
     margin-top: 25px;
@@ -1471,193 +1416,4 @@ a:hover {
 
 .btn-delete-poll:hover {
     background: #c0392b;
-}
-/* Thumbnail Selection */
-.thumbnail-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    margin-top: 10px;
-}
-
-.thumbnail-option {
-    border: 3px solid #ddd !important;
-    border-radius: 4px;
-    padding: 5px;
-    cursor: pointer !important;
-    transition: all 0.2s ease;
-    background: white !important;
-    position: relative;
-    display: inline-block;
-}
-
-.thumbnail-option img {
-    height: 100px;
-    width: auto;
-    object-fit: contain;
-    display: block;
-    pointer-events: none;
-}
-
-.thumbnail-option:hover {
-    border-color: #3498db !important;
-    transform: scale(1.05);
-    box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
-}
-
-.thumbnail-option.selected {
-    border-color: #27ae60 !important;
-    background: #d5f4e6 !important;
-    box-shadow: 0 0 15px rgba(39, 174, 96, 0.4);
-}
-
-.thumbnail-option.selected::after {
-    content: '✓';
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background: #27ae60;
-    color: white;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 16px;
-}
-
-/* BGG Search Results */
-.search-results {
-    margin-top: 15px;
-    max-height: 400px;
-    overflow-y: auto;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    background: white;
-}
-
-.search-result-item {
-    padding: 12px 15px;
-    border-bottom: 1px solid #eee;
-    cursor: pointer;
-    transition: background 0.2s;
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-}
-
-.search-result-item:last-child {
-    border-bottom: none;
-}
-
-.search-result-item:hover {
-    background: #f5f5f5;
-}
-
-.result-name {
-    font-weight: 600;
-    color: #2c3e50;
-    flex: 1;
-}
-
-.result-year {
-    color: #7f8c8d;
-    font-size: 14px;
-}
-
-/* Modal Alert/Confirm Styles */
-.modal-alert, .modal-confirm, .modal-verify {
-    background: white;
-    padding: 25px;
-    border-radius: 8px;
-    max-width: 500px;
-    margin: 0 auto;
-}
-
-.modal-alert h3, .modal-confirm h3, .modal-verify h3 {
-    margin-top: 0;
-    margin-bottom: 20px;
-    color: #2c3e50;
-    font-size: 22px;
-}
-
-.alert-message, .confirm-message, .verify-message {
-    margin-bottom: 25px;
-    color: #34495e;
-    line-height: 1.6;
-    font-size: 16px;
-}
-
-.confirm-buttons, .verify-buttons {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-end;
-}
-
-.modal-verify .form-group {
-    margin-bottom: 20px;
-}
-
-.modal-verify .form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #2c3e50;
-}
-
-.modal-verify .form-group input {
-    width: 100%;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 15px;
-}
-
-.modal-verify .form-group input:focus {
-    outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-}
-
-/* Archive Banner (from index.php) */
-.archive-banner {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 15px 0;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.archive-banner-content {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-}
-
-.archive-icon {
-    font-size: 24px;
-}
-
-.archive-text {
-    flex: 1;
-    font-size: 16px;
-}
-
-.btn-current-event {
-    background: white;
-    color: #667eea;
-    padding: 8px 16px;
-    border-radius: 4px;
-    text-decoration: none;
-    font-weight: bold;
-    white-space: nowrap;
-}
-
-.btn-current-event:hover {
-    background: #f0f0f0;
 }

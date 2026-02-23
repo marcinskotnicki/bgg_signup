@@ -267,6 +267,7 @@ return [
     'error_adding_table' => 'Error adding table.',
     'confirm_resign' => 'Are you sure you want to resign from this game?',
     'confirm_delete_game' => 'Are you sure you want to delete this game?',
+    'confirm_edit_game' => 'Verification required to edit this game',
     'confirm_soft_delete' => 'Soft delete (can be restored)?',
     'confirm_hard_delete' => 'PERMANENTLY delete? This cannot be undone!',
     'confirm_fully_delete' => 'Are you sure you want to permanently delete this game? This cannot be undone!',
