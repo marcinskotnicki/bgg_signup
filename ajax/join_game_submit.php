@@ -118,24 +118,52 @@ try {
     
     $db->beginTransaction();
     
-    // Generate verification code for non-logged-in users
+    // Check if verification_code column exists (backward compatibility)
+    $has_verification_code = false;
+    try {
+        $columns = $db->query("PRAGMA table_info(players)")->fetchAll(PDO::FETCH_ASSOC);
+        foreach ($columns as $col) {
+            if ($col['name'] === 'verification_code') {
+                $has_verification_code = true;
+                break;
+            }
+        }
+    } catch (Exception $e) {
+        $has_verification_code = false;
+    }
+    
+    // Generate verification code for non-logged-in users (if column exists)
     $verification_code = null;
-    if (!$current_user) {
+    if (!$current_user && $has_verification_code) {
         $verification_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
     }
     
-    // Insert player
-    $stmt = $db->prepare("INSERT INTO players (
-        game_id, player_name, player_email, knows_rules, 
-        comment, is_reserve, position, user_id, verification_code, created_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)");
-    
-    $stmt->execute([
-        $game_id, $player_name, $player_email, $knows_rules,
-        $comment, $join_as_reserve ? 1 : 0, $position,
-        $current_user ? $current_user['id'] : null,
-        $verification_code
-    ]);
+    // Insert player (with or without verification_code depending on schema)
+    if ($has_verification_code) {
+        $stmt = $db->prepare("INSERT INTO players (
+            game_id, player_name, player_email, knows_rules, 
+            comment, is_reserve, position, user_id, verification_code, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)");
+        
+        $stmt->execute([
+            $game_id, $player_name, $player_email, $knows_rules,
+            $comment, $join_as_reserve ? 1 : 0, $position,
+            $current_user ? $current_user['id'] : null,
+            $verification_code
+        ]);
+    } else {
+        // Fallback for older schema without verification_code
+        $stmt = $db->prepare("INSERT INTO players (
+            game_id, player_name, player_email, knows_rules, 
+            comment, is_reserve, position, user_id, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)");
+        
+        $stmt->execute([
+            $game_id, $player_name, $player_email, $knows_rules,
+            $comment, $join_as_reserve ? 1 : 0, $position,
+            $current_user ? $current_user['id'] : null
+        ]);
+    }
     
     $player_id = $db->lastInsertId();
     

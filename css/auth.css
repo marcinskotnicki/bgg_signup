@@ -286,3 +286,61 @@ label.required::after {
         width: 100%;
     }
 }
+
+/* Profile-specific styles */
+.profile-header {
+    margin-bottom: 20px;
+}
+
+.profile-header h1 {
+    margin: 0 0 15px 0;
+}
+
+.profile-nav {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.profile-nav a {
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin: 20px 0;
+}
+
+.stat-card {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #e9ecef;
+}
+
+.stat-card .label {
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.stat-card .number {
+    font-size: 32px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin: 30px 0 15px 0;
+    color: #2c3e50;
+}

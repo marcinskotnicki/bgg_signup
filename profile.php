@@ -82,30 +82,24 @@ $comments_made = $stmt->fetchColumn();
 </head>
 <body class="auth-page">
     <div class="auth-container">
-        <div class="header">
+        <div class="profile-header">
             <h1><?php echo t('user_profile'); ?></h1>
-            <div class="user-info">
-                <div class="user-name"><?php echo htmlspecialchars($current_user['name']); ?></div>
-                <div class="user-email"><?php echo htmlspecialchars($current_user['email']); ?></div>
+            <div class="profile-nav">
+                <a href="index.php" class="btn-secondary">← <?php echo t('back_to_homepage'); ?></a>
+                <?php if ($current_user['is_admin']): ?>
+                    <a href="admin.php" class="btn-secondary"><?php echo t('admin_panel'); ?></a>
+                <?php endif; ?>
+                <a href="?action=logout" class="btn-secondary"><?php echo t('logout'); ?></a>
             </div>
         </div>
         
-        <div class="nav-buttons">
-            <a href="index.php">← <?php echo t('back_to_homepage'); ?></a>
-            <?php if ($current_user['is_admin']): ?>
-                <a href="admin.php"><?php echo t('admin_panel'); ?></a>
-            <?php endif; ?>
-            <a href="?action=logout" class="logout"><?php echo t('logout'); ?></a>
-        </div>
+        <?php if ($error): ?>
+            <div class="error"><?php echo htmlspecialchars($error); ?></div>
+        <?php endif; ?>
         
-        <div class="content">
-            <?php if ($error): ?>
-                <div class="error"><?php echo htmlspecialchars($error); ?></div>
-            <?php endif; ?>
-            
-            <?php if ($message): ?>
-                <div class="message"><?php echo htmlspecialchars($message); ?></div>
-            <?php endif; ?>
+        <?php if ($message): ?>
+            <div class="message"><?php echo htmlspecialchars($message); ?></div>
+        <?php endif; ?>
             
             <h2><?php echo t('your_activity'); ?></h2>
             <div class="stats">
