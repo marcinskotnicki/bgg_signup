@@ -215,4 +215,3 @@ function get_default_options() {
         'admin_password' => '' // Will be set during installation
     ];
 }
-?>
