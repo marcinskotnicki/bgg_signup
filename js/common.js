@@ -952,4 +952,221 @@ $(document).ready(function() {
             }, 500);
         }
     });
+    
+    // Edit Game Button - with verification
+    $(document).on('click', '.edit-game-btn', function(e) {
+        e.preventDefault();
+        const gameId = $(this).data('game-id');
+        editGame(gameId);
+    });
+    
+    // Delete Game Button - with verification
+    $(document).on('click', '.delete-game-btn', function(e) {
+        e.preventDefault();
+        const gameId = $(this).data('game-id');
+        deleteGame(gameId);
+    });
 });
+
+/**
+ * Edit Game with Verification
+ * Checks if user is logged in, if not requires verification code
+ */
+function editGame(gameId) {
+    console.log('editGame called for game:', gameId);
+    
+    // Check if user is logged in or admin
+    if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
+        // Logged in users can edit directly
+        loadEditGameForm(gameId);
+        return;
+    }
+    
+    // Not logged in - check verification method
+    if (typeof CONFIG !== 'undefined' && (CONFIG.verificationMethod === 'code' || CONFIG.verificationMethod === 'link')) {
+        // Request verification code
+        console.log('Requesting verification code for game:', gameId);
+        
+        $.post('ajax/send_verification_code.php', {
+            game_id: gameId
+        }, function(codeResponse) {
+            console.log('Code request response:', codeResponse);
+            
+            if (!codeResponse.success) {
+                // Email failed or not configured
+                let errorMsg = codeResponse.error || 'Failed to send verification code';
+                if (codeResponse.config_error || codeResponse.email_error) {
+                    errorMsg += '\n\nPlease contact the administrator to enable email verification.';
+                }
+                showAlert(errorMsg);
+                return;
+            }
+            
+            // Check if no email on record - allow edit with just confirmation
+            if (codeResponse.no_email) {
+                loadEditGameForm(gameId);
+                return;
+            }
+            
+            // Email sent - show code input
+            let message = (t.code_sent_to_email || 'A verification code has been sent to your email');
+            if (codeResponse.email) {
+                message += ' (' + codeResponse.email + ')';
+            }
+            
+            showCodeVerification(
+                message,
+                function(code) {
+                    console.log('Code entered:', code, 'Verifying...');
+                    // Verify code
+                    $.post('ajax/verify_code.php', {
+                        game_id: gameId,
+                        code: code,
+                        action: 'edit_game'
+                    }, function(response) {
+                        console.log('Code verification response:', response);
+                        if (response.verified) {
+                            // Code verified - show edit form
+                            loadEditGameForm(gameId);
+                        } else {
+                            showAlert(response.message || t.code_does_not_match || 'Invalid verification code');
+                        }
+                    }, 'json').fail(function(jqXHR) {
+                        console.error('Verification failed:', jqXHR.responseText);
+                        showAlert('Verification failed. Please try again.');
+                    });
+                },
+                t.verification_code || 'Verification Code'
+            );
+            
+        }, 'json').fail(function(jqXHR) {
+            console.error('Failed to request code:', jqXHR.responseText);
+            showAlert('Failed to send verification code. Please contact the administrator.');
+        });
+    } else {
+        // No verification required
+        loadEditGameForm(gameId);
+    }
+}
+
+/**
+ * Delete Game with Verification
+ * Checks if user is logged in, if not requires verification code
+ */
+function deleteGame(gameId) {
+    console.log('deleteGame called for game:', gameId);
+    
+    // Check if user is logged in or admin
+    if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
+        // Logged in users get direct confirmation
+        showConfirm(
+            t.confirm_delete_game || 'Are you sure you want to delete this game?',
+            function() {
+                doDeleteGame(gameId);
+            },
+            t.confirm_deletion || 'Confirm Deletion'
+        );
+        return;
+    }
+    
+    // Not logged in - check verification method
+    if (typeof CONFIG !== 'undefined' && (CONFIG.verificationMethod === 'code' || CONFIG.verificationMethod === 'link')) {
+        // Request verification code
+        console.log('Requesting verification code for game deletion:', gameId);
+        
+        $.post('ajax/send_verification_code.php', {
+            game_id: gameId
+        }, function(codeResponse) {
+            console.log('Code request response:', codeResponse);
+            
+            if (!codeResponse.success) {
+                let errorMsg = codeResponse.error || 'Failed to send verification code';
+                if (codeResponse.config_error || codeResponse.email_error) {
+                    errorMsg += '\n\nPlease contact the administrator to enable email verification.';
+                }
+                showAlert(errorMsg);
+                return;
+            }
+            
+            // Check if no email on record
+            if (codeResponse.no_email) {
+                showConfirm(
+                    t.confirm_delete_game || 'Are you sure you want to delete this game?',
+                    function() {
+                        doDeleteGame(gameId);
+                    },
+                    t.confirm_deletion || 'Confirm Deletion'
+                );
+                return;
+            }
+            
+            // Email sent - show code input
+            let message = (t.code_sent_to_email || 'A verification code has been sent to your email');
+            if (codeResponse.email) {
+                message += ' (' + codeResponse.email + ')';
+            }
+            
+            showCodeVerification(
+                message,
+                function(code) {
+                    console.log('Code entered:', code, 'Verifying...');
+                    // Verify code
+                    $.post('ajax/verify_code.php', {
+                        game_id: gameId,
+                        code: code,
+                        action: 'delete_game'
+                    }, function(response) {
+                        console.log('Code verification response:', response);
+                        if (response.verified) {
+                            // Code verified - show confirmation
+                            showConfirm(
+                                t.confirm_delete_game || 'Are you sure you want to delete this game?',
+                                function() {
+                                    doDeleteGame(gameId);
+                                },
+                                t.confirm_deletion || 'Confirm Deletion'
+                            );
+                        } else {
+                            showAlert(response.message || t.code_does_not_match || 'Invalid verification code');
+                        }
+                    }, 'json').fail(function(jqXHR) {
+                        console.error('Verification failed:', jqXHR.responseText);
+                        showAlert('Verification failed. Please try again.');
+                    });
+                },
+                t.verification_code || 'Verification Code'
+            );
+            
+        }, 'json').fail(function(jqXHR) {
+            console.error('Failed to request code:', jqXHR.responseText);
+            showAlert('Failed to send verification code. Please contact the administrator.');
+        });
+    } else {
+        // No verification required
+        showConfirm(
+            t.confirm_delete_game || 'Are you sure you want to delete this game?',
+            function() {
+                doDeleteGame(gameId);
+            },
+            t.confirm_deletion || 'Confirm Deletion'
+        );
+    }
+}
+
+/**
+ * Actually perform the game deletion
+ */
+function doDeleteGame(gameId) {
+    $.post('ajax/delete_game.php', { 
+        game_id: gameId 
+    }, function(response) {
+        if (response.success) {
+            window.location.reload();
+        } else {
+            showAlert(response.error || 'Failed to delete game');
+        }
+    }, 'json').fail(function(jqXHR) {
+        console.error('Delete failed:', jqXHR.responseText);
+        showAlert('Failed to delete game. Please try again.');
+    });
+}
