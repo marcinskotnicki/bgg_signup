@@ -188,6 +188,7 @@ try {
         'success' => true,
         'player_id' => $player_id,
         'is_reserve' => $join_as_reserve
+        // Don't send verification_code here - will be sent when user resigns
     ]);
     
 } catch (PDOException $e) {

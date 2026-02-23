@@ -107,6 +107,9 @@ try {
     
     $game_id = $db->lastInsertId();
     
+    // Track verification code for response (if generated)
+    $player_verification_code = null;
+    
     // If user wants to join as first player
     if ($join_as_player) {
         // Check if verification_code column exists (backward compatibility)
@@ -127,6 +130,7 @@ try {
         $verification_code = null;
         if (!$current_user && $has_verification_code) {
             $verification_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            $player_verification_code = $verification_code;  // Store for response
         }
         
         if ($has_verification_code) {
@@ -162,6 +166,7 @@ try {
     echo json_encode([
         'success' => true,
         'game_id' => $game_id
+        // Don't send verification_code here - will be sent when user resigns
     ]);
     
 } catch (PDOException $e) {

@@ -254,45 +254,67 @@ function resignFromGame(gameId, playerId) {
     
     // Not logged in - check verification method
     if (typeof CONFIG !== 'undefined' && (CONFIG.verificationMethod === 'code' || CONFIG.verificationMethod === 'link')) {
-        // Require code verification (6-digit code)
-        showCodeVerification(
-            t.enter_verification_code || 'Enter your 6-digit verification code',
-            function(code) {
-                console.log('Code entered:', code, 'Calling verify_code.php...');
-                // Verify code with backend
-                $.post('ajax/verify_code.php', {
-                    player_id: playerId,
-                    code: code,
-                    action: 'resign_player'
-                }, function(response) {
-                    console.log('Code verification response:', response);
-                    if (response.verified) {
-                        // Code matches - confirm resignation
-                        console.log('Code verified, showing confirmation with message:', t.confirm_resign);
-                        showConfirm(
-                            t.confirm_resign || 'Are you sure you want to resign from this game?',
-                            function() {
-                                doResign(); // Code already verified
-                            },
-                            t.confirm_resignation || 'Confirm Resignation'
-                        );
-                    } else {
-                        console.log('Code not verified, showing error');
-                        showAlert(response.message || t.code_does_not_match || 'Invalid verification code. Please try again.');
-                    }
-                }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
-                    console.error('AJAX call failed!', {
-                        status: jqXHR.status,
-                        statusText: jqXHR.statusText,
-                        textStatus: textStatus,
-                        errorThrown: errorThrown,
-                        responseText: jqXHR.responseText
+        // First, request the verification code to be sent via email
+        console.log('Requesting verification code for player:', playerId);
+        
+        $.post('ajax/send_verification_code.php', {
+            player_id: playerId
+        }, function(codeResponse) {
+            console.log('Code request response:', codeResponse);
+            
+            if (!codeResponse.success) {
+                // Email failed or not configured
+                let errorMsg = codeResponse.error || 'Failed to send verification code';
+                if (codeResponse.config_error || codeResponse.email_error) {
+                    errorMsg += '\n\nPlease contact the administrator to enable email verification.';
+                }
+                showAlert(errorMsg);
+                return;
+            }
+            
+            // Email sent successfully - show code input
+            let message = (t.code_sent_to_email || 'A verification code has been sent to your email');
+            if (codeResponse.email) {
+                message += ' (' + codeResponse.email + ')';
+            }
+            
+            showCodeVerification(
+                message,
+                function(code) {
+                    console.log('Code entered:', code, 'Calling verify_code.php...');
+                    // Verify code with backend
+                    $.post('ajax/verify_code.php', {
+                        player_id: playerId,
+                        code: code,
+                        action: 'resign_player'
+                    }, function(response) {
+                        console.log('Code verification response:', response);
+                        if (response.verified) {
+                            // Code matches - confirm resignation
+                            console.log('Code verified, showing confirmation');
+                            showConfirm(
+                                t.confirm_resign || 'Are you sure you want to resign from this game?',
+                                function() {
+                                    doResign(); // Code already verified
+                                },
+                                t.confirm_resignation || 'Confirm Resignation'
+                            );
+                        } else {
+                            console.log('Code not verified, showing error');
+                            showAlert(response.message || t.code_does_not_match || 'Invalid verification code. Please try again.');
+                        }
+                    }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
+                        console.error('Verification AJAX failed:', jqXHR.responseText);
+                        showAlert(t.verification_failed || 'Verification failed. Please try again.');
                     });
-                    showAlert(t.verification_failed || 'Verification failed. Please try again. Error: ' + textStatus);
-                });
-            },
-            t.verification_code || 'Verification Code'
-        );
+                },
+                t.verification_code || 'Verification Code'
+            );
+            
+        }, 'json').fail(function(jqXHR) {
+            console.error('Failed to request code:', jqXHR.responseText);
+            showAlert('Failed to send verification code. Please contact the administrator.');
+        });
     } else if (typeof CONFIG !== 'undefined' && CONFIG.verificationMethod === 'email') {
         // Require email verification
         showEmailVerification(
@@ -916,25 +938,3 @@ $(document).ready(function() {
                 scrollTop: gameElement.offset().top - 100
             }, 500);
         }
-    });
-    
-    // Poll button handlers (moved from poll.php templates)
-    $(document).on('click', '.btn-vote', function(e) {
-        e.preventDefault();
-        const optionId = $(this).data('option-id');
-        const pollId = $(this).data('poll-id');
-        voteOption(optionId, pollId);
-    });
-    
-    $(document).on('click', '.btn-edit-poll', function(e) {
-        e.preventDefault();
-        const pollId = $(this).data('poll-id');
-        editPoll(pollId);
-    });
-    
-    $(document).on('click', '.btn-delete-poll', function(e) {
-        e.preventDefault();
-        const pollId = $(this).data('poll-id');
-        deletePoll(pollId);
-    });
-});

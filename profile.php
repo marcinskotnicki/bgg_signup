@@ -85,11 +85,11 @@ $comments_made = $stmt->fetchColumn();
         <div class="profile-header">
             <h1><?php echo t('user_profile'); ?></h1>
             <div class="profile-nav">
-                <a href="index.php" class="btn-secondary">← <?php echo t('back_to_homepage'); ?></a>
+                <a href="index.php">← <?php echo t('back_to_homepage'); ?></a>
                 <?php if ($current_user['is_admin']): ?>
-                    <a href="admin.php" class="btn-secondary"><?php echo t('admin_panel'); ?></a>
+                    <a href="admin.php"><?php echo t('admin_panel'); ?></a>
                 <?php endif; ?>
-                <a href="?action=logout" class="btn-secondary"><?php echo t('logout'); ?></a>
+                <a href="?action=logout"><?php echo t('logout'); ?></a>
             </div>
         </div>
         
