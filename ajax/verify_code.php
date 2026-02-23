@@ -1,0 +1,160 @@
+<?php
+/**
+ * AJAX Handler: Verify Code
+ * 
+ * Verifies that the provided 6-digit code matches the player/poll verification code
+ * Used when verification_method is 'code' or 'link'
+ * 
+ * NOTE: Verification codes are stored with player/poll records (for non-logged-in users)
+ * Logged-in users don't need codes - they're already verified by their login
+ */
+
+header('Content-Type: application/json');
+
+// Load configuration
+$config = require_once '../config.php';
+
+// Database connection
+require_once '../includes/db.php';
+
+// Get parameters
+$action = $_POST['action'] ?? '';
+$code = trim($_POST['code'] ?? '');
+$game_id = intval($_POST['game_id'] ?? 0);
+$player_id = intval($_POST['player_id'] ?? 0);
+$poll_id = intval($_POST['poll_id'] ?? 0);
+
+// Validate code (must be 6 digits)
+if (empty($code)) {
+    echo json_encode(['success' => false, 'verified' => false, 'message' => 'Verification code is required']);
+    exit;
+}
+
+if (!preg_match('/^\d{6}$/', $code)) {
+    echo json_encode(['success' => false, 'verified' => false, 'message' => 'Invalid code format. Must be 6 digits.']);
+    exit;
+}
+
+// Verify based on action
+$verified = false;
+
+try {
+    switch ($action) {
+        case 'edit_game':
+        case 'delete_game':
+            if ($game_id) {
+                // Games are verified by email, not code (game creators aren't tracked as players)
+                echo json_encode([
+                    'success' => true,
+                    'verified' => false,
+                    'message' => 'Please use email verification for games.'
+                ]);
+                exit;
+            }
+            break;
+            
+        case 'resign_player':
+            if ($player_id) {
+                // Get player's verification code
+                $stmt = $db->prepare("SELECT verification_code, user_id FROM players WHERE id = ?");
+                $stmt->execute([$player_id]);
+                $player = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if (!$player) {
+                    echo json_encode([
+                        'success' => true,
+                        'verified' => false,
+                        'message' => 'Player not found.'
+                    ]);
+                    exit;
+                }
+                
+                // If player has user_id, they're logged in and shouldn't use codes
+                if ($player['user_id']) {
+                    echo json_encode([
+                        'success' => true,
+                        'verified' => false,
+                        'message' => 'Logged-in players do not need verification codes. Please log in to resign.'
+                    ]);
+                    exit;
+                }
+                
+                // Check if code matches
+                if ($player['verification_code'] && $player['verification_code'] === $code) {
+                    $verified = true;
+                    
+                    // Regenerate verification code after successful verification
+                    $new_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                    $update = $db->prepare("UPDATE players SET verification_code = ? WHERE id = ?");
+                    $update->execute([$new_code, $player_id]);
+                }
+            }
+            break;
+            
+        case 'edit_poll':
+        case 'delete_poll':
+            if ($poll_id) {
+                // Get poll's verification code
+                $stmt = $db->prepare("SELECT verification_code, created_by_user_id FROM polls WHERE id = ?");
+                $stmt->execute([$poll_id]);
+                $poll = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if (!$poll) {
+                    echo json_encode([
+                        'success' => true,
+                        'verified' => false,
+                        'message' => 'Poll not found.'
+                    ]);
+                    exit;
+                }
+                
+                // If poll has created_by_user_id, creator was logged in and shouldn't use codes
+                if ($poll['created_by_user_id']) {
+                    echo json_encode([
+                        'success' => true,
+                        'verified' => false,
+                        'message' => 'Please log in to edit or delete this poll.'
+                    ]);
+                    exit;
+                }
+                
+                // Check if code matches
+                if ($poll['verification_code'] && $poll['verification_code'] === $code) {
+                    $verified = true;
+                    
+                    // Regenerate verification code after successful verification
+                    $new_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                    $update = $db->prepare("UPDATE polls SET verification_code = ? WHERE id = ?");
+                    $update->execute([$new_code, $poll_id]);
+                }
+            }
+            break;
+            
+        default:
+            echo json_encode(['success' => false, 'verified' => false, 'message' => 'Invalid action']);
+            exit;
+    }
+    
+    if ($verified) {
+        echo json_encode([
+            'success' => true,
+            'verified' => true,
+            'message' => 'Code verified successfully'
+        ]);
+    } else {
+        echo json_encode([
+            'success' => true,
+            'verified' => false,
+            'message' => 'Invalid verification code. Please check your code and try again.'
+        ]);
+    }
+    
+} catch (PDOException $e) {
+    error_log('Verification code error: ' . $e->getMessage());
+    echo json_encode([
+        'success' => false,
+        'verified' => false,
+        'message' => 'Database error occurred'
+    ]);
+}
+?>

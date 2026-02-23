@@ -109,14 +109,21 @@ try {
     
     // If user wants to join as first player
     if ($join_as_player) {
+        // Generate verification code for non-logged-in users
+        $verification_code = null;
+        if (!$current_user) {
+            $verification_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        }
+        
         $stmt = $db->prepare("INSERT INTO players (
             game_id, player_name, player_email, knows_rules, 
-            comment, is_reserve, position, user_id, created_at
-        ) VALUES (?, ?, ?, ?, ?, 0, 1, ?, CURRENT_TIMESTAMP)");
+            comment, is_reserve, position, user_id, verification_code, created_at
+        ) VALUES (?, ?, ?, ?, ?, 0, 1, ?, ?, CURRENT_TIMESTAMP)");
         
         $stmt->execute([
             $game_id, $host_name, $host_email, 'yes', 
-            '', $current_user ? $current_user['id'] : null
+            '', $current_user ? $current_user['id'] : null,
+            $verification_code
         ]);
     }
     

@@ -545,6 +545,14 @@ return [
     'enter_valid_email' => 'Wpisz poprawny adres email',
     'enter_email' => 'Wpisz adres email',
     
+    // Verification code
+    'verification_code' => 'Kod weryfikacyjny',
+    'enter_code' => 'Wpisz swój 6-cyfrowy kod weryfikacyjny',
+    'code_sent_to_email' => 'Kod weryfikacyjny został wysłany na Twój email',
+    'invalid_code' => 'Niepoprawny format kodu. Musi mieć 6 cyfr.',
+    'code_does_not_match' => 'Niepoprawny kod weryfikacyjny. Spróbuj ponownie.',
+    'enter_verification_code' => 'Wpisz 6-cyfrowy kod z emaila',
+    
     // Modal form labels and buttons
     'email_address' => 'Adres email',
     'enter_your_email' => 'Wpisz swój email',

@@ -545,6 +545,14 @@ return [
     'enter_valid_email' => 'Please enter a valid email address',
     'enter_email' => 'Please enter an email address',
     
+    // Verification code
+    'verification_code' => 'Verification Code',
+    'enter_code' => 'Enter your 6-digit verification code',
+    'code_sent_to_email' => 'A verification code has been sent to your email',
+    'invalid_code' => 'Invalid code format. Must be 6 digits.',
+    'code_does_not_match' => 'Invalid verification code. Please try again.',
+    'enter_verification_code' => 'Enter the 6-digit code from your email',
+    
     // Modal form labels and buttons
     'email_address' => 'Email Address',
     'enter_your_email' => 'Enter your email',

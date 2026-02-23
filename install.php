@@ -106,6 +106,7 @@ function create_database($admin_name, $admin_email, $admin_password) {
             is_reserve INTEGER DEFAULT 0,
             position INTEGER NOT NULL,
             user_id INTEGER,
+            verification_code TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
         )");
@@ -159,6 +160,7 @@ function create_database($admin_name, $admin_email, $admin_password) {
             comment TEXT,
             created_by_user_id INTEGER,
             start_time TIME,
+            verification_code TEXT,
             is_active INTEGER DEFAULT 1,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             closed_at DATETIME,

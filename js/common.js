@@ -253,7 +253,47 @@ function resignFromGame(gameId, playerId) {
     }
     
     // Not logged in - check verification method
-    if (typeof CONFIG !== 'undefined' && CONFIG.verificationMethod === 'email') {
+    if (typeof CONFIG !== 'undefined' && (CONFIG.verificationMethod === 'code' || CONFIG.verificationMethod === 'link')) {
+        // Require code verification (6-digit code)
+        showCodeVerification(
+            t.enter_verification_code || 'Enter your 6-digit verification code',
+            function(code) {
+                console.log('Code entered:', code, 'Calling verify_code.php...');
+                // Verify code with backend
+                $.post('ajax/verify_code.php', {
+                    player_id: playerId,
+                    code: code,
+                    action: 'resign_player'
+                }, function(response) {
+                    console.log('Code verification response:', response);
+                    if (response.verified) {
+                        // Code matches - confirm resignation
+                        console.log('Code verified, showing confirmation with message:', t.confirm_resign);
+                        showConfirm(
+                            t.confirm_resign || 'Are you sure you want to resign from this game?',
+                            function() {
+                                doResign(); // Code already verified
+                            },
+                            t.confirm_resignation || 'Confirm Resignation'
+                        );
+                    } else {
+                        console.log('Code not verified, showing error');
+                        showAlert(response.message || t.code_does_not_match || 'Invalid verification code. Please try again.');
+                    }
+                }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX call failed!', {
+                        status: jqXHR.status,
+                        statusText: jqXHR.statusText,
+                        textStatus: textStatus,
+                        errorThrown: errorThrown,
+                        responseText: jqXHR.responseText
+                    });
+                    showAlert(t.verification_failed || 'Verification failed. Please try again. Error: ' + textStatus);
+                });
+            },
+            t.verification_code || 'Verification Code'
+        );
+    } else if (typeof CONFIG !== 'undefined' && CONFIG.verificationMethod === 'email') {
         // Require email verification
         showEmailVerification(
             t.enter_email_for_joining || 'Enter the email address you used when joining this game', 
@@ -639,6 +679,75 @@ function showEmailVerification(message, onVerify, title) {
             e.stopPropagation(); // Stop event from bubbling
             $('#' + verifyId).click();
         }
+    });
+}
+
+// Code verification prompt (for 6-digit verification codes)
+function showCodeVerification(message, onVerify, title) {
+    const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
+    title = title || t.verification_code || 'Verification Code';
+    const verifyId = 'verify_' + Date.now();
+    const codeId = 'code_' + Date.now();
+    
+    const html = `
+        <div class="modal-verify">
+            <h3>${title}</h3>
+            <div class="verify-message">${message}</div>
+            <div class="form-group">
+                <label>${t.verification_code || 'Verification Code'}:</label>
+                <input type="text" 
+                       id="${codeId}" 
+                       class="form-control" 
+                       placeholder="${t.enter_code || 'Enter 6-digit code'}" 
+                       maxlength="6" 
+                       pattern="[0-9]{6}"
+                       inputmode="numeric"
+                       required>
+            </div>
+            <div class="verify-buttons">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">${t.cancel || 'Cancel'}</button>
+                <button type="button" class="btn btn-primary" id="${verifyId}">${t.verify || 'Verify'}</button>
+            </div>
+        </div>
+    `;
+    
+    openModal(html);
+    
+    // Focus on code input
+    $('#' + codeId).focus();
+    
+    // Attach verify handler
+    $('#' + verifyId).on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const code = $('#' + codeId).val().trim();
+        if (!code) {
+            showAlert(t.enter_code || 'Please enter your verification code');
+            return;
+        }
+        if (!/^\d{6}$/.test(code)) {
+            showAlert(t.invalid_code || 'Invalid code format. Must be 6 digits.');
+            return;
+        }
+        closeModal();
+        if (onVerify && typeof onVerify === 'function') {
+            onVerify(code);
+        }
+    });
+    
+    // Allow Enter key to submit
+    $('#' + codeId).on('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            e.stopPropagation();
+            $('#' + verifyId).click();
+        }
+    });
+    
+    // Only allow digits in code input
+    $('#' + codeId).on('input', function() {
+        this.value = this.value.replace(/\D/g, '').substring(0, 6);
     });
 }
 

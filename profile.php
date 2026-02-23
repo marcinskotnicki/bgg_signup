@@ -19,7 +19,6 @@ require_once 'includes/auth.php';
 
 // Database connection
 require_once 'includes/db.php';
-}
 
 // Require login
 require_login($db, 'profile.php');

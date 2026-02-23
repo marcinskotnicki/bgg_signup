@@ -185,6 +185,7 @@ function update_database_schema() {
                 is_reserve INTEGER DEFAULT 0,
                 position INTEGER NOT NULL,
                 user_id INTEGER,
+                verification_code TEXT,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (game_id) REFERENCES games(id) ON DELETE CASCADE
             )",
@@ -220,7 +221,10 @@ function update_database_schema() {
                 table_id INTEGER NOT NULL,
                 creator_name TEXT NOT NULL,
                 creator_email TEXT,
+                comment TEXT,
                 created_by_user_id INTEGER,
+                start_time TIME,
+                verification_code TEXT,
                 is_active INTEGER DEFAULT 1,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 closed_at DATETIME,
@@ -259,6 +263,69 @@ function update_database_schema() {
                 $db->exec($create_sql);
                 log_update_message("Created missing table: $table_name");
                 $updates_made++;
+            }
+        }
+        
+        // Check and add missing columns to existing tables
+        $expected_columns = [
+            'players' => [
+                'verification_code' => "ALTER TABLE players ADD COLUMN verification_code TEXT"
+            ],
+            'polls' => [
+                'start_time' => "ALTER TABLE polls ADD COLUMN start_time TIME",
+                'comment' => "ALTER TABLE polls ADD COLUMN comment TEXT",
+                'verification_code' => "ALTER TABLE polls ADD COLUMN verification_code TEXT"
+            ],
+            'games' => [
+                'creator_email' => "ALTER TABLE games ADD COLUMN creator_email TEXT"
+            ]
+        ];
+        
+        foreach ($expected_columns as $table_name => $columns) {
+            if (isset($current_schema[$table_name])) {
+                $existing_columns = array_keys($current_schema[$table_name]['columns']);
+                
+                foreach ($columns as $column_name => $alter_sql) {
+                    if (!in_array($column_name, $existing_columns)) {
+                        try {
+                            $db->exec($alter_sql);
+                            log_update_message("Added column '$column_name' to table '$table_name'");
+                            
+                            // Generate verification codes for existing records without user_id
+                            if ($column_name === 'verification_code') {
+                                if ($table_name === 'players') {
+                                    $stmt = $db->query("SELECT id FROM players WHERE user_id IS NULL AND (verification_code IS NULL OR verification_code = '')");
+                                    $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                    
+                                    if (count($records) > 0) {
+                                        $update = $db->prepare("UPDATE players SET verification_code = ? WHERE id = ?");
+                                        foreach ($records as $record) {
+                                            $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                                            $update->execute([$code, $record['id']]);
+                                        }
+                                        log_update_message("Generated verification codes for " . count($records) . " players");
+                                    }
+                                } elseif ($table_name === 'polls') {
+                                    $stmt = $db->query("SELECT id FROM polls WHERE created_by_user_id IS NULL AND (verification_code IS NULL OR verification_code = '')");
+                                    $records = $stmt->fetchAll(PDO::FETCH_ASSOC);
+                                    
+                                    if (count($records) > 0) {
+                                        $update = $db->prepare("UPDATE polls SET verification_code = ? WHERE id = ?");
+                                        foreach ($records as $record) {
+                                            $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                                            $update->execute([$code, $record['id']]);
+                                        }
+                                        log_update_message("Generated verification codes for " . count($records) . " polls");
+                                    }
+                                }
+                            }
+                            
+                            $updates_made++;
+                        } catch (PDOException $e) {
+                            log_update_message("WARNING: Could not add column '$column_name' to '$table_name': " . $e->getMessage());
+                        }
+                    }
+                }
             }
         }
         

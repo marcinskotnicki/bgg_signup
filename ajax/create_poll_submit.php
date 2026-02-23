@@ -89,18 +89,42 @@ try {
     try {
         $columns = $db->query("PRAGMA table_info(polls)")->fetchAll(PDO::FETCH_ASSOC);
         $has_comment = false;
+        $has_verification_code = false;
         foreach ($columns as $col) {
             if ($col['name'] === 'comment') {
                 $has_comment = true;
-                break;
+            }
+            if ($col['name'] === 'verification_code') {
+                $has_verification_code = true;
             }
         }
     } catch (Exception $e) {
         $has_comment = false;
+        $has_verification_code = false;
     }
     
-    // Create poll (with or without comment depending on schema)
-    if ($has_comment) {
+    // Generate verification code for non-logged-in users
+    $verification_code = null;
+    if (!$current_user && $has_verification_code) {
+        $verification_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+    }
+    
+    // Create poll (with or without comment/verification_code depending on schema)
+    if ($has_comment && $has_verification_code) {
+        $stmt = $db->prepare("INSERT INTO polls (
+            table_id, creator_name, creator_email, comment, created_by_user_id, start_time, verification_code, is_active, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
+        
+        $stmt->execute([
+            $table_id,
+            $creator_name,
+            $creator_email,
+            $comment,
+            $current_user ? $current_user['id'] : null,
+            $start_time,
+            $verification_code
+        ]);
+    } elseif ($has_comment) {
         $stmt = $db->prepare("INSERT INTO polls (
             table_id, creator_name, creator_email, comment, created_by_user_id, start_time, is_active, created_at
         ) VALUES (?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
@@ -112,6 +136,19 @@ try {
             $comment,
             $current_user ? $current_user['id'] : null,
             $start_time
+        ]);
+    } elseif ($has_verification_code) {
+        $stmt = $db->prepare("INSERT INTO polls (
+            table_id, creator_name, creator_email, created_by_user_id, start_time, verification_code, is_active, created_at
+        ) VALUES (?, ?, ?, ?, ?, ?, 1, CURRENT_TIMESTAMP)");
+        
+        $stmt->execute([
+            $table_id,
+            $creator_name,
+            $creator_email,
+            $current_user ? $current_user['id'] : null,
+            $start_time,
+            $verification_code
         ]);
     } else {
         $stmt = $db->prepare("INSERT INTO polls (
