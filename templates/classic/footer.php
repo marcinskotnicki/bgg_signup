@@ -32,22 +32,7 @@ $venue_name = isset($config['venue_name']) ? $config['venue_name'] : 'BGG Signup
     </div>
     
     <!-- Timeline JavaScript -->
+    <script src="templates/classic/timeline.js"></script>
     
-    <script>
-     
-        
-        // Close modal - Only via X button, Cancel, OK, or ESC key
-        $(document).ready(function() {
-            // Close button (X)
-            $('.modal-close').click(closeModal);
-            
-            // ESC key to close modal
-            $(document).keyup(function(e) {
-                if (e.key === "Escape") {
-                    closeModal();
-                }
-            });
-        });
-    </script>
 </body>
 </html>

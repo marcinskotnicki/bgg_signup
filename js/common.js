@@ -482,16 +482,39 @@ function loadPrivateMessageForm(playerId, gameId) {
 }
 
 // Utility functions
+// Utility functions
 function parseTime(timeStr) {
     var parts = timeStr.split(':');
     return parseInt(parts[0]) * 60 + parseInt(parts[1]);
 }
 
-// jQuery ready
+// Modal event handlers - setup when page loads
 $(document).ready(function() {
-    // Close modal only via close button (X) or ESC key
-    // Overlay clicks do NOT close modal (prevents accidental closes)
-    $('.modal-close').click(closeModal);
+    // Close modal with X button
+    $(document).on('click', '.modal-close', closeModal);
+    
+    // Track where mouse down started to prevent closing during text selection
+    let mouseDownTarget = null;
+    
+    $('#modal-overlay').on('mousedown', function(e) {
+        mouseDownTarget = e.target;
+    });
+    
+    $('#modal-overlay').on('click', function(e) {
+        // Only close if:
+        // 1. Click target is the overlay itself (not modal content)
+        // 2. Mouse down also started on the overlay (not during text selection)
+        if (e.target.id === 'modal-overlay' && mouseDownTarget === e.target) {
+            closeModal();
+        }
+        // Reset tracking
+        mouseDownTarget = null;
+    });
+    
+    // Prevent clicks on modal content from closing
+    $(document).on('click', '.modal-content', function(e) {
+        e.stopPropagation();
+    });
     
     // ESC key to close modal
     $(document).keyup(function(e) {
@@ -500,6 +523,7 @@ $(document).ready(function() {
         }
     });
 });
+
 // Modal confirmation and alert system (replaces browser alerts/confirms)
 
 function showAlert(message, title) {
@@ -575,7 +599,10 @@ function showEmailVerification(message, onVerify, title) {
     $('#' + emailId).focus();
     
     // Attach verify handler
-    $('#' + verifyId).on('click', function() {
+    $('#' + verifyId).on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
         const email = $('#' + emailId).val().trim();
         if (!email) {
             showAlert(t.enter_email || 'Please enter an email address');
