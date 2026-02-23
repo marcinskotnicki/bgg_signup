@@ -148,7 +148,7 @@ $default_email = $current_user ? $current_user['email'] : '';
             <!-- Difficulty -->
             <div class="form-group">
                 <label><?php echo t('difficulty'); ?> (1-5): <span class="required">*</span></label>
-                <input type="number" id="difficulty" name="difficulty" class="form-control" min="0" max="5" step="0.01" value="2.5" required>
+                <input type="number" id="difficulty" name="difficulty" class="form-control" min="0" max="5" step="any" value="2.5" required>
             </div>
             
             <!-- Start Time -->

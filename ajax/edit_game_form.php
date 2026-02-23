@@ -111,7 +111,7 @@ $available_languages = [
         <!-- Difficulty -->
         <div class="form-group">
             <label><?php echo t('difficulty'); ?> (1-5):</label>
-            <input type="number" name="difficulty" value="<?php echo $game['difficulty']; ?>" min="0" max="5" step="0.1">
+            <input type="number" name="difficulty" value="<?php echo $game['difficulty']; ?>" min="0" max="5" step="any">
         </div>
         
         <!-- Start Time -->
