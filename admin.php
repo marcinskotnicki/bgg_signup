@@ -1576,6 +1576,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
                     } else {
                         alert('Database schema updated successfully!\n\n' + totalChanges + ' change(s) applied.');
                     }
+                } else {
+                    btn.textContent = translations.updateFailed;
+                    btn.style.background = '#e74c3c';
                     alert('Schema update failed: ' + (data.error || 'Unknown error'));
                 }
                 
@@ -1783,3 +1786,4 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['run_update'])) {
         });
     </script>
 </body>
+</html>
