@@ -575,8 +575,10 @@ return [
     // Email verification code messages
     'email_verification_code_subject' => 'Twój kod weryfikacyjny',
     'email_verification_code_body' => 'Twój kod weryfikacyjny to',
-    'email_verification_code_context' => 'Zażądałeś tego kodu, aby zrezygnować z',
+    'email_verification_code_context' => 'Użyj tego kodu na naszej stronie, aby potwierdzić swoją akcję dla',
     'email_verification_code_ignore' => 'Jeśli nie prosiłeś o ten kod, zignoruj tę wiadomość.',
+    'game' => 'gry',
+    'poll' => 'ankiety',
     
     // Modal form labels and buttons
     'email_address' => 'Adres email',

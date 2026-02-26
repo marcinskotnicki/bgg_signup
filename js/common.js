@@ -1,5 +1,6 @@
 /**
  * Shared JavaScript Functions for BGG Signup System
+ * VERSION: 2.0 - MULTILINGUAL WITH CODE VERIFICATION
  * 
  * Consolidates functions that were duplicated across:
  * - index.php
@@ -7,7 +8,26 @@
  * - templates/classic/footer.php
  * 
  * Load this file ONCE per page to avoid redeclaration errors
+ * 
+ * IMPORTANT: Load translations.js.php BEFORE this file:
+ * <script src="js/translations.js.php"></script>
+ * <script src="js/common.js"></script>
  */
+
+// Version check - to verify correct file is loaded
+window.COMMON_JS_VERSION = '2.0-MULTILINGUAL';
+console.log('common.js loaded - Version:', window.COMMON_JS_VERSION);
+
+// Ensure translations object exists (fallback if translations.js.php not loaded)
+if (typeof t === 'undefined') {
+    var t = {};
+    console.warn('Translations not loaded! Please load translations.js.php before common.js');
+} else {
+    console.log('Translations loaded successfully. Sample:', {
+        code_sent_to_email: t.code_sent_to_email,
+        verification_code: t.verification_code
+    });
+}
 
 // Modal functions
 let modalClearTimeout = null;  // Track the timeout so we can cancel it
@@ -88,7 +108,6 @@ function loadJoinGameForm(gameId, isReserve) {
 
 function editGame(gameId) {
     console.log('editGame called for game:', gameId);
-    const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
     
     // Check if user is logged in or admin
     if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
@@ -174,7 +193,6 @@ function loadEditGameForm(gameId) {
 
 function deleteGame(gameId) {
     console.log('deleteGame called for game:', gameId);
-    const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
     
     // Check if user is logged in or admin
     if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
@@ -280,7 +298,6 @@ function resignFromGame(gameId, playerId) {
     console.log('resignFromGame called with gameId:', gameId, 'playerId:', playerId);
     
     // Get translations or use fallbacks
-    const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
     
     // Inner function to actually resign
     function doResign(verifiedEmail) {
@@ -466,7 +483,6 @@ function loadCreatePollForm(tableId) {
 }
 
 function editPoll(pollId) {
-    const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
     
     // Check if user is logged in or admin
     if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
@@ -526,7 +542,6 @@ function voteOption(optionId, pollId) {
 }
 
 function deletePoll(pollId) {
-    const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
     
     // Inner function to actually delete
     function doDelete() {
@@ -651,7 +666,6 @@ $(document).ready(function() {
 // Modal confirmation and alert system (replaces browser alerts/confirms)
 
 function showAlert(message, title) {
-    const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
     title = title || t.notice || 'Notice';
     const html = `
         <div class="modal-alert">
@@ -664,7 +678,6 @@ function showAlert(message, title) {
 }
 
 function showConfirm(message, onConfirm, title) {
-    const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
     title = title || t.confirm_delete || 'Confirm';
     const confirmId = 'confirm_' + Date.now();
     
@@ -697,7 +710,6 @@ function showConfirm(message, onConfirm, title) {
 
 // Email verification prompt
 function showEmailVerification(message, onVerify, title) {
-    const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
     title = title || t.email_verification_required || 'Email Verification Required';
     const verifyId = 'verify_' + Date.now();
     const emailId = 'email_' + Date.now();
@@ -754,7 +766,6 @@ function showEmailVerification(message, onVerify, title) {
 
 // Code verification prompt (for 6-digit verification codes)
 function showCodeVerification(message, onVerify, title) {
-    const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
     title = title || t.verification_code || 'Verification Code';
     const verifyId = 'verify_' + Date.now();
     const codeId = 'code_' + Date.now();

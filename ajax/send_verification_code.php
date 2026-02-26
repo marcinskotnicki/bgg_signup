@@ -58,12 +58,12 @@ try {
         
         $email = $record['player_email'];
         $code = $record['verification_code'];
-        $context = 'game: ' . $record['game_name'];
+        $context = t('game') . ': ' . $record['game_name'];
         
     } elseif ($poll_id) {
         // Get poll details
         $stmt = $db->prepare("
-            SELECT p.creator_email, p.verification_code, p.created_by_user_id
+            SELECT p.creator_email, p.verification_code, p.created_by_user_id, p.question
             FROM polls p
             WHERE p.id = ?
         ");
@@ -87,7 +87,7 @@ try {
         
         $email = $record['creator_email'];
         $code = $record['verification_code'];
-        $context = 'poll';
+        $context = t('poll') . ': ' . $record['question'];
         
     } elseif ($game_id) {
         // Get game details
@@ -116,7 +116,7 @@ try {
         
         $email = $record['creator_email'];
         $code = $record['verification_code'];
-        $context = 'game: ' . $record['game_name'];
+        $context = t('game') . ': ' . $record['game_name'];
         
     } else {
         echo json_encode(['success' => false, 'error' => 'No player_id, poll_id, or game_id provided']);
