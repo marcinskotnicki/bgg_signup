@@ -33,7 +33,9 @@ function closeModal() {
     
     // Schedule content clear, but track it so openModal can cancel if needed
     modalClearTimeout = setTimeout(function() {
-        $('#modal-body').html('Modal content cleared after fadeOut');
+        $('#modal-body').html('');
+        modalClearTimeout = null;
+        console.log('Modal content cleared after fadeOut');
     }, 200);
 }
 
@@ -50,7 +52,8 @@ function reloadAndScrollToGame(gameId) {
 // On page load, scroll to game if hash is present
 $(document).ready(function() {
     if (window.location.hash && window.location.hash.startsWith('#game-')) {
-        const gameId = window.location.hash.replace('#game-', '.gameitem[data-game-id="' + gameId + '"]').first();
+        const gameId = window.location.hash.replace('#game-', '');
+        const gameElement = $('.gameitem[data-game-id="' + gameId + '"]').first();
         if (gameElement.length) {
             setTimeout(function() {
                 $('html, body').animate({
@@ -84,11 +87,12 @@ function loadJoinGameForm(gameId, isReserve) {
 }
 
 function editGame(gameId) {
+    console.log('editGame called for game:', gameId);
     const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
     
     // Check if user is logged in or admin
     if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
-        // Logged in users can edit
+        // Logged in users can edit directly
         $.get('ajax/edit_game_form.php', { game_id: gameId }, function(html) {
             openModal(html);
         });
@@ -96,31 +100,65 @@ function editGame(gameId) {
     }
     
     // Not logged in - check verification method
-    if (typeof CONFIG !== 'undefined' && CONFIG.verificationMethod === 'email') {
-        // Require email verification
-        showEmailVerification(
-            t.enter_email_for_creating, 
-            function(email) {
-                // Verify email with backend
-                $.post('ajax/verify_email.php', {
-                    game_id: gameId,
-                    email: email,
-                    action: 'edit_game'
-                }, function(response) {
-                    if (response.verified) {
-                        // Email matches - allow edit
-                        $.get('ajax/edit_game_form.php', { game_id: gameId }, function(html) {
-                            openModal(html);
-                        });
-                    } else {
-                        showAlert(response.message || t.email_does_not_match);
-                    }
-                }, 'json').fail(function() {
-                    showAlert(t.verification_failed);
+    if (typeof CONFIG !== 'undefined' && (CONFIG.verificationMethod === 'code' || CONFIG.verificationMethod === 'link')) {
+        // Request verification code
+        console.log('Requesting verification code for game:', gameId);
+        
+        $.post('ajax/send_verification_code.php', {
+            game_id: gameId
+        }, function(codeResponse) {
+            console.log('Code request response:', codeResponse);
+            
+            if (!codeResponse.success) {
+                showAlert(codeResponse.error || 'Failed to send verification code');
+                return;
+            }
+            
+            // Check if no email on record
+            if (codeResponse.no_email) {
+                // No email - just show edit form
+                $.get('ajax/edit_game_form.php', { game_id: gameId }, function(html) {
+                    openModal(html);
                 });
-            }, 
-            t.email_verification_required
-        );
+                return;
+            }
+            
+            // Email sent - show code input
+            let message = (t.code_sent_to_email || 'A verification code has been sent to your email');
+            if (codeResponse.email) {
+                message += ' (' + codeResponse.email + ')';
+            }
+            
+            showCodeVerification(
+                message,
+                function(code) {
+                    console.log('Code entered:', code, 'Verifying...');
+                    // Verify code
+                    $.post('ajax/verify_code.php', {
+                        game_id: gameId,
+                        code: code,
+                        action: 'edit_game'
+                    }, function(response) {
+                        console.log('Code verification response:', response);
+                        if (response.verified) {
+                            // Code verified - show edit form
+                            $.get('ajax/edit_game_form.php', { game_id: gameId }, function(html) {
+                                openModal(html);
+                            });
+                        } else {
+                            showAlert(response.message || t.code_does_not_match || 'Invalid verification code');
+                        }
+                    }, 'json').fail(function(jqXHR) {
+                        console.error('Verification failed:', jqXHR.responseText);
+                        showAlert(t.verification_failed || 'Verification failed. Please try again.');
+                    });
+                },
+                t.verification_code || 'Verification Code'
+            );
+        }, 'json').fail(function(jqXHR) {
+            console.error('Failed to request code:', jqXHR.responseText);
+            showAlert('Failed to send verification code. Please try again.');
+        });
     } else {
         // No verification required
         $.get('ajax/edit_game_form.php', { game_id: gameId }, function(html) {
@@ -135,11 +173,12 @@ function loadEditGameForm(gameId) {
 }
 
 function deleteGame(gameId) {
+    console.log('deleteGame called for game:', gameId);
     const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
     
     // Check if user is logged in or admin
     if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
-        // Logged in users can delete
+        // Logged in users can delete directly
         $.get('ajax/delete_game_choice.php', { game_id: gameId }, function(html) {
             openModal(html);
         });
@@ -147,31 +186,65 @@ function deleteGame(gameId) {
     }
     
     // Not logged in - check verification method
-    if (typeof CONFIG !== 'undefined' && CONFIG.verificationMethod === 'email') {
-        // Require email verification
-        showEmailVerification(
-            t.enter_email_for_creating, 
-            function(email) {
-                // Verify email with backend
-                $.post('ajax/verify_email.php', {
-                    game_id: gameId,
-                    email: email,
-                    action: 'delete_game'
-                }, function(response) {
-                    if (response.verified) {
-                        // Email matches - allow delete
-                        $.get('ajax/delete_game_choice.php', { game_id: gameId }, function(html) {
-                            openModal(html);
-                        });
-                    } else {
-                        showAlert(response.message || t.email_does_not_match);
-                    }
-                }, 'json').fail(function() {
-                    showAlert(t.verification_failed);
+    if (typeof CONFIG !== 'undefined' && (CONFIG.verificationMethod === 'code' || CONFIG.verificationMethod === 'link')) {
+        // Request verification code
+        console.log('Requesting verification code for game deletion:', gameId);
+        
+        $.post('ajax/send_verification_code.php', {
+            game_id: gameId
+        }, function(codeResponse) {
+            console.log('Code request response:', codeResponse);
+            
+            if (!codeResponse.success) {
+                showAlert(codeResponse.error || 'Failed to send verification code');
+                return;
+            }
+            
+            // Check if no email on record
+            if (codeResponse.no_email) {
+                // No email - just show delete choice
+                $.get('ajax/delete_game_choice.php', { game_id: gameId }, function(html) {
+                    openModal(html);
                 });
-            }, 
-            t.email_verification_required
-        );
+                return;
+            }
+            
+            // Email sent - show code input
+            let message = (t.code_sent_to_email || 'A verification code has been sent to your email');
+            if (codeResponse.email) {
+                message += ' (' + codeResponse.email + ')';
+            }
+            
+            showCodeVerification(
+                message,
+                function(code) {
+                    console.log('Code entered:', code, 'Verifying...');
+                    // Verify code
+                    $.post('ajax/verify_code.php', {
+                        game_id: gameId,
+                        code: code,
+                        action: 'delete_game'
+                    }, function(response) {
+                        console.log('Code verification response:', response);
+                        if (response.verified) {
+                            // Code verified - show delete choice
+                            $.get('ajax/delete_game_choice.php', { game_id: gameId }, function(html) {
+                                openModal(html);
+                            });
+                        } else {
+                            showAlert(response.message || t.code_does_not_match || 'Invalid verification code');
+                        }
+                    }, 'json').fail(function(jqXHR) {
+                        console.error('Verification failed:', jqXHR.responseText);
+                        showAlert(t.verification_failed || 'Verification failed. Please try again.');
+                    });
+                },
+                t.verification_code || 'Verification Code'
+            );
+        }, 'json').fail(function(jqXHR) {
+            console.error('Failed to request code:', jqXHR.responseText);
+            showAlert('Failed to send verification code. Please try again.');
+        });
     } else {
         // No verification required
         $.get('ajax/delete_game_choice.php', { game_id: gameId }, function(html) {
@@ -228,11 +301,11 @@ function resignFromGame(gameId, playerId) {
             if (response.success) {
                 reloadAndScrollToGame(gameId);
             } else {
-                showAlert(response.error || response.message || t.error_occurred);
+                showAlert(response.error || response.message || t.error_occurred || 'Error occurred');
             }
         }, 'json').fail(function(xhr) {
             console.error('Resign failed:', xhr.responseText);
-            showAlert(t.verification_failed);
+            showAlert(t.verification_failed || 'Failed to resign. Please try again.');
         });
     }
     
@@ -240,95 +313,60 @@ function resignFromGame(gameId, playerId) {
     if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
         // Logged in users can resign
         showConfirm(
-            t.confirm_resign, 
+            t.confirm_resign || 'Are you sure you want to resign from this game?', 
             function() {
                 doResign(); // No verified email needed
             }, 
-            t.confirm_resignation
+            t.confirm_resignation || 'Confirm Resignation'
         );
         return;
     }
     
     // Not logged in - check verification method
     if (typeof CONFIG !== 'undefined' && (CONFIG.verificationMethod === 'code' || CONFIG.verificationMethod === 'link')) {
-        // First, request the verification code to be sent via email
-        console.log('Requesting verification code for player:', playerId);
-        
-        $.post('ajax/send_verification_code.php', {
-            player_id: playerId
-        }, function(codeResponse) {
-            console.log('Code request response:', codeResponse);
-            
-            if (!codeResponse.success) {
-                // Email failed or not configured
-                let errorMsg = codeResponse.error || 'Failed to send verification code';
-                if (codeResponse.config_error || codeResponse.email_error) {
-                    errorMsg += '\n\nPlease contact the administrator to enable email verification.';
-                }
-                showAlert(errorMsg);
-                return;
-            }
-            
-            // Check if no email on record - allow trust-based resignation
-            if (codeResponse.no_email) {
-                // No email - just show confirmation
-                showConfirm(
-                    t.confirm_resign,
-                    function() {
-                        doResign(); // No verification needed
-                    },
-                    t.confirm_resignation
-                );
-                return;
-            }
-            
-            // Email sent successfully - show code input
-            let message = (t.code_sent_to_email);
-            if (codeResponse.email) {
-                message += ' (' + codeResponse.email + ')';
-            }
-            
-            showCodeVerification(
-                message,
-                function(code) {
-                    console.log('Code entered:', code, 'Calling verify_code.php...');
-                    // Verify code with backend
-                    $.post('ajax/verify_code.php', {
-                        player_id: playerId,
-                        code: code,
-                        action: 'resign_player'
-                    }, function(response) {
-                        console.log('Code verification response:', response);
-                        if (response.verified) {
-                            // Code matches - confirm resignation
-                            console.log('Code verified, showing confirmation');
-                            showConfirm(
-                                t.confirm_resign,
-                                function() {
-                                    doResign(); // Code already verified
-                                },
-                                t.confirm_resignation
-                            );
-                        } else {
-                            console.log('Code not verified, showing error');
-                            showAlert(response.message || t.code_does_not_match);
-                        }
-                    }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
-                        console.error('Verification AJAX failed:', jqXHR.responseText);
-                        showAlert(t.verification_failed);
+        // Require code verification (6-digit code)
+        showCodeVerification(
+            t.enter_verification_code || 'Enter your 6-digit verification code',
+            function(code) {
+                console.log('Code entered:', code, 'Calling verify_code.php...');
+                // Verify code with backend
+                $.post('ajax/verify_code.php', {
+                    player_id: playerId,
+                    code: code,
+                    action: 'resign_player'
+                }, function(response) {
+                    console.log('Code verification response:', response);
+                    if (response.verified) {
+                        // Code matches - confirm resignation
+                        console.log('Code verified, showing confirmation with message:', t.confirm_resign);
+                        showConfirm(
+                            t.confirm_resign || 'Are you sure you want to resign from this game?',
+                            function() {
+                                doResign(); // Code already verified
+                            },
+                            t.confirm_resignation || 'Confirm Resignation'
+                        );
+                    } else {
+                        console.log('Code not verified, showing error');
+                        showAlert(response.message || t.code_does_not_match || 'Invalid verification code. Please try again.');
+                    }
+                }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX call failed!', {
+                        status: jqXHR.status,
+                        statusText: jqXHR.statusText,
+                        textStatus: textStatus,
+                        errorThrown: errorThrown,
+                        responseText: jqXHR.responseText
                     });
-                },
-                t.verification_code
-            );
-            
-        }, 'json').fail(function(jqXHR) {
-            console.error('Failed to request code:', jqXHR.responseText);
-            showAlert('Failed to send verification code. Please contact the administrator.');
-        });
+                    showAlert(t.verification_failed || 'Verification failed. Please try again. Error: ' + textStatus);
+                });
+            },
+            t.verification_code || 'Verification Code'
+        );
     } else if (typeof CONFIG !== 'undefined' && CONFIG.verificationMethod === 'email') {
         // Require email verification
         showEmailVerification(
-            t.enter_email_for_joining, 
+            t.enter_email_for_joining || 'Enter the email address you used when joining this game', 
             function(email) {
                 console.log('Email entered:', email, 'Calling verify_email.php...');
                 // Verify email with backend
@@ -340,17 +378,17 @@ function resignFromGame(gameId, playerId) {
                     console.log('Email verification response:', response);
                     if (response.verified) {
                         // Email matches - confirm resignation and pass verified email
-                        console.log('Email verified, showing confirmation');
+                        console.log('Email verified, showing confirmation with message:', t.confirm_resign);
                         showConfirm(
-                            t.confirm_resign, 
+                            t.confirm_resign || 'Are you sure you want to resign from this game?', 
                             function() {
                                 doResign(email); // Pass the verified email
                             }, 
-                            t.confirm_resignation
+                            t.confirm_resignation || 'Confirm Resignation'
                         );
                     } else {
                         console.log('Email not verified, showing error');
-                        showAlert(response.message || t.email_does_not_match);
+                        showAlert(response.message || t.email_does_not_match || 'Email does not match. You can only resign from games you joined.');
                     }
                 }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
                     console.error('AJAX call failed!', {
@@ -360,19 +398,19 @@ function resignFromGame(gameId, playerId) {
                         errorThrown: errorThrown,
                         responseText: jqXHR.responseText
                     });
-                    showAlert(t.verification_failed + textStatus);
+                    showAlert(t.verification_failed || 'Verification failed. Please try again. Error: ' + textStatus);
                 });
             }, 
-            t.email_verification_required
+            t.email_verification_required || 'Verify Email'
         );
     } else {
         // No verification required
         showConfirm(
-            t.confirm_resign, 
+            t.confirm_resign || 'Are you sure you want to resign from this game?', 
             function() {
                 doResign(); // No verified email needed
             }, 
-            t.confirm_resignation
+            t.confirm_resignation || 'Confirm Resignation'
         );
     }
 }
@@ -443,7 +481,7 @@ function editPoll(pollId) {
     if (typeof CONFIG !== 'undefined' && CONFIG.verificationMethod === 'email') {
         // Require email verification
         showEmailVerification(
-            t.enter_email_for_poll, 
+            t.enter_email_for_poll || 'Enter the email address you used when creating this poll', 
             function(email) {
                 // Verify email with backend
                 $.post('ajax/verify_email.php', {
@@ -457,13 +495,13 @@ function editPoll(pollId) {
                             openModal(html);
                         });
                     } else {
-                        showAlert(response.message || t.email_does_not_match);
+                        showAlert(response.message || t.email_does_not_match || 'Email does not match. You can only edit polls you created.');
                     }
                 }, 'json').fail(function() {
-                    showAlert(t.verification_failed);
+                    showAlert(t.verification_failed || 'Verification failed. Please try again.');
                 });
             }, 
-            t.email_verification_required
+            t.email_verification_required || 'Verify Email'
         );
     } else {
         // No verification required
@@ -496,7 +534,7 @@ function deletePoll(pollId) {
             if (response.success) {
                 location.reload();
             } else {
-                showAlert(response.message || t.error_occurred);
+                showAlert(response.message || t.error_occurred || 'Error deleting poll');
             }
         }, 'json');
     }
@@ -505,11 +543,11 @@ function deletePoll(pollId) {
     if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
         // Logged in users can delete
         showConfirm(
-            t.confirm_delete_poll, 
+            t.confirm_delete_poll || 'Are you sure you want to delete this poll?', 
             function() {
                 doDelete();
             }, 
-            t.confirm_delete
+            t.confirm_delete || 'Confirm Delete Poll'
         );
         return;
     }
@@ -518,7 +556,7 @@ function deletePoll(pollId) {
     if (typeof CONFIG !== 'undefined' && CONFIG.verificationMethod === 'email') {
         // Require email verification
         showEmailVerification(
-            t.enter_email_for_poll, 
+            t.enter_email_for_poll || 'Enter the email address you used when creating this poll', 
             function(email) {
                 // Verify email with backend
                 $.post('ajax/verify_email.php', {
@@ -529,29 +567,29 @@ function deletePoll(pollId) {
                     if (response.verified) {
                         // Email matches - confirm delete
                         showConfirm(
-                            t.confirm_delete_poll, 
+                            t.confirm_delete_poll || 'Are you sure you want to delete this poll?', 
                             function() {
                                 doDelete();
                             }, 
-                            t.confirm_delete
+                            t.confirm_delete || 'Confirm Delete Poll'
                         );
                     } else {
-                        showAlert(response.message || t.email_does_not_match);
+                        showAlert(response.message || t.email_does_not_match || 'Email does not match. You can only delete polls you created.');
                     }
                 }, 'json').fail(function() {
-                    showAlert(t.verification_failed);
+                    showAlert(t.verification_failed || 'Verification failed. Please try again.');
                 });
             }, 
-            t.email_verification_required
+            t.email_verification_required || 'Verify Email'
         );
     } else {
         // No verification required
         showConfirm(
-            t.confirm_delete_poll, 
+            t.confirm_delete_poll || 'Are you sure you want to delete this poll?', 
             function() {
                 doDelete();
             }, 
-            t.confirm_delete
+            t.confirm_delete || 'Confirm Delete Poll'
         );
     }
 }
@@ -614,12 +652,12 @@ $(document).ready(function() {
 
 function showAlert(message, title) {
     const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
-    title = title || t.notice;
+    title = title || t.notice || 'Notice';
     const html = `
         <div class="modal-alert">
             <h3>${title}</h3>
             <div class="alert-message">${message}</div>
-            <button type="button" class="btn btn-primary" onclick="closeModal()">${t.ok}</button>
+            <button type="button" class="btn btn-primary" onclick="closeModal()">${t.ok || 'OK'}</button>
         </div>
     `;
     openModal(html);
@@ -627,7 +665,7 @@ function showAlert(message, title) {
 
 function showConfirm(message, onConfirm, title) {
     const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
-    title = title || 'Confirm Delete';
+    title = title || t.confirm_delete || 'Confirm';
     const confirmId = 'confirm_' + Date.now();
     
     console.log('showConfirm called with:', {message, title, hasTranslations: !!t});
@@ -637,8 +675,8 @@ function showConfirm(message, onConfirm, title) {
             <h3>${title}</h3>
             <div class="confirm-message">${message}</div>
             <div class="confirm-buttons">
-                <button type="button" class="btn btn-secondary" onclick="closeModal()">${t.cancel}</button>
-                <button type="button" class="btn btn-primary" id="${confirmId}">${t.ok}</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">${t.cancel || 'Cancel'}</button>
+                <button type="button" class="btn btn-primary" id="${confirmId}">${t.ok || 'OK'}</button>
             </div>
         </div>
     `;
@@ -660,7 +698,7 @@ function showConfirm(message, onConfirm, title) {
 // Email verification prompt
 function showEmailVerification(message, onVerify, title) {
     const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
-    title = title || 'Verify Email';
+    title = title || t.email_verification_required || 'Email Verification Required';
     const verifyId = 'verify_' + Date.now();
     const emailId = 'email_' + Date.now();
     
@@ -669,12 +707,12 @@ function showEmailVerification(message, onVerify, title) {
             <h3>${title}</h3>
             <div class="verify-message">${message}</div>
             <div class="form-group">
-                <label>${'Email Address'}:</label>
-                <input type="email" id="${emailId}" class="form-control" placeholder="${t.enter_your_email}" required>
+                <label>${t.email_address || 'Email Address'}:</label>
+                <input type="email" id="${emailId}" class="form-control" placeholder="${t.enter_your_email || 'Enter your email'}" required>
             </div>
             <div class="verify-buttons">
-                <button type="button" class="btn btn-secondary" onclick="closeModal()">${t.cancel}</button>
-                <button type="button" class="btn btn-primary" id="${verifyId}">${'Verify'}</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">${t.cancel || 'Cancel'}</button>
+                <button type="button" class="btn btn-primary" id="${verifyId}">${t.verify || 'Verify'}</button>
             </div>
         </div>
     `;
@@ -691,11 +729,11 @@ function showEmailVerification(message, onVerify, title) {
         
         const email = $('#' + emailId).val().trim();
         if (!email) {
-            showAlert(t.enter_email);
+            showAlert(t.enter_email || 'Please enter an email address');
             return;
         }
         if (!isValidEmail(email)) {
-            showAlert(t.enter_valid_email);
+            showAlert(t.enter_valid_email || 'Please enter a valid email address');
             return;
         }
         closeModal();
@@ -717,7 +755,7 @@ function showEmailVerification(message, onVerify, title) {
 // Code verification prompt (for 6-digit verification codes)
 function showCodeVerification(message, onVerify, title) {
     const t = (typeof CONFIG !== 'undefined' && CONFIG.translations) ? CONFIG.translations : {};
-    title = title || t.verification_code;
+    title = title || t.verification_code || 'Verification Code';
     const verifyId = 'verify_' + Date.now();
     const codeId = 'code_' + Date.now();
     
@@ -726,19 +764,19 @@ function showCodeVerification(message, onVerify, title) {
             <h3>${title}</h3>
             <div class="verify-message">${message}</div>
             <div class="form-group">
-                <label>${t.verification_code}:</label>
+                <label>${t.verification_code || 'Verification Code'}:</label>
                 <input type="text" 
                        id="${codeId}" 
                        class="form-control" 
-                       placeholder="${t.enter_code}" 
+                       placeholder="${t.enter_code || 'Enter 6-digit code'}" 
                        maxlength="6" 
                        pattern="[0-9]{6}"
                        inputmode="numeric"
                        required>
             </div>
             <div class="verify-buttons">
-                <button type="button" class="btn btn-secondary" onclick="closeModal()">${t.cancel}</button>
-                <button type="button" class="btn btn-primary" id="${verifyId}">${'Verify'}</button>
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">${t.cancel || 'Cancel'}</button>
+                <button type="button" class="btn btn-primary" id="${verifyId}">${t.verify || 'Verify'}</button>
             </div>
         </div>
     `;
@@ -755,11 +793,11 @@ function showCodeVerification(message, onVerify, title) {
         
         const code = $('#' + codeId).val().trim();
         if (!code) {
-            showAlert('Enter 6-digit code');
+            showAlert(t.enter_code || 'Please enter your verification code');
             return;
         }
         if (!/^\d{6}$/.test(code)) {
-            showAlert(t.invalid_code);
+            showAlert(t.invalid_code || 'Invalid code format. Must be 6 digits.');
             return;
         }
         closeModal();
@@ -779,7 +817,23 @@ function showCodeVerification(message, onVerify, title) {
     
     // Only allow digits in code input
     $('#' + codeId).on('input', function() {
-        this.value = this.value.replace(/\D/g, '.btn-add-game').click(function() {
+        this.value = this.value.replace(/\D/g, '').substring(0, 6);
+    });
+}
+
+// Email validation helper
+function isValidEmail(email) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+}
+
+// ============================================================================
+// EVENT HANDLERS (moved from index.php for clean separation)
+// ============================================================================
+
+$(document).ready(function() {
+    
+    // Add Game Button
+    $('.btn-add-game').click(function() {
         const tableId = $(this).data('table-id');
         
         // Check login requirement
@@ -934,220 +988,23 @@ function showCodeVerification(message, onVerify, title) {
         }
     });
     
-    // Edit Game Button - with verification
-    $(document).on('click', '.edit-game-btn', function(e) {
+    // Poll button handlers (moved from poll.php templates)
+    $(document).on('click', '.btn-vote', function(e) {
         e.preventDefault();
-        const gameId = $(this).data('game-id');
-        editGame(gameId);
+        const optionId = $(this).data('option-id');
+        const pollId = $(this).data('poll-id');
+        voteOption(optionId, pollId);
     });
     
-    // Delete Game Button - with verification
-    $(document).on('click', '.delete-game-btn', function(e) {
+    $(document).on('click', '.btn-edit-poll', function(e) {
         e.preventDefault();
-        const gameId = $(this).data('game-id');
-        deleteGame(gameId);
+        const pollId = $(this).data('poll-id');
+        editPoll(pollId);
+    });
+    
+    $(document).on('click', '.btn-delete-poll', function(e) {
+        e.preventDefault();
+        const pollId = $(this).data('poll-id');
+        deletePoll(pollId);
     });
 });
-
-/**
- * Edit Game with Verification
- * Checks if user is logged in, if not requires verification code
- */
-function editGame(gameId) {
-    console.log('editGame called for game:', gameId);
-    
-    // Check if user is logged in or admin
-    if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
-        // Logged in users can edit directly
-        loadEditGameForm(gameId);
-        return;
-    }
-    
-    // Not logged in - check verification method
-    if (typeof CONFIG !== 'undefined' && (CONFIG.verificationMethod === 'code' || CONFIG.verificationMethod === 'link')) {
-        // Request verification code
-        console.log('Requesting verification code for game:', gameId);
-        
-        $.post('ajax/send_verification_code.php', {
-            game_id: gameId
-        }, function(codeResponse) {
-            console.log('Code request response:', codeResponse);
-            
-            if (!codeResponse.success) {
-                // Email failed or not configured
-                let errorMsg = codeResponse.error || 'Failed to send verification code';
-                if (codeResponse.config_error || codeResponse.email_error) {
-                    errorMsg += '\n\nPlease contact the administrator to enable email verification.';
-                }
-                showAlert(errorMsg);
-                return;
-            }
-            
-            // Check if no email on record - allow edit with just confirmation
-            if (codeResponse.no_email) {
-                loadEditGameForm(gameId);
-                return;
-            }
-            
-            // Email sent - show code input
-            let message = 'A verification code has been sent to your email';
-            if (codeResponse.email) {
-                message += ' (' + codeResponse.email + ')';
-            }
-            
-            showCodeVerification(
-                message,
-                function(code) {
-                    console.log('Code entered:', code, 'Verifying...');
-                    // Verify code
-                    $.post('ajax/verify_code.php', {
-                        game_id: gameId,
-                        code: code,
-                        action: 'edit_game'
-                    }, function(response) {
-                        console.log('Code verification response:', response);
-                        if (response.verified) {
-                            // Code verified - show edit form
-                            loadEditGameForm(gameId);
-                        } else {
-                            showAlert(response.message || 'Invalid verification code');
-                        }
-                    }, 'json').fail(function(jqXHR) {
-                        console.error('Verification failed:', jqXHR.responseText);
-                        showAlert('Verification failed. Please try again.');
-                    });
-                },
-                'Verification Code'
-            );
-            
-        }, 'json').fail(function(jqXHR) {
-            console.error('Failed to request code:', jqXHR.responseText);
-            showAlert('Failed to send verification code. Please contact the administrator.');
-        });
-    } else {
-        // No verification required
-        loadEditGameForm(gameId);
-    }
-}
-
-/**
- * Delete Game with Verification
- * Checks if user is logged in, if not requires verification code
- */
-function deleteGame(gameId) {
-    console.log('deleteGame called for game:', gameId);
-    
-    // Check if user is logged in or admin
-    if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
-        // Logged in users get direct confirmation
-        showConfirm(
-            'Are you sure you want to delete this game?',
-            function() {
-                doDeleteGame(gameId);
-            },
-            'Confirm Deletion'
-        );
-        return;
-    }
-    
-    // Not logged in - check verification method
-    if (typeof CONFIG !== 'undefined' && (CONFIG.verificationMethod === 'code' || CONFIG.verificationMethod === 'link')) {
-        // Request verification code
-        console.log('Requesting verification code for game deletion:', gameId);
-        
-        $.post('ajax/send_verification_code.php', {
-            game_id: gameId
-        }, function(codeResponse) {
-            console.log('Code request response:', codeResponse);
-            
-            if (!codeResponse.success) {
-                let errorMsg = codeResponse.error || 'Failed to send verification code';
-                if (codeResponse.config_error || codeResponse.email_error) {
-                    errorMsg += '\n\nPlease contact the administrator to enable email verification.';
-                }
-                showAlert(errorMsg);
-                return;
-            }
-            
-            // Check if no email on record
-            if (codeResponse.no_email) {
-                showConfirm(
-                    'Are you sure you want to delete this game?',
-                    function() {
-                        doDeleteGame(gameId);
-                    },
-                    'Confirm Deletion'
-                );
-                return;
-            }
-            
-            // Email sent - show code input
-            let message = 'A verification code has been sent to your email';
-            if (codeResponse.email) {
-                message += ' (' + codeResponse.email + ')';
-            }
-            
-            showCodeVerification(
-                message,
-                function(code) {
-                    console.log('Code entered:', code, 'Verifying...');
-                    // Verify code
-                    $.post('ajax/verify_code.php', {
-                        game_id: gameId,
-                        code: code,
-                        action: 'delete_game'
-                    }, function(response) {
-                        console.log('Code verification response:', response);
-                        if (response.verified) {
-                            // Code verified - show confirmation
-                            showConfirm(
-                                'Are you sure you want to delete this game?',
-                                function() {
-                                    doDeleteGame(gameId);
-                                },
-                                'Confirm Deletion'
-                            );
-                        } else {
-                            showAlert(response.message || 'Invalid verification code');
-                        }
-                    }, 'json').fail(function(jqXHR) {
-                        console.error('Verification failed:', jqXHR.responseText);
-                        showAlert('Verification failed. Please try again.');
-                    });
-                },
-                'Verification Code'
-            );
-            
-        }, 'json').fail(function(jqXHR) {
-            console.error('Failed to request code:', jqXHR.responseText);
-            showAlert('Failed to send verification code. Please contact the administrator.');
-        });
-    } else {
-        // No verification required
-        showConfirm(
-            'Are you sure you want to delete this game?',
-            function() {
-                doDeleteGame(gameId);
-            },
-            'Confirm Deletion'
-        );
-    }
-}
-
-/**
- * Actually perform the game deletion
- */
-function doDeleteGame(gameId) {
-    $.post('ajax/delete_game.php', { 
-        game_id: gameId 
-    }, function(response) {
-        if (response.success) {
-            window.location.reload();
-        } else {
-            showAlert(response.error || 'Failed to delete game');
-        }
-    }, 'json').fail(function(jqXHR) {
-        console.error('Delete failed:', jqXHR.responseText);
-        showAlert('Failed to delete game. Please try again.');
-    });
-}
