@@ -280,6 +280,7 @@ function update_files_from_github() {
     // Copy files from extracted folder to current directory
     log_update_message("Copying updated files...");
     $files_copied = copy_directory_contents($source_dir, '.');
+    log_update_message("Files copied: $files_copied");
     
     // SECURITY: Remove install.php if it exists (should not be on production)
     if (file_exists('install.php')) {

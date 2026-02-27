@@ -39,7 +39,13 @@ $page_title = isset($page_title) ? $page_title : '';
                     <a href="profile.php" class="btn-profile"><?php echo t('user_profile'); ?></a>
                     <a href="?action=logout" class="btn-logout"><?php echo t('logout'); ?></a>
                 <?php else: ?>
-                    <a href="login.php" class="btn-login"><?php echo t('login'); ?></a>
+                    <?php
+                    $allow_logged_in = isset($config['allow_logged_in']) ? $config['allow_logged_in'] : 'no';
+                    if ($allow_logged_in !== 'no'): 
+                    ?>
+                        <a href="login.php" class="btn-login"><?php echo t('login'); ?></a>
+                        <a href="login.php?register" class="btn-register"><?php echo t('register'); ?></a>
+                    <?php endif; ?>
                 <?php endif; ?>
                 
                 <!-- Language Selector -->

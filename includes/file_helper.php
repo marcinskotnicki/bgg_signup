@@ -14,26 +14,48 @@
  * 
  * @param string $source Source directory path
  * @param string $dest Destination directory path
- * @return bool True on success, false on failure
+ * @return int Number of files copied
  */
 function copy_directory_contents($source, $dest) {
+    // ========================================================================
+    // FILES TO NEVER OVERWRITE DURING UPDATES
+    // ========================================================================
+    // These files contain user-specific data and should be preserved
+    $skip_files = [
+        'config.php',           // User configuration - MUST NOT overwrite
+        'database.db',          // User database - MUST NOT overwrite
+        'database.db-journal',  // SQLite journal file
+        'database.db-wal',      // SQLite write-ahead log
+        'database.db-shm',      // SQLite shared memory
+        '.htaccess',            // Server-specific config (may be customized)
+    ];
+    
+    // Directories to skip completely
+    $skip_dirs = [
+        'backups',              // User's backup folder
+        'thumbnails',           // User-uploaded thumbnails
+        '.git',                 // Git repository data
+    ];
+    
+    $files_copied = 0;
+    
     // Create destination directory if it doesn't exist
     if (!is_dir($dest)) {
         if (!mkdir($dest, 0755, true)) {
-            if (function_exists('log_error')) {
-                log_error("Failed to create directory: $dest");
+            if (function_exists('log_update_message')) {
+                log_update_message("Failed to create directory: $dest");
             }
-            return false;
+            return $files_copied;
         }
     }
     
     // Open source directory
     $dir = opendir($source);
     if (!$dir) {
-        if (function_exists('log_error')) {
-            log_error("Failed to open directory: $source");
+        if (function_exists('log_update_message')) {
+            log_update_message("Failed to open directory: $source");
         }
-        return false;
+        return $files_copied;
     }
     
     // Copy each item
@@ -43,29 +65,49 @@ function copy_directory_contents($source, $dest) {
             continue;
         }
         
+        // ====================================================================
+        // SKIP FILES THAT SHOULD NEVER BE OVERWRITTEN
+        // ====================================================================
+        if (in_array($file, $skip_files)) {
+            if (function_exists('log_update_message')) {
+                log_update_message("SKIPPED (preserved): $file");
+            }
+            continue;
+        }
+        
+        // ====================================================================
+        // SKIP DIRECTORIES THAT CONTAIN USER DATA
+        // ====================================================================
+        if (in_array($file, $skip_dirs)) {
+            if (function_exists('log_update_message')) {
+                log_update_message("SKIPPED directory: $file");
+            }
+            continue;
+        }
+        
         $source_path = $source . '/' . $file;
         $dest_path = $dest . '/' . $file;
         
         if (is_dir($source_path)) {
             // Recursively copy subdirectory
-            if (!copy_directory_contents($source_path, $dest_path)) {
-                closedir($dir);
-                return false;
-            }
+            $files_copied += copy_directory_contents($source_path, $dest_path);
         } else {
             // Copy file
-            if (!copy($source_path, $dest_path)) {
-                if (function_exists('log_error')) {
-                    log_error("Failed to copy file: $source_path to $dest_path");
+            if (copy($source_path, $dest_path)) {
+                $files_copied++;
+                if (function_exists('log_update_message')) {
+                    log_update_message("Updated: $file");
                 }
-                closedir($dir);
-                return false;
+            } else {
+                if (function_exists('log_update_message')) {
+                    log_update_message("WARNING: Failed to copy: $file");
+                }
             }
         }
     }
     
     closedir($dir);
-    return true;
+    return $files_copied;
 }
 
 /**

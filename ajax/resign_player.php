@@ -64,15 +64,20 @@ try {
             $can_delete = true;
         }
     } else {
-        // Not logged in - check verification
-        if ($config['verification_method'] === 'email' && isset($_POST['verified_email'])) {
-            // Verify the email matches the player's email
-            $verified_email = trim($_POST['verified_email']);
-            if ($player['player_email'] && strcasecmp($player['player_email'], $verified_email) === 0) {
-                $can_delete = true;
+        // Not logged in - need to verify
+        
+        // CASE 1: Player HAS an email address - must verify it
+        if ($player['player_email']) {
+            // Check if verified_email was provided and matches
+            if (isset($_POST['verified_email'])) {
+                $verified_email = trim($_POST['verified_email']);
+                if (strcasecmp($player['player_email'], $verified_email) === 0) {
+                    $can_delete = true;
+                }
             }
-        } elseif ($config['verification_method'] !== 'email' && !$player['user_id']) {
-            // No verification required and no user_id - allow deletion
+        } 
+        // CASE 2: Player has NO email AND no user_id - allow without verification
+        elseif (!$player['user_id']) {
             $can_delete = true;
         }
     }
