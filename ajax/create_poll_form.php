@@ -245,21 +245,59 @@ $(document).ready(function() {
         });
     });
     
-    // Manual option
+    // ============================================================================
+    // EVENT HANDLER: Manual Option Button Click
+    // ============================================================================
+    // WHAT HAPPENS:
+    //   User clicked the "Add manually" button instead of searching BGG.
+    //   This means they want to add a poll option for a game that's either:
+    //   - Not on BoardGameGeek
+    //   - They prefer to enter the details themselves
+    //
+    // WHAT WE DO:
+    //   1. Clear all BGG-related fields (since this isn't from BGG)
+    //   2. Clear the game name field (user will type it themselves)
+    //   3. Hide the search results
+    //   4. Show the details form so user can fill it in
+    //   5. Show the thumbnail selector (they need to pick one manually)
+    //   6. Auto-select the first thumbnail for better UX
+    // ============================================================================
     $('#option-manual-btn').click(function() {
-        $('#option_bgg_id').val('');
-        $('#option_bgg_url').val('');
-        $('#option_thumbnail').val('');
-        $('#option_game_name').val('').prop('readonly', false);
-        $('#option-search-results').hide();
-        $('#option-details-form').show();
-        $('#option-thumbnail-selector').show(); // Show thumbnail selector for manual entries
         
-        // Auto-select first thumbnail if available
+        // ------------------------------------------------------------------
+        // STEP 1: Clear all BGG-related data
+        // ------------------------------------------------------------------
+        // Since this is a manual entry, we don't have any BoardGameGeek info
+        $('#option_bgg_id').val('');      // No BGG ID for this game
+        $('#option_bgg_url').val('');     // No BGG URL
+        $('#option_thumbnail').val('');   // No thumbnail yet (user will choose)
+        
+        // ------------------------------------------------------------------
+        // STEP 2: Clear the game name field
+        // ------------------------------------------------------------------
+        // User will type in the game name themselves
+        // IMPORTANT: Field is editable - no readonly restriction
+        $('#option_game_name').val('');  // Empty field ready for input
+        
+        // ------------------------------------------------------------------
+        // STEP 3: Show/hide appropriate UI sections
+        // ------------------------------------------------------------------
+        $('#option-search-results').hide();    // Hide BGG search results
+        $('#option-details-form').show();       // Show the form to fill in
+        $('#option-thumbnail-selector').show(); // Show thumbnail picker
+        
+        // ------------------------------------------------------------------
+        // STEP 4: Auto-select first thumbnail (better UX)
+        // ------------------------------------------------------------------
+        // Instead of making user click, we pre-select the first thumbnail.
+        // They can still change it if they want a different one.
         const $firstThumbnail = $('.thumbnail-option').first();
         if ($firstThumbnail.length) {
+            // Remove 'selected' class from all thumbnails
             $('.thumbnail-option').removeClass('selected');
+            // Add 'selected' class to the first thumbnail
             $firstThumbnail.addClass('selected');
+            // Store this thumbnail's path in the hidden field
             $('#option_thumbnail').val($firstThumbnail.data('thumbnail'));
         }
     });
@@ -292,26 +330,73 @@ $(document).ready(function() {
         $('#option-search-results').html(html);
     }
     
-    // Select game from search
+    // ============================================================================
+    // EVENT HANDLER: User Clicks on a BGG Search Result
+    // ============================================================================
+    // WHAT HAPPENS:
+    //   User searched for a game on BoardGameGeek and clicked on one of the
+    //   search results. Now we need to fetch the full details for that game
+    //   and populate the poll option form.
+    //
+    // FLOW:
+    //   1. Extract the game ID from the clicked element
+    //   2. Make AJAX request to get full game details from BGG
+    //   3. Populate all form fields with the data we get back
+    //   4. Show the details form so user can review/edit and add threshold
+    // ============================================================================
     $(document).on('click', '.search-result-item', function() {
+        
+        // ------------------------------------------------------------------
+        // STEP 1: Get the BoardGameGeek ID
+        // ------------------------------------------------------------------
+        // Each search result element has a data-game-id attribute
+        // This is the unique BGG ID for this game
         const gameId = $(this).data('game-id');
         
+        // ------------------------------------------------------------------
+        // STEP 2: Fetch full game details from BGG
+        // ------------------------------------------------------------------
+        // We make an AJAX call to our server, which then queries BGG's API
+        // for complete information about this game
         $.get('../ajax/get_bgg_game.php', { game_id: gameId }, function(response) {
+            
+            // Check if the request was successful
             if (response.success) {
+                // We got the game data! Let's use it.
                 const game = response.game;
-                $('#option_bgg_id').val(game.id);
-                $('#option_bgg_url').val(game.url);
-                $('#option_thumbnail').val(game.thumbnail);
-                $('#option_game_name').val(game.name).prop('readonly', true);
                 
-                // Populate additional fields from BGG data
+                // --------------------------------------------------------------
+                // STEP 3A: Store BGG identifiers
+                // --------------------------------------------------------------
+                // Save these hidden fields so we know this is a BGG game
+                $('#option_bgg_id').val(game.id);        // BGG's ID for this game
+                $('#option_bgg_url').val(game.url);      // Link to game on BGG
+                $('#option_thumbnail').val(game.thumbnail); // Game's image URL
+                
+                // --------------------------------------------------------------
+                // STEP 3B: Fill in the game name
+                // --------------------------------------------------------------
+                // IMPORTANT: We pre-fill with BGG's name BUT allow user to edit
+                // Why allow editing?
+                //   - User might want to translate to their language
+                //   - User might want to add clarifications ("Wingspan Euro")
+                //   - User might want to fix typos or formatting
+                $('#option_game_name').val(game.name);  // Name is editable!
+                
+                // --------------------------------------------------------------
+                // STEP 3C: Populate gameplay details (if available from BGG)
+                // --------------------------------------------------------------
+                // These are optional fields - we only fill them if BGG has the data
                 if (game.play_time) $('#option_play_time').val(game.play_time);
                 if (game.min_players) $('#option_min_players').val(game.min_players);
                 if (game.max_players) $('#option_max_players').val(game.max_players);
                 if (game.difficulty) $('#option_difficulty').val(game.difficulty);
                 
-                $('#option-search-results').hide();
-                $('#option-details-form').show();
+                // --------------------------------------------------------------
+                // STEP 4: Update UI to show the details form
+                // --------------------------------------------------------------
+                $('#option-search-results').hide();  // Hide the search results
+                $('#option-details-form').show();     // Show the form with data
             }
         });
     });

@@ -315,36 +315,96 @@ $(document).ready(function() {
         showDetailsStep();
     });
     
-    // Fill form with game data
+    // ============================================================================
+    // FUNCTION: fillGameForm()
+    // ============================================================================
+    // PURPOSE:
+    //   This function populates the game details form with data.
+    //   It handles TWO scenarios:
+    //   1. BGG Game - User selected a game from BoardGameGeek search results
+    //   2. Manual Game - User chose to add a game manually without BGG
+    //
+    // PARAMETERS:
+    //   - game: Object containing game data (from BGG or empty for manual)
+    //   - manual: Boolean - true if manual entry, false if from BGG
+    //
+    // WHAT IT DOES:
+    //   - Fills in all the form fields with appropriate values
+    //   - Shows/hides thumbnail selector based on entry type
+    //   - Validates the form after filling
+    // ============================================================================
     function fillGameForm(game, manual) {
+        
+        // --------------------------------------------------------------------
+        // SCENARIO 1: BGG GAME (when manual = false)
+        // --------------------------------------------------------------------
+        // User selected a game from the BoardGameGeek search results.
+        // We have real data from BGG to populate the form with.
         if (!manual) {
-            // BGG game
-            $('#bgg_id').val(game.id);
-            $('#bgg_url').val(game.url);
-            $('#thumbnail').val(game.thumbnail);
-            $('#game_name').val(game.name).prop('readonly', true);
-            $('#play_time').val(game.play_time);
-            $('#min_players').val(game.min_players);
-            $('#max_players').val(game.max_players);
-            $('#difficulty').val(game.difficulty.toFixed(2));
+            
+            // STEP 1: Store BGG identifiers
+            // These hidden fields connect this game entry to BoardGameGeek
+            $('#bgg_id').val(game.id);        // BGG's unique ID for this game
+            $('#bgg_url').val(game.url);      // Link to the game on BGG
+            $('#thumbnail').val(game.thumbnail);  // URL to the game's image
+            
+            // STEP 2: Fill in the game name
+            // IMPORTANT: We pre-fill with BGG's name BUT allow user to edit it
+            // Why allow editing? 
+            //   - User might want to translate name to their language
+            //   - User might want to fix typos or add clarifications
+            //   - User might want different formatting (e.g., "Wingspan (European)")
+            $('#game_name').val(game.name);  // Name is editable - user can change it!
+            
+            // STEP 3: Fill in gameplay details from BGG
+            $('#play_time').val(game.play_time);        // How long the game takes
+            $('#min_players').val(game.min_players);    // Minimum number of players
+            $('#max_players').val(game.max_players);    // Maximum number of players
+            $('#difficulty').val(game.difficulty.toFixed(2));  // Complexity rating
+            
+            // STEP 4: Hide thumbnail selector
+            // We already have a thumbnail from BGG, so hide the manual selector
             $('#thumbnail-selector').hide();
+            
         } else {
-            // Manual game
-            $('#bgg_id').val('');
-            $('#bgg_url').val('');
-            $('#thumbnail').val('');
-            $('#game_name').val('').prop('readonly', false);
+            // ----------------------------------------------------------------
+            // SCENARIO 2: MANUAL GAME (when manual = true)
+            // ----------------------------------------------------------------
+            // User clicked "Add manually" - they're entering a game that's not on BGG
+            // or they just prefer to enter everything themselves.
+            
+            // STEP 1: Clear all BGG-related fields
+            // Since this isn't from BGG, we don't have any BGG data
+            $('#bgg_id').val('');       // No BGG ID
+            $('#bgg_url').val('');      // No BGG URL
+            $('#thumbnail').val('');    // No thumbnail yet
+            
+            // STEP 2: Clear the game name field
+            // User will type in the name themselves
+            $('#game_name').val('');  // Empty field, ready for user input
+            
+            // STEP 3: Show thumbnail selector
+            // User needs to choose a thumbnail manually from our collection
             $('#thumbnail-selector').show();
             
-            // Auto-select first thumbnail if available
+            // STEP 4: Auto-select first available thumbnail
+            // This gives a better UX - they can change it if they want
             const $firstThumbnail = $('.thumbnail-option').first();
             if ($firstThumbnail.length) {
+                // Remove 'selected' class from all thumbnails first
                 $('.thumbnail-option').removeClass('selected');
+                // Add 'selected' class to the first one
                 $firstThumbnail.addClass('selected');
+                // Set the hidden field to this thumbnail's value
                 $('#thumbnail').val($firstThumbnail.data('thumbnail'));
             }
         }
         
+        // --------------------------------------------------------------------
+        // FINAL STEP: Validate the form
+        // --------------------------------------------------------------------
+        // Check if all required fields are filled so we can enable/disable
+        // the submit button appropriately
         validateForm();
     }
     
