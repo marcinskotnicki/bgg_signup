@@ -189,14 +189,29 @@ function search_bgg_games($db, $query) {
     
     // Make API request (exclude expansions)
     $query_encoded = urlencode($query);
-    $url = "https://boardgamegeek.com/xmlapi2/search?type=boardgame&excludesubtype=boardgameexpansion&query={$query_encoded}";
+    $url_v2 = "https://boardgamegeek.com/xmlapi2/search?type=boardgame&excludesubtype=boardgameexpansion&query={$query_encoded}";
     
-    error_log("BGG API: Searching for: $query");
-    $xml = fetch_bgg_url($url, $api_token);
+    error_log("BGG API: Searching for: $query (trying API v2)");
+    $xml = fetch_bgg_url($url_v2, $api_token);
+    
+    // ========================================================================
+    // API v2 FAILED or RETURNED INVALID XML - Try API v1 as fallback
+    // ========================================================================
+    // BGG's API v2 is sometimes broken and returns invalid XML or ignores
+    // the expansion filter. API v1 is older but more reliable.
+    // ========================================================================
+    $using_api_v1 = false;
     
     if ($xml === false) {
-        error_log("BGG API search failed for query: $query");
-        return ['error' => 'Failed to connect to BoardGameGeek API. Please try again later.'];
+        error_log("BGG API v2 connection failed, trying API v1 fallback");
+        $url_v1 = "https://boardgamegeek.com/xmlapi/search?search={$query_encoded}";
+        $xml = fetch_bgg_url($url_v1, $api_token);
+        $using_api_v1 = true;
+        
+        if ($xml === false) {
+            error_log("BGG API v1 also failed for query: $query");
+            return ['error' => 'Failed to connect to BoardGameGeek API. Please try again later.'];
+        }
     }
     
     // Validate and parse XML
@@ -210,17 +225,57 @@ function search_bgg_games($db, $query) {
             $error_messages[] = trim($error->message);
         }
         libxml_clear_errors();
-        error_log("BGG API: XML parsing errors: " . implode(', ', $error_messages));
-        return ['error' => 'Failed to parse BGG response'];
+        error_log("BGG API: XML parsing failed for v" . ($using_api_v1 ? "1" : "2") . ": " . implode(', ', $error_messages));
+        
+        // If v2 XML parsing failed, try v1 as fallback
+        if (!$using_api_v1) {
+            error_log("BGG API v2 returned invalid XML, trying API v1 fallback");
+            $url_v1 = "https://boardgamegeek.com/xmlapi/search?search={$query_encoded}";
+            $xml = fetch_bgg_url($url_v1, $api_token);
+            
+            if ($xml !== false) {
+                libxml_clear_errors();
+                $xml_obj = simplexml_load_string($xml);
+                if ($xml_obj !== false) {
+                    $using_api_v1 = true;
+                    error_log("BGG API v1 fallback successful");
+                } else {
+                    return ['error' => 'Failed to parse BGG response from both APIs'];
+                }
+            } else {
+                return ['error' => 'Failed to parse BGG response'];
+            }
+        } else {
+            return ['error' => 'Failed to parse BGG response'];
+        }
     }
     
     $results = [];
     
-    // Check if there are any items
-    if (isset($xml_obj->item)) {
-        foreach ($xml_obj->item as $item) {
-            // Only include board games (should already be filtered by API, but double-check)
-            if ((string)$item['type'] === 'boardgame') {
+    // ========================================================================
+    // PARSE RESULTS - Different structure for API v1 vs v2
+    // ========================================================================
+    if ($using_api_v1) {
+        // API v1 structure: <boardgame objectid="..." >
+        if (isset($xml_obj->boardgame)) {
+            foreach ($xml_obj->boardgame as $item) {
+                $results[] = [
+                    'id' => (int)$item['objectid'],
+                    'name' => (string)$item->name,
+                    'year' => isset($item->yearpublished) ? (int)$item->yearpublished : null
+                ];
+            }
+        }
+    } else {
+        // API v2 structure: <item type="..." >
+        if (isset($xml_obj->item)) {
+            foreach ($xml_obj->item as $item) {
+                // Only include if type is exactly 'boardgame' (not expansion)
+                $item_type = (string)$item['type'];
+                if ($item_type !== 'boardgame') {
+                    continue;
+                }
+                
                 $results[] = [
                     'id' => (int)$item['id'],
                     'name' => (string)$item->name['value'],

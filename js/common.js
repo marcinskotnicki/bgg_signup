@@ -747,6 +747,27 @@ function showConfirm(message, onConfirm, title) {
     }, 100);
 }
 
+// ============================================================================
+// GLOBAL LOADING SPINNER FOR ALL MODAL BUTTONS
+// ============================================================================
+// Automatically add loading spinner to ANY button clicked in modals
+// (except cancel/close buttons)
+// 
+// This provides visual feedback for ALL actions:
+// - Confirm/Delete buttons
+// - Submit/Save buttons  
+// - Verify buttons
+// - Any primary action button
+//
+// Excluded buttons: Cancel, Close, Secondary actions
+// ============================================================================
+$(document).on('click', '.modal-overlay button:not(.btn-cancel):not(.btn-secondary):not([class*="close"]):not([onclick*="closeModal"])', function() {
+    // Add loading class to this button
+    $(this).addClass('btn-loading');
+    
+    // Note: The button will be removed when modal closes, no need to manually remove the class
+});
+
 // Email verification prompt
 function showEmailVerification(message, onVerify, title) {
     title = title || t.email_verification_required || 'Email Verification Required';
