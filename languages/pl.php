@@ -580,6 +580,15 @@ return [
     'game' => 'gry',
     'poll' => 'ankiety',
     
+    // Restore game
+    'restore_game' => 'Przywróć grę',
+    'restore_game_logged_in_info' => 'Staniesz się nowym właścicielem tej gry.',
+    'restore_game_ownership_info' => 'Przywracając tę grę, staniesz się jej nowym właścicielem. Podaj swój email, aby móc nią zarządzać później.',
+    'restore_game_email_help' => 'Będziesz potrzebować tego emaila, aby edytować lub usunąć grę później.',
+    'game_restored_successfully' => 'Gra została pomyślnie przywrócona. Jesteś teraz właścicielem.',
+    'game_not_deleted' => 'Ta gra nie jest usunięta.',
+    'your_email' => 'Twój Email',
+    
     // Modal form labels and buttons
     'email_address' => 'Adres email',
     'enter_your_email' => 'Wpisz swój email',

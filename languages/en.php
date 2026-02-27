@@ -580,6 +580,15 @@ return [
     'game' => 'game',
     'poll' => 'poll',
     
+    // Restore game
+    'restore_game' => 'Restore Game',
+    'restore_game_logged_in_info' => 'You will become the new owner of this game.',
+    'restore_game_ownership_info' => 'By restoring this game, you will become its new owner. Provide your email to manage it later.',
+    'restore_game_email_help' => 'You will need this email to edit or delete the game later.',
+    'game_restored_successfully' => 'Game restored successfully. You are now the owner.',
+    'game_not_deleted' => 'This game is not deleted.',
+    'your_email' => 'Your Email',
+    
     // Modal form labels and buttons
     'email_address' => 'Email Address',
     'enter_your_email' => 'Enter your email',

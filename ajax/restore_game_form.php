@@ -1,135 +1,144 @@
 <?php
 /**
- * AJAX Handler: Restore Game Form
+ * restore_game_form.php
+ * 
+ * PURPOSE:
+ * Shows a form asking for email when restoring a deleted game.
+ * The person restoring becomes the NEW OWNER.
+ * 
+ * IMPORTANT:
+ * This form collects the restoring person's email so they become
+ * the new owner (not the original creator).
  */
 
-// Load configuration
-$config = require_once '../config.php';
-
-// Load translation system
+session_start();
+require_once '../config.php';
+require_once '../includes/db.php';
+require_once '../includes/auth.php';
 require_once '../includes/translations.php';
 
-// Load auth helper
-require_once '../includes/auth.php';
-
-// Database connection
-try {
-    $db = new PDO('sqlite:../' . DB_FILE);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    die('Database connection failed');
-}
-
-// Get current user
-$current_user = get_current_user($db);
-
-// Get game ID
 $game_id = isset($_GET['game_id']) ? intval($_GET['game_id']) : 0;
+$current_user = get_current_user();
 
 if (!$game_id) {
-    die('Invalid game ID');
+    echo '<div class="error">' . t('invalid_game_id') . '</div>';
+    exit;
 }
 
 // Get game details
-$stmt = $db->prepare("SELECT g.*, e.name as event_name 
-                      FROM games g 
-                      JOIN tables t ON g.table_id = t.id 
-                      JOIN event_days ed ON t.event_day_id = ed.id 
-                      JOIN events e ON ed.event_id = e.id 
-                      WHERE g.id = ?");
+$db = get_db_connection();
+$stmt = $db->prepare("
+    SELECT 
+        id,
+        name,
+        description,
+        inactive
+    FROM games 
+    WHERE id = ?
+");
 $stmt->execute([$game_id]);
 $game = $stmt->fetch(PDO::FETCH_ASSOC);
 
-if (!$game || $game['is_active'] == 1) {
-    die('Game not found or already active');
+if (!$game) {
+    echo '<div class="error">' . t('game_not_found') . '</div>';
+    exit;
 }
 
-// Get all players from this game
-$stmt = $db->prepare("SELECT * FROM players WHERE game_id = ? ORDER BY is_reserve ASC, position ASC");
-$stmt->execute([$game_id]);
-$players = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-// Pre-fill user data if logged in
-$default_name = $current_user ? $current_user['name'] : '';
-$default_email = $current_user ? $current_user['email'] : '';
+if ($game['inactive'] != 1) {
+    echo '<div class="error">' . t('game_not_deleted') . '</div>';
+    exit;
+}
 ?>
 
-<div class="restore-game-form">
+<div class="modal-form">
     <h2><?php echo t('restore_game'); ?></h2>
     
     <div class="game-info">
-        <h3><?php echo htmlspecialchars($game['name']); ?></h3>
-        <p><?php echo htmlspecialchars($game['event_name']); ?> - <?php echo $game['start_time']; ?></p>
-        <p class="player-count"><?php echo count($players); ?> <?php echo t('players_signed_up'); ?></p>
+        <strong><?php echo t('game_name'); ?>:</strong> <?php echo htmlspecialchars($game['name']); ?>
     </div>
     
-    <div class="restore-info">
-        <?php echo t('restore_game_info'); ?>
-    </div>
-    
-    <form id="restore-game-form">
-        <input type="hidden" name="game_id" value="<?php echo $game_id; ?>">
-        
-        <!-- New Host Name -->
-        <div class="form-group">
-            <label><?php echo t('your_name'); ?>: <span class="required">*</span></label>
-            <input type="text" name="host_name" class="form-control" value="<?php echo htmlspecialchars($default_name); ?>" required>
+    <?php if ($current_user): ?>
+        <!-- ============================================
+             LOGGED-IN USER: No email needed
+             ============================================
+             Logged-in users are authenticated, so we don't
+             need their email. They'll become the owner via
+             their user account.
+        -->
+        <div class="info-box">
+            <?php echo t('restore_game_logged_in_info'); ?>
         </div>
         
-        <!-- New Host Email -->
-        <div class="form-group">
-            <label><?php echo t('your_email'); ?>:<?php if ($config['require_emails']): ?> <span class="required">*</span><?php endif; ?></label>
-            <input type="email" name="host_email" class="form-control" value="<?php echo htmlspecialchars($default_email); ?>" <?php echo $config['require_emails'] ? 'required' : ''; ?>>
+        <form id="restore-game-form" onsubmit="return submitRestoreGame(event, <?php echo $game_id; ?>);">
+            <input type="hidden" name="game_id" value="<?php echo $game_id; ?>">
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()"><?php echo t('cancel'); ?></button>
+                <button type="submit" class="btn btn-primary"><?php echo t('restore_game'); ?></button>
+            </div>
+        </form>
+        
+    <?php else: ?>
+        <!-- ============================================
+             NOT LOGGED IN: Ask for email
+             ============================================
+             When restoring without login, the person's email
+             becomes the new owner email. This is important
+             because they'll need it to edit/delete later.
+        -->
+        <div class="info-box">
+            <?php echo t('restore_game_ownership_info'); ?>
         </div>
         
-        <div class="form-actions">
-            <button type="button" onclick="closeModal()" class="btn btn-secondary"><?php echo t('cancel'); ?></button>
-            <button type="submit" id="submit-restore" class="btn btn-primary" disabled><?php echo t('restore_game'); ?></button>
-        </div>
-    </form>
+        <form id="restore-game-form" onsubmit="return submitRestoreGame(event, <?php echo $game_id; ?>);">
+            <input type="hidden" name="game_id" value="<?php echo $game_id; ?>">
+            
+            <div class="form-group">
+                <label><?php echo t('your_email'); ?>:</label>
+                <input type="email" 
+                       name="email" 
+                       class="form-control" 
+                       placeholder="<?php echo t('enter_your_email'); ?>"
+                       <?php echo !empty($config['require_email']) ? 'required' : ''; ?>>
+                <small><?php echo t('restore_game_email_help'); ?></small>
+            </div>
+            
+            <div class="form-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()"><?php echo t('cancel'); ?></button>
+                <button type="submit" class="btn btn-primary"><?php echo t('restore_game'); ?></button>
+            </div>
+        </form>
+    <?php endif; ?>
 </div>
 
-
 <script>
-$(document).ready(function() {
-    // Validate form and enable/disable submit button
-    function validateForm() {
-        const requiredFields = $('#restore-game-form').find('[required]');
-        let allFilled = true;
-        
-        requiredFields.each(function() {
-            if (!$(this).val()) {
-                allFilled = false;
-                return false;
-            }
-        });
-        
-        $('#submit-restore').prop('disabled', !allFilled);
-    }
+/**
+ * submitRestoreGame() - Handle restore form submission
+ * 
+ * Sends the restore request with the restorer's email (if not logged in)
+ * so they become the new owner of the game.
+ */
+function submitRestoreGame(event, gameId) {
+    event.preventDefault();
     
-    // Monitor all form inputs
-    $('#restore-game-form').on('input change', 'input', validateForm);
+    const formData = new FormData(event.target);
     
-    // Initial validation
-    validateForm();
-    
-    // Form submission
-    $('#restore-game-form').submit(function(e) {
-        e.preventDefault();
-        
-        const formData = $(this).serialize();
-        
-        $('#submit-restore').prop('disabled', true).text('<?php echo t('saving'); ?>...');
-        
-        $.post('../ajax/restore_game_submit.php', formData, function(response) {
-            if (response.success) {
-                closeModal();
-                location.reload();
-            } else {
-                alert(response.error || '<?php echo t('error_occurred'); ?>');
-                $('#submit-restore').prop('disabled', false).text('<?php echo t('restore_game'); ?>');
-            }
-        });
+    // Send to server
+    $.post('ajax/restore_game_submit.php', {
+        game_id: formData.get('game_id'),
+        email: formData.get('email') || ''
+    }, function(response) {
+        if (response.success) {
+            closeModal();
+            // Reload page to show restored game
+            location.reload();
+        } else {
+            alert(response.error || 'Failed to restore game');
+        }
+    }, 'json').fail(function() {
+        alert('Error restoring game. Please try again.');
     });
-});
+    
+    return false;
+}
 </script>

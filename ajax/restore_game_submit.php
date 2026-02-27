@@ -1,95 +1,191 @@
 <?php
 /**
- * AJAX Handler: Submit Restore Game
+ * restore_game_submit.php
+ * 
+ * PURPOSE:
+ * Restores a soft-deleted game and transfers ownership to the person restoring it.
+ * 
+ * CRITICAL SECURITY FIX:
+ * When a game is restored, the person restoring becomes the NEW OWNER.
+ * We must update:
+ * - creator_email → restoring person's email
+ * - verification_code → NEW code for the restoring person
+ * - created_by_user_id → restoring person's user ID (if logged in)
+ * 
+ * Without this, the ORIGINAL owner could still edit/delete the restored game!
+ * 
+ * CALLED BY:
+ * - restore_game_form.php form submission
+ * - User clicks "Restore" button on a deleted game
  */
+
+session_start();
+require_once '../config.php';
+require_once '../includes/db.php';
+require_once '../includes/auth.php';
+require_once '../includes/translations.php';
 
 header('Content-Type: application/json');
 
-// Load configuration
-$config = require_once '../config.php';
-
-// Load auth helper
-require_once '../includes/auth.php';
-
-// Database connection
 try {
-    $db = new PDO('sqlite:../' . DB_FILE);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-} catch (PDOException $e) {
-    echo json_encode(['success' => false, 'error' => 'Database connection failed']);
-    exit;
-}
-
-// Get current user
-$current_user = get_current_user($db);
-
-// Get form data
-$game_id = isset($_POST['game_id']) ? intval($_POST['game_id']) : 0;
-$host_name = isset($_POST['host_name']) ? trim($_POST['host_name']) : '';
-$host_email = isset($_POST['host_email']) ? trim($_POST['host_email']) : '';
-
-// Validate required fields
-if (!$game_id || !$host_name) {
-    echo json_encode(['success' => false, 'error' => 'Missing required fields']);
-    exit;
-}
-
-// Validate email if required
-if ($config['require_emails'] && empty($host_email)) {
-    echo json_encode(['success' => false, 'error' => 'Email is required']);
-    exit;
-}
-
-if ($host_email && !filter_var($host_email, FILTER_VALIDATE_EMAIL)) {
-    echo json_encode(['success' => false, 'error' => 'Invalid email address']);
-    exit;
-}
-
-try {
-    // Get game details
-    $stmt = $db->prepare("SELECT * FROM games WHERE id = ?");
+    $db = get_db_connection();
+    
+    // Get form data
+    $game_id = isset($_POST['game_id']) ? intval($_POST['game_id']) : 0;
+    $restorer_email = isset($_POST['email']) ? trim($_POST['email']) : '';
+    
+    // ============================================
+    // VALIDATION: Check game ID
+    // ============================================
+    if (!$game_id) {
+        echo json_encode(['success' => false, 'error' => t('invalid_game_id')]);
+        exit;
+    }
+    
+    // ============================================
+    // STEP 1: Get the deleted game
+    // ============================================
+    // We need to verify:
+    // - Game exists
+    // - Game is deleted (inactive = 1)
+    // - Get current owner info (for logging/audit trail)
+    $stmt = $db->prepare("
+        SELECT 
+            id,
+            name,
+            creator_email as old_creator_email,
+            created_by_user_id as old_user_id,
+            inactive
+        FROM games 
+        WHERE id = ?
+    ");
     $stmt->execute([$game_id]);
     $game = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$game) {
-        echo json_encode(['success' => false, 'error' => 'Game not found']);
+        echo json_encode(['success' => false, 'error' => t('game_not_found')]);
         exit;
     }
     
-    if ($game['is_active'] == 1) {
-        echo json_encode(['success' => false, 'error' => 'Game is already active']);
+    if ($game['inactive'] != 1) {
+        // Game is not deleted - can't restore it
+        echo json_encode(['success' => false, 'error' => 'Game is not deleted']);
         exit;
     }
     
-    $db->beginTransaction();
+    // ============================================
+    // STEP 2: Determine new ownership
+    // ============================================
+    $current_user = get_current_user();
+    $new_creator_email = null;
+    $new_user_id = null;
+    $new_verification_code = null;
     
-    // Restore game and update host
-    $stmt = $db->prepare("UPDATE games SET 
-        is_active = 1, 
-        host_name = ?, 
-        host_email = ?,
-        created_by_user_id = ?
-        WHERE id = ?");
+    if ($current_user) {
+        // ============================================
+        // LOGGED-IN USER: Transfer ownership to their account
+        // ============================================
+        // Logged-in users are authenticated, so we trust them
+        // Set their user ID as the new owner
+        // No email or verification code needed (they're logged in)
+        $new_user_id = $current_user['id'];
+        $new_creator_email = null;  // Not needed - they're logged in
+        $new_verification_code = null;  // Not needed - they're logged in
+        
+    } else {
+        // ============================================
+        // NOT LOGGED IN: Use email for ownership
+        // ============================================
+        
+        if ($restorer_email) {
+            // Email provided - validate it
+            if (!filter_var($restorer_email, FILTER_VALIDATE_EMAIL)) {
+                echo json_encode(['success' => false, 'error' => t('invalid_email')]);
+                exit;
+            }
+            
+            // Generate NEW verification code for the restoring person
+            // This is critical - we don't want the old owner's code!
+            $new_verification_code = str_pad(rand(0, 999999), 6, '0', STR_PAD_LEFT);
+            $new_creator_email = $restorer_email;
+            
+        } else {
+            // ============================================
+            // NO EMAIL PROVIDED
+            // ============================================
+            // User chose not to provide email - this is allowed
+            // They can restore the game but won't be able to verify
+            // ownership later (unless they remember to edit it soon)
+            $new_creator_email = null;
+            $new_verification_code = null;
+        }
+    }
+    
+    // ============================================
+    // STEP 3: Restore game with NEW ownership
+    // ============================================
+    // This is the critical part - we update:
+    // 1. inactive = 0 (restore the game)
+    // 2. creator_email = new person's email
+    // 3. verification_code = new code
+    // 4. created_by_user_id = new person's user ID (if logged in)
+    //
+    // This transfers complete ownership to the restoring person
+    $stmt = $db->prepare("
+        UPDATE games 
+        SET 
+            inactive = 0,
+            creator_email = ?,
+            verification_code = ?,
+            created_by_user_id = ?
+        WHERE id = ?
+    ");
     
     $stmt->execute([
-        $host_name,
-        $host_email,
-        $current_user ? $current_user['id'] : null,
+        $new_creator_email,
+        $new_verification_code,
+        $new_user_id,
         $game_id
     ]);
     
-    $db->commit();
+    // ============================================
+    // STEP 4: Log the ownership transfer (optional but recommended)
+    // ============================================
+    // For audit trail, you might want to log:
+    // - Who was the old owner (email or user_id)
+    // - Who is the new owner
+    // - When this happened
+    // 
+    // This could be useful for:
+    // - Debugging ownership disputes
+    // - Security audits
+    // - Understanding game lifecycle
+    //
+    // Example (if you have an audit_log table):
+    // $stmt = $db->prepare("
+    //     INSERT INTO audit_log (action, game_id, old_owner, new_owner, timestamp)
+    //     VALUES ('game_restored', ?, ?, ?, NOW())
+    // ");
+    // $stmt->execute([
+    //     $game_id,
+    //     $game['old_creator_email'] ?: $game['old_user_id'],
+    //     $new_creator_email ?: $new_user_id
+    // ]);
     
-    // Log activity
-    log_activity($db, $current_user ? $current_user['id'] : null, 'game_restored', 
-        "Game restored: {$game['name']} (ID: $game_id) by $host_name");
-    
-    echo json_encode(['success' => true]);
+    // ============================================
+    // SUCCESS: Game restored with new ownership
+    // ============================================
+    echo json_encode([
+        'success' => true,
+        'message' => t('game_restored_successfully'),
+        'new_owner' => $current_user ? $current_user['name'] : $new_creator_email,
+        'game_name' => $game['name']
+    ]);
     
 } catch (PDOException $e) {
-    if (isset($db) && $db->inTransaction()) {
-        $db->rollBack();
-    }
-    echo json_encode(['success' => false, 'error' => 'Database error: ' . $e->getMessage()]);
+    error_log('Restore game error: ' . $e->getMessage());
+    echo json_encode([
+        'success' => false, 
+        'error' => t('database_error')
+    ]);
 }
-?>
