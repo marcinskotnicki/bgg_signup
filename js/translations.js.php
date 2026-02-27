@@ -34,6 +34,7 @@ var translations = {
     
     // Code verification
     verification_code: <?php echo json_encode(t('verification_code')); ?>,
+    enter_verification_code: <?php echo json_encode(t('enter_verification_code')); ?>,
     enter_code: <?php echo json_encode(t('enter_code')); ?>,
     code_sent_to_email: <?php echo json_encode(t('code_sent_to_email')); ?>,
     code_does_not_match: <?php echo json_encode(t('code_does_not_match')); ?>,

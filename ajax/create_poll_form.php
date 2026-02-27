@@ -303,7 +303,7 @@ $(document).ready(function() {
     });
     
     // Thumbnail selection
-    $(document).on('click', '.thumbnail-option', function() {
+    $(document).on('click', '#add-option-modal .thumbnail-option', function() {
         $('.thumbnail-option').removeClass('selected');
         $(this).addClass('selected');
         const thumbnailPath = $(this).data('thumbnail');
@@ -344,7 +344,7 @@ $(document).ready(function() {
     //   3. Populate all form fields with the data we get back
     //   4. Show the details form so user can review/edit and add threshold
     // ============================================================================
-    $(document).on('click', '.search-result-item', function() {
+    $(document).on('click', '#add-option-modal .search-result-item', function() {
         
         // ------------------------------------------------------------------
         // STEP 1: Get the BoardGameGeek ID

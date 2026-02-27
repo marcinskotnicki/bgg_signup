@@ -289,7 +289,8 @@ $(document).ready(function() {
     }
     
     // Select game from search results
-    $(document).on('click', '.search-result-item', function() {
+    // SCOPED to .add-game-form to prevent conflicts with poll form
+    $(document).on('click', '.add-game-form .search-result-item', function() {
         const gameId = $(this).data('game-id');
         loadGameDetails(gameId);
     });
@@ -424,7 +425,7 @@ $(document).ready(function() {
     });
     
     // Thumbnail selection
-    $(document).on('click', '.thumbnail-option', function() {
+    $(document).on('click', '.add-game-form .thumbnail-option', function() {
         $('.thumbnail-option').removeClass('selected');
         $(this).addClass('selected');
         $('#thumbnail').val($(this).data('thumbnail'));
