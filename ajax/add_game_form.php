@@ -224,18 +224,12 @@ $(document).ready(function() {
     let isManualAdd = false;
     
     // Validate form and enable/disable submit button
+    // Only requires game_name to have content (server will validate the rest)
     function validateForm() {
-        const requiredFields = $('#add-game-form').find('[required]');
-        let allFilled = true;
+        const gameName = $('#game_name').val();
+        const hasName = gameName && gameName.trim().length > 0;
         
-        requiredFields.each(function() {
-            if (!$(this).val()) {
-                allFilled = false;
-                return false;
-            }
-        });
-        
-        $('#submit-game').prop('disabled', !allFilled);
+        $('#submit-game').prop('disabled', !hasName);
     }
     
     // Monitor all form inputs
@@ -250,14 +244,24 @@ $(document).ready(function() {
             return;
         }
         
+        // Validation passed - now add loading state
+        $(this).addClass('btn-loading');
+        
         $('#search-results').html('<div class="loading"><?php echo t('loading'); ?>...</div>').show();
         
         $.get('../ajax/search_bgg.php', { query: query }, function(response) {
+            // Remove loading state when done
+            $('#bgg-search-btn').removeClass('btn-loading');
+            
             if (response.success) {
                 displaySearchResults(response.results);
             } else {
                 $('#search-results').html('<div class="loading">' + response.error + '</div>');
             }
+        }).fail(function() {
+            // Remove loading state on error too
+            $('#bgg-search-btn').removeClass('btn-loading');
+            $('#search-results').html('<div class="loading">Search failed. Please try again.</div>');
         });
     });
     

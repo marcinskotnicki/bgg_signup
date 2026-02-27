@@ -751,7 +751,7 @@ function showConfirm(message, onConfirm, title) {
 // GLOBAL LOADING SPINNER FOR ALL MODAL BUTTONS
 // ============================================================================
 // Automatically add loading spinner to ANY button clicked in modals
-// (except cancel/close buttons)
+// (except cancel/close/search buttons)
 // 
 // This provides visual feedback for ALL actions:
 // - Confirm/Delete buttons
@@ -759,9 +759,11 @@ function showConfirm(message, onConfirm, title) {
 // - Verify buttons
 // - Any primary action button
 //
-// Excluded buttons: Cancel, Close, Secondary actions
+// Excluded buttons: 
+// - Cancel, Close, Secondary actions
+// - Search buttons (they handle loading themselves with validation)
 // ============================================================================
-$(document).on('click', '.modal-overlay button:not(.btn-cancel):not(.btn-secondary):not([class*="close"]):not([onclick*="closeModal"])', function() {
+$(document).on('click', '.modal-overlay button:not(.btn-cancel):not(.btn-secondary):not([class*="close"]):not([onclick*="closeModal"]):not([id*="search"])', function() {
     // Add loading class to this button
     $(this).addClass('btn-loading');
     

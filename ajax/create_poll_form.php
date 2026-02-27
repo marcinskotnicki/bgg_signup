@@ -234,14 +234,24 @@ $(document).ready(function() {
             return;
         }
         
+        // Validation passed - now add loading state
+        $(this).addClass('btn-loading');
+        
         $('#option-search-results').html('<div class="loading"><?php echo t('loading'); ?>...</div>').show();
         
         $.get('../ajax/search_bgg.php', { query: query }, function(response) {
+            // Remove loading state when done
+            $('#option-search-btn').removeClass('btn-loading');
+            
             if (response.success) {
                 displayOptionSearchResults(response.results);
             } else {
                 $('#option-search-results').html('<div class="loading">' + response.error + '</div>');
             }
+        }).fail(function() {
+            // Remove loading state on error too
+            $('#option-search-btn').removeClass('btn-loading');
+            $('#option-search-results').html('<div class="loading">Search failed. Please try again.</div>');
         });
     });
     
