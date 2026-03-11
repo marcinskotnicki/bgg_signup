@@ -66,6 +66,19 @@ switch ($action) {
         }
         break;
         
+    case 'cancel_vote':
+        $vote_id = intval($_POST['vote_id'] ?? 0);
+        if ($vote_id) {
+            $stmt = $db->prepare("SELECT voter_email FROM poll_votes WHERE id = ?");
+            $stmt->execute([$vote_id]);
+            $vote = $stmt->fetch(PDO::FETCH_ASSOC);
+            
+            if ($vote && strcasecmp($vote['voter_email'], $email) === 0) {
+                $verified = true;
+            }
+        }
+        break;
+        
     case 'edit_poll':
     case 'delete_poll':
         $poll_id = intval($_POST['poll_id'] ?? 0);

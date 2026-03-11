@@ -95,6 +95,38 @@ if ($current_user) {
                         <div class="poll-progress-bar" style="width: <?php echo $percentage; ?>%"></div>
                     </div>
                     
+                    <?php if (!empty($option['voters'])): ?>
+                        <div class="poll-voters-list">
+                            <strong><?php echo t('voters'); ?>:</strong>
+                            <?php foreach ($option['voters'] as $voter): ?>
+                                <?php
+                                // Check if this is the current user's vote
+                                $is_own_vote = false;
+                                if ($current_user && $voter['user_id'] && $voter['user_id'] == $current_user['id']) {
+                                    $is_own_vote = true;
+                                }
+                                
+                                // Can cancel if: admin, own vote (logged in), or poll not closed
+                                $can_cancel_vote = !$is_closed && (
+                                    ($current_user && $current_user['is_admin']) ||
+                                    $is_own_vote
+                                );
+                                ?>
+                                <div class="poll-voter-item">
+                                    <span class="voter-name"><?php echo htmlspecialchars($voter['voter_name']); ?></span>
+                                    <?php if ($can_cancel_vote): ?>
+                                        <button class="btn-cancel-vote btn-small" 
+                                                data-vote-id="<?php echo $voter['vote_id']; ?>"
+                                                data-poll-id="<?php echo $poll['id']; ?>"
+                                                data-game-name="<?php echo htmlspecialchars($option['game_name']); ?>">
+                                            <?php echo t('cancel_vote'); ?>
+                                        </button>
+                                    <?php endif; ?>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
+                    
                     <?php if (!$is_closed): ?>
                         <button class="btn-sm btn-vote" onclick="voteOption(<?php echo $option['id']; ?>, <?php echo $poll['id']; ?>)">
                             <?php echo t('vote_for_this'); ?>

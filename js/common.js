@@ -471,6 +471,121 @@ function resignFromGame(gameId, playerId) {
     }
 }
 
+// Cancel vote from poll (similar to resignFromGame)
+function cancelVote(voteId, pollId, gameName) {
+    console.log('cancelVote called with voteId:', voteId, 'pollId:', pollId);
+    
+    // Inner function to actually cancel
+    function doCancel(verifiedEmail) {
+        console.log('Cancelling vote:', voteId, 'verifiedEmail:', verifiedEmail);
+        
+        var postData = { 
+            vote_id: voteId
+        };
+        
+        // Add verified email if provided
+        if (verifiedEmail) {
+            postData.verified_email = verifiedEmail;
+        }
+        
+        $.post('ajax/cancel_vote.php', postData, function(response) {
+            console.log('Cancel vote response:', response);
+            if (response.success) {
+                location.reload();
+            } else {
+                showAlert(response.error || response.message || t.error_occurred || 'Error occurred');
+            }
+        }, 'json').fail(function(xhr) {
+            console.error('Cancel vote failed:', xhr.responseText);
+            showAlert(t.verification_failed || 'Failed to cancel vote. Please try again.');
+        });
+    }
+    
+    // Check if user is logged in or admin
+    if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
+        // Logged in users can cancel
+        showConfirm(
+            t.confirm_cancel_vote || 'Are you sure you want to cancel your vote for ' + gameName + '?', 
+            function() {
+                doCancel(); // No verified email needed
+            }, 
+            t.confirm_resignation || 'Confirm'
+        );
+        return;
+    }
+    
+    // Not logged in - check verification method
+    if (typeof CONFIG !== 'undefined' && (CONFIG.verificationMethod === 'code' || CONFIG.verificationMethod === 'link')) {
+        // Require code verification - but votes don't have codes like players do
+        // So we fall back to email verification
+        showEmailVerification(
+            t.enter_email_for_voting || 'Enter the email address you used when voting', 
+            function(email) {
+                // Verify email with backend
+                $.post('ajax/verify_email.php', {
+                    vote_id: voteId,
+                    email: email,
+                    action: 'cancel_vote'
+                }, function(response) {
+                    if (response.verified) {
+                        // Email matches - confirm cancellation
+                        showConfirm(
+                            t.confirm_cancel_vote || 'Are you sure you want to cancel your vote for ' + gameName + '?',
+                            function() {
+                                doCancel(email); // Pass the verified email
+                            },
+                            t.confirm_resignation || 'Confirm'
+                        );
+                    } else {
+                        showAlert(response.message || t.email_does_not_match || 'Email does not match.');
+                    }
+                }, 'json').fail(function() {
+                    showAlert(t.verification_failed || 'Verification failed. Please try again.');
+                });
+            }, 
+            t.email_verification_required || 'Verify Email'
+        );
+    } else if (typeof CONFIG !== 'undefined' && CONFIG.verificationMethod === 'email') {
+        // Require email verification
+        showEmailVerification(
+            t.enter_email_for_voting || 'Enter the email address you used when voting', 
+            function(email) {
+                // Verify email with backend
+                $.post('ajax/verify_email.php', {
+                    vote_id: voteId,
+                    email: email,
+                    action: 'cancel_vote'
+                }, function(response) {
+                    if (response.verified) {
+                        // Email matches - confirm cancellation
+                        showConfirm(
+                            t.confirm_cancel_vote || 'Are you sure you want to cancel your vote for ' + gameName + '?',
+                            function() {
+                                doCancel(email); // Pass the verified email
+                            },
+                            t.confirm_resignation || 'Confirm'
+                        );
+                    } else {
+                        showAlert(response.message || t.email_does_not_match || 'Email does not match.');
+                    }
+                }, 'json').fail(function() {
+                    showAlert(t.verification_failed || 'Verification failed. Please try again.');
+                });
+            }, 
+            t.email_verification_required || 'Verify Email'
+        );
+    } else {
+        // No verification required
+        showConfirm(
+            t.confirm_cancel_vote || 'Are you sure you want to cancel your vote for ' + gameName + '?', 
+            function() {
+                doCancel(); // No verified email needed
+            }, 
+            t.confirm_resignation || 'Confirm'
+        );
+    }
+}
+
 // Comment functions
 function loadComments(gameId) {
     $.get('ajax/add_comment_form.php', { game_id: gameId }, function(html) {
@@ -1067,6 +1182,15 @@ $(document).ready(function() {
         const optionId = $(this).data('option-id');
         const pollId = $(this).data('poll-id');
         voteOption(optionId, pollId);
+    });
+    
+    // Cancel vote button
+    $(document).on('click', '.btn-cancel-vote', function(e) {
+        e.preventDefault();
+        const voteId = $(this).data('vote-id');
+        const pollId = $(this).data('poll-id');
+        const gameName = $(this).data('game-name');
+        cancelVote(voteId, pollId, gameName);
     });
     
     $(document).on('click', '.btn-edit-poll', function(e) {

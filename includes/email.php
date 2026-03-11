@@ -572,7 +572,7 @@ function email_template($data) {
 /**
  * Send email when poll closes
  */
-function email_poll_closed($db, $poll_id, $winning_game_name, $voter_email) {
+function email_poll_closed($db, $poll_id, $winning_game_name, $voter_email, $voted_for_winner = false, $game_id = null) {
     $config = require __DIR__ . '/../config.php';
     
     if (!$config['send_emails'] || !$voter_email) {
@@ -593,17 +593,32 @@ function email_poll_closed($db, $poll_id, $winning_game_name, $voter_email) {
         return;
     }
     
-    $subject = t('email_subject_poll_closed', ['game' => $winning_game_name]);
-    
-    $message = email_template([
-        'title' => $subject,
-        'content' => t('email_body_poll_closed', [
-            'game' => $winning_game_name,
-            'event' => $poll['event_name']
-        ]),
-        'footer' => t('email_footer_view_event'),
-        'link' => get_site_url() . 'index.php'
-    ]);
+    // Different subject and message based on whether they voted for winner
+    if ($voted_for_winner) {
+        $subject = t('email_subject_poll_won', ['game' => $winning_game_name]);
+        
+        $message = email_template([
+            'title' => $subject,
+            'content' => t('email_body_poll_won', [
+                'game' => $winning_game_name,
+                'event' => $poll['event_name']
+            ]),
+            'footer' => t('email_footer_view_event'),
+            'link' => get_site_url() . 'index.php'
+        ]);
+    } else {
+        $subject = t('email_subject_poll_closed', ['game' => $winning_game_name']);
+        
+        $message = email_template([
+            'title' => $subject,
+            'content' => t('email_body_poll_closed', [
+                'game' => $winning_game_name,
+                'event' => $poll['event_name']
+            ]),
+            'footer' => t('email_footer_view_event'),
+            'link' => get_site_url() . 'index.php'
+        ]);
+    }
     
     send_email($voter_email, $subject, $message, $config);
 }

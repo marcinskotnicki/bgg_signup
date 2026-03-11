@@ -1532,3 +1532,51 @@ a:hover {
     font-weight: bold;
     font-size: 16px;
 }
+
+/* ============================================
+   Poll Voters Display
+   ============================================ */
+
+.poll-voters-list {
+    margin-top: 10px;
+    padding: 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.poll-voter-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.poll-voter-item:last-child {
+    border-bottom: none;
+}
+
+.voter-name {
+    font-weight: 500;
+}
+
+.btn-cancel-vote {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 4px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s;
+}
+
+.btn-cancel-vote:hover {
+    background: #c0392b;
+}
+
+.btn-small {
+    padding: 4px 10px;
+    font-size: 12px;
+}

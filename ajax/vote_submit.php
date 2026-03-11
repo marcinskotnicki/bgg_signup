@@ -185,24 +185,78 @@ try {
             
             $new_game_id = $db->lastInsertId();
             
+            // ================================================================
+            // ADD VOTERS FOR WINNING OPTION AS PLAYERS
+            // ================================================================
+            // Get all voters who voted for the winning option
+            $stmt = $db->prepare("
+                SELECT pv.voter_name, pv.voter_email, pv.user_id
+                FROM poll_votes pv
+                WHERE pv.poll_option_id = ?
+                ORDER BY pv.created_at ASC
+            ");
+            $stmt->execute([$winner['id']]);
+            $winning_voters = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            
+            // Add each winning voter as a player
+            $position = 1;
+            foreach ($winning_voters as $voter) {
+                // Check if we've reached max players
+                if ($position > $max_players) {
+                    break; // Stop adding players if game is full
+                }
+                
+                // Generate verification code for this player
+                $verification_code = sprintf('%06d', mt_rand(0, 999999));
+                
+                $stmt = $db->prepare("INSERT INTO players (
+                    game_id, player_name, player_email, user_id, 
+                    position, is_reserve, verification_code, created_at
+                ) VALUES (?, ?, ?, ?, ?, 0, ?, CURRENT_TIMESTAMP)");
+                
+                $stmt->execute([
+                    $new_game_id,
+                    $voter['voter_name'],
+                    $voter['voter_email'],
+                    $voter['user_id'],
+                    $position,
+                    $verification_code
+                ]);
+                
+                $position++;
+            }
+            
             // Close the poll
             $stmt = $db->prepare("UPDATE polls SET is_active = 0, closed_at = CURRENT_TIMESTAMP WHERE id = ?");
             $stmt->execute([$poll_id]);
             
-            // Get all voters to notify them
+            // ================================================================
+            // SEND NOTIFICATION EMAILS TO ALL VOTERS
+            // ================================================================
+            // Get ALL voters (for any option in this poll)
             $stmt = $db->prepare("
-                SELECT DISTINCT pv.voter_name, pv.voter_email
+                SELECT DISTINCT pv.voter_name, pv.voter_email, pv.poll_option_id
                 FROM poll_votes pv
                 JOIN poll_options po ON pv.poll_option_id = po.id
                 WHERE po.poll_id = ?
             ");
             $stmt->execute([$poll_id]);
-            $voters = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            $all_voters = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             // Send notifications to all voters
-            foreach ($voters as $voter) {
+            foreach ($all_voters as $voter) {
                 try {
-                    email_poll_closed($db, $poll_id, $winner['game_name'], $voter['voter_email']);
+                    // Check if this voter voted for the winning option
+                    $voted_for_winner = ($voter['poll_option_id'] == $winner['id']);
+                    
+                    email_poll_closed(
+                        $db, 
+                        $poll_id, 
+                        $winner['game_name'], 
+                        $voter['voter_email'],
+                        $voted_for_winner,
+                        $new_game_id
+                    );
                 } catch (Exception $e) {
                     error_log("Email sending failed for poll voter: " . $e->getMessage());
                 }

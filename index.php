@@ -161,6 +161,19 @@ foreach ($tables as $table) {
         ");
         $stmt->execute([$poll['id']]);
         $poll['options'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        
+        // Get voters for each option
+        foreach ($poll['options'] as &$option) {
+            $stmt = $db->prepare("
+                SELECT pv.id as vote_id, pv.voter_name, pv.voter_email, pv.user_id, pv.created_at
+                FROM poll_votes pv
+                WHERE pv.poll_option_id = ?
+                ORDER BY pv.created_at ASC
+            ");
+            $stmt->execute([$option['id']]);
+            $option['voters'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        }
+        unset($option); // Break reference
     }
     unset($poll); // CRITICAL: Break reference
     
