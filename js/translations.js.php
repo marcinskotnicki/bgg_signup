@@ -49,6 +49,8 @@ var translations = {
     confirm_resign: <?php echo json_encode(t('confirm_resign')); ?>,
     confirm_resignation: <?php echo json_encode(t('confirm_resignation')); ?>,
     enter_email_for_joining: <?php echo json_encode(t('enter_email_for_joining')); ?>,
+    enter_email_for_voting: <?php echo json_encode(t('enter_email_for_voting')); ?>,
+    confirm_cancel_vote: <?php echo json_encode(t('confirm_cancel_vote')); ?>,
     
     // Poll actions
     confirm_delete_poll: <?php echo json_encode(t('confirm_delete_poll')); ?>,

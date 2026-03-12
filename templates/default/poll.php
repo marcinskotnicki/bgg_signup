@@ -120,22 +120,28 @@ if ($current_user) {
                             <strong><?php echo t('voters'); ?>:</strong>
                             <?php foreach ($option['voters'] as $voter): ?>
                                 <?php
-                                // Check if this is the current user's vote
-                                $is_own_vote = false;
-                                if ($current_user && $voter['user_id'] && $voter['user_id'] == $current_user['id']) {
-                                    $is_own_vote = true;
-                                }
+                                // Determine if cancel button should be shown
+                                $show_cancel = false;
                                 
-                                // Can cancel if: admin, own vote (logged in), or poll not closed
-                                $can_cancel_vote = !$is_closed && (
-                                    ($current_user && $current_user['is_admin']) ||
-                                    $is_own_vote
-                                );
+                                if (!$is_closed) {
+                                    // Admin can always cancel
+                                    if ($current_user && $current_user['is_admin']) {
+                                        $show_cancel = true;
+                                    }
+                                    // Logged in user can cancel their own vote
+                                    elseif ($current_user && $voter['user_id'] && $voter['user_id'] == $current_user['id']) {
+                                        $show_cancel = true;
+                                    }
+                                    // Guest votes (no user_id) - show to everyone (they'll verify email)
+                                    elseif (!$voter['user_id']) {
+                                        $show_cancel = true;
+                                    }
+                                }
                                 ?>
                                 <div class="poll-voter-item">
                                     <span class="voter-name"><?php echo htmlspecialchars($voter['voter_name']); ?></span>
-                                    <?php if ($can_cancel_vote): ?>
-                                        <button class="btn-cancel-vote btn-small" 
+                                    <?php if ($show_cancel): ?>
+                                        <button type="button" class="btn-cancel-vote btn-small" 
                                                 data-vote-id="<?php echo $voter['vote_id']; ?>"
                                                 data-poll-id="<?php echo $poll['id']; ?>"
                                                 data-game-name="<?php echo htmlspecialchars($option['game_name']); ?>">
