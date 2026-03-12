@@ -572,6 +572,7 @@ function email_template($data) {
 /**
  * Send email when poll closes
  */
+
 function email_poll_closed($db, $poll_id, $winning_game_name, $voter_email, $voted_for_winner = false, $game_id = null) {
     $config = require __DIR__ . '/../config.php';
     
@@ -593,35 +594,42 @@ function email_poll_closed($db, $poll_id, $winning_game_name, $voter_email, $vot
         return;
     }
     
-    // Different subject and message based on whether they voted for winner
+    // Build email based on whether they voted for winner
     if ($voted_for_winner) {
-        $subject = t('email_subject_poll_won', ['game' => $winning_game_name]);
+        // Winner email
+        $params = array('game' => $winning_game_name);
+        $subject = t('email_subject_poll_won', $params);
         
-        $message = email_template([
+        $body_params = array('game' => $winning_game_name, 'event' => $poll['event_name']);
+        $content = t('email_body_poll_won', $body_params);
+        
+        $template_data = array(
             'title' => $subject,
-            'content' => t('email_body_poll_won', [
-                'game' => $winning_game_name,
-                'event' => $poll['event_name']
-            ]),
+            'content' => $content,
             'footer' => t('email_footer_view_event'),
             'link' => get_site_url() . 'index.php'
-        ]);
+        );
+        $message = email_template($template_data);
     } else {
-        $subject = t('email_subject_poll_closed', ['game' => $winning_game_name']);
+        // Non-winner email
+        $params = array('game' => $winning_game_name);
+        $subject = t('email_subject_poll_closed', $params);
         
-        $message = email_template([
+        $body_params = array('game' => $winning_game_name, 'event' => $poll['event_name']);
+        $content = t('email_body_poll_closed', $body_params);
+        
+        $template_data = array(
             'title' => $subject,
-            'content' => t('email_body_poll_closed', [
-                'game' => $winning_game_name,
-                'event' => $poll['event_name']
-            ]),
+            'content' => $content,
             'footer' => t('email_footer_view_event'),
             'link' => get_site_url() . 'index.php'
-        ]);
+        );
+        $message = email_template($template_data);
     }
     
     send_email($voter_email, $subject, $message, $config);
 }
+
 
 /**
  * Send password reset email
