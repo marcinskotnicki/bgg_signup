@@ -214,6 +214,12 @@ try {
                     $new_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
                     $update = $db->prepare("UPDATE poll_votes SET verification_code = ? WHERE id = ?");
                     $update->execute([$new_code, $vote_id]);
+                    
+                    // Store verification in session (used by cancel_vote.php)
+                    if (session_status() === PHP_SESSION_NONE) {
+                        session_start();
+                    }
+                    $_SESSION['verified_vote_' . $vote_id] = time();
                 }
             }
             break;

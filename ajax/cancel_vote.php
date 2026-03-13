@@ -72,13 +72,31 @@ try {
     } else {
         // Not logged in - need to verify
         
-        // CASE 1: Voter HAS an email address - must verify it
+        // CASE 1: Voter HAS an email address
         if ($vote['voter_email']) {
-            // Check if verified_email was provided and matches
+            // EMAIL verification method: check if verified_email was provided
             if (isset($_POST['verified_email'])) {
                 $verified_email = trim($_POST['verified_email']);
                 if (strcasecmp($vote['voter_email'], $verified_email) === 0) {
                     $can_cancel = true;
+                }
+            }
+            // CODE verification method: check session for recent verification
+            elseif (!$vote['user_id']) {
+                // Start session if not already started
+                if (session_status() === PHP_SESSION_NONE) {
+                    session_start();
+                }
+                
+                // Check if this vote was verified via code in the last 5 minutes
+                $session_key = 'verified_vote_' . $vote_id;
+                if (isset($_SESSION[$session_key])) {
+                    $verified_time = $_SESSION[$session_key];
+                    if ((time() - $verified_time) < 300) { // 5 minutes
+                        $can_cancel = true;
+                        // Clear the session variable after use (one-time token)
+                        unset($_SESSION[$session_key]);
+                    }
                 }
             }
         } 
