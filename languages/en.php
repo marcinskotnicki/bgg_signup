@@ -375,6 +375,7 @@ return [
     'vote_for_this' => 'Vote for this',
     'voters' => 'Voters',
     'cancel_vote' => 'Cancel vote',
+    'vote_for' => 'Vote for',
     'submit_vote' => 'Submit Vote',
     'email_notification_on_poll_close' => 'You will receive an email when the poll closes',
     'winner' => 'Winner',
@@ -577,6 +578,12 @@ return [
     'invalid_code' => 'Invalid code format. Must be 6 digits.',
     'code_does_not_match' => 'Invalid verification code. Please try again.',
     'enter_verification_code' => 'Enter the 6-digit code from your email',
+    
+    // Vote cancellation errors
+    'invalid_parameters' => 'Invalid parameters',
+    'vote_not_found' => 'Vote not found',
+    'poll_already_closed' => 'Cannot cancel vote - poll is already closed',
+    'permission_denied_verify_email' => 'Permission denied. Please verify your email.',
     
     // Email verification code messages
     'email_verification_code_subject' => 'Your Verification Code',

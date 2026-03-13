@@ -36,6 +36,7 @@ $code = trim($_POST['code'] ?? '');
 $game_id = intval($_POST['game_id'] ?? 0);
 $player_id = intval($_POST['player_id'] ?? 0);
 $poll_id = intval($_POST['poll_id'] ?? 0);
+$vote_id = intval($_POST['vote_id'] ?? 0);
 
 // Validate code (must be 6 digits)
 if (empty($code)) {
@@ -173,6 +174,46 @@ try {
                     $new_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
                     $update = $db->prepare("UPDATE polls SET verification_code = ? WHERE id = ?");
                     $update->execute([$new_code, $poll_id]);
+                }
+            }
+            break;
+            
+        case 'cancel_vote':
+            if ($vote_id) {
+                // Get vote's verification code
+                $stmt = $db->prepare("SELECT verification_code, user_id FROM poll_votes WHERE id = ?");
+                $stmt->execute([$vote_id]);
+                $vote = $stmt->fetch(PDO::FETCH_ASSOC);
+                
+                if (!$vote) {
+                    ob_end_clean();
+                    echo json_encode([
+                        'success' => true,
+                        'verified' => false,
+                        'message' => 'Vote not found.'
+                    ]);
+                    exit;
+                }
+                
+                // If vote has user_id, they're logged in and shouldn't use codes
+                if ($vote['user_id']) {
+                    ob_end_clean();
+                    echo json_encode([
+                        'success' => true,
+                        'verified' => false,
+                        'message' => 'Logged-in users do not need verification codes. Please log in to cancel your vote.'
+                    ]);
+                    exit;
+                }
+                
+                // Check if code matches
+                if ($vote['verification_code'] && $vote['verification_code'] === $code) {
+                    $verified = true;
+                    
+                    // Regenerate verification code after successful verification
+                    $new_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                    $update = $db->prepare("UPDATE poll_votes SET verification_code = ? WHERE id = ?");
+                    $update->execute([$new_code, $vote_id]);
                 }
             }
             break;

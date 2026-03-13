@@ -101,16 +101,20 @@ try {
     
     $db->beginTransaction();
     
+    // Generate verification code for this vote
+    $verification_code = sprintf('%06d', mt_rand(0, 999999));
+    
     // Insert vote
     $stmt = $db->prepare("INSERT INTO poll_votes (
-        poll_option_id, voter_name, voter_email, user_id, created_at
-    ) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)");
+        poll_option_id, voter_name, voter_email, user_id, verification_code, created_at
+    ) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)");
     
     $stmt->execute([
         $option_id,
         $voter_name,
         $voter_email,
-        $current_user ? $current_user['id'] : null
+        $current_user ? $current_user['id'] : null,
+        $verification_code
     ]);
     
     $vote_id = $db->lastInsertId();

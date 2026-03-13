@@ -375,6 +375,7 @@ return [
     'vote_for_this' => 'Głosuj',
     'voters' => 'Głosujący',
     'cancel_vote' => 'Anuluj głos',
+    'vote_for' => 'Głos na',
     'submit_vote' => 'Oddaj Głos',
     'email_notification_on_poll_close' => 'Otrzymasz email gdy głosowanie się zakończy',
     'winner' => 'Zwycięzca',
@@ -577,6 +578,12 @@ return [
     'invalid_code' => 'Niepoprawny format kodu. Musi mieć 6 cyfr.',
     'code_does_not_match' => 'Niepoprawny kod weryfikacyjny. Spróbuj ponownie.',
     'enter_verification_code' => 'Wpisz 6-cyfrowy kod z emaila',
+    
+    // Vote cancellation errors
+    'invalid_parameters' => 'Nieprawidłowe parametry',
+    'vote_not_found' => 'Nie znaleziono głosu',
+    'poll_already_closed' => 'Nie można anulować głosu - głosowanie jest już zamknięte',
+    'permission_denied_verify_email' => 'Brak uprawnień. Proszę zweryfikować email.',
     
     // Email verification code messages
     'email_verification_code_subject' => 'Twój kod weryfikacyjny',

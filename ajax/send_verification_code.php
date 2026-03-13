@@ -28,6 +28,7 @@ try {
 $player_id = intval($_POST['player_id'] ?? 0);
 $poll_id = intval($_POST['poll_id'] ?? 0);
 $game_id = intval($_POST['game_id'] ?? 0);
+$vote_id = intval($_POST['vote_id'] ?? 0);
 
 try {
     if ($player_id) {
@@ -118,8 +119,38 @@ try {
         $code = $record['verification_code'];
         $context = t('game') . ': ' . $record['game_name'];
         
+    } elseif ($vote_id) {
+        // Get vote details
+        $stmt = $db->prepare("
+            SELECT pv.voter_email, pv.verification_code, pv.user_id, po.game_name
+            FROM poll_votes pv
+            JOIN poll_options po ON pv.poll_option_id = po.id
+            WHERE pv.id = ?
+        ");
+        $stmt->execute([$vote_id]);
+        $record = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if (!$record) {
+            echo json_encode(['success' => false, 'error' => 'Vote not found']);
+            exit;
+        }
+        
+        // Logged-in users don't need codes
+        if ($record['user_id']) {
+            echo json_encode([
+                'success' => false,
+                'error' => 'Logged-in users do not need verification codes. Please log in to cancel your vote.',
+                'requires_login' => true
+            ]);
+            exit;
+        }
+        
+        $email = $record['voter_email'];
+        $code = $record['verification_code'];
+        $context = t('vote_for') . ': ' . $record['game_name'];
+        
     } else {
-        echo json_encode(['success' => false, 'error' => 'No player_id, poll_id, or game_id provided']);
+        echo json_encode(['success' => false, 'error' => 'No player_id, poll_id, game_id, or vote_id provided']);
         exit;
     }
     

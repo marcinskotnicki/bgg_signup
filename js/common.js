@@ -471,7 +471,7 @@ function resignFromGame(gameId, playerId) {
     }
 }
 
-// Cancel vote from poll (similar to resignFromGame)
+// Cancel vote from poll (matches resignFromGame logic)
 function cancelVote(voteId, pollId, gameName) {
     console.log('cancelVote called with voteId:', voteId, 'pollId:', pollId);
     
@@ -503,7 +503,7 @@ function cancelVote(voteId, pollId, gameName) {
     
     // Check if user is logged in or admin
     if (typeof CONFIG !== 'undefined' && (CONFIG.isLoggedIn || CONFIG.isAdmin)) {
-        // Logged in users can cancel
+        // Logged in users can cancel directly
         showConfirm(
             t.confirm_cancel_vote || 'Are you sure you want to cancel your vote for ' + gameName + '?', 
             function() {
@@ -516,60 +516,120 @@ function cancelVote(voteId, pollId, gameName) {
     
     // Not logged in - check verification method
     if (typeof CONFIG !== 'undefined' && (CONFIG.verificationMethod === 'code' || CONFIG.verificationMethod === 'link')) {
-        // Require code verification - but votes don't have codes like players do
-        // So we fall back to email verification
-        showEmailVerification(
-            t.enter_email_for_voting || 'Enter the email address you used when voting', 
-            function(email) {
-                // Verify email with backend
-                $.post('ajax/verify_email.php', {
-                    vote_id: voteId,
-                    email: email,
-                    action: 'cancel_vote'
-                }, function(response) {
-                    if (response.verified) {
-                        // Email matches - confirm cancellation
-                        showConfirm(
-                            t.confirm_cancel_vote || 'Are you sure you want to cancel your vote for ' + gameName + '?',
-                            function() {
-                                doCancel(email); // Pass the verified email
-                            },
-                            t.confirm_resignation || 'Confirm'
-                        );
-                    } else {
-                        showAlert(response.message || t.email_does_not_match || 'Email does not match.');
-                    }
-                }, 'json').fail(function() {
-                    showAlert(t.verification_failed || 'Verification failed. Please try again.');
-                });
-            }, 
-            t.email_verification_required || 'Verify Email'
-        );
+        // ====================================================================
+        // STEP 1: Request verification code to be sent via email
+        // ====================================================================
+        console.log('Requesting verification code for vote:', voteId);
+        
+        $.post('ajax/send_verification_code.php', {
+            vote_id: voteId
+        }, function(codeResponse) {
+            console.log('Code request response:', codeResponse);
+            
+            if (!codeResponse.success) {
+                showAlert(codeResponse.error || 'Failed to send verification code');
+                return;
+            }
+            
+            // Check if no email on record
+            if (codeResponse.no_email) {
+                // No email - just confirm cancellation
+                showConfirm(
+                    t.confirm_cancel_vote || 'Are you sure you want to cancel your vote for ' + gameName + '?',
+                    function() {
+                        doCancel(); // No verification needed
+                    },
+                    t.confirm_resignation || 'Confirm'
+                );
+                return;
+            }
+            
+            // ================================================================
+            // STEP 2: Email sent - now show code input dialog
+            // ================================================================
+            let message = (t.code_sent_to_email || 'A verification code has been sent to your email');
+            if (codeResponse.email) {
+                message += ' (' + codeResponse.email + ')';
+            }
+            
+            showCodeVerification(
+                message,
+                function(code) {
+                    console.log('Code entered:', code, 'Calling verify_code.php...');
+                    // Verify code with backend
+                    $.post('ajax/verify_code.php', {
+                        vote_id: voteId,
+                        code: code,
+                        action: 'cancel_vote'
+                    }, function(response) {
+                        console.log('Code verification response:', response);
+                        if (response.verified) {
+                            // Code matches - confirm cancellation
+                            console.log('Code verified, showing confirmation');
+                            showConfirm(
+                                t.confirm_cancel_vote || 'Are you sure you want to cancel your vote for ' + gameName + '?',
+                                function() {
+                                    doCancel(); // Code already verified
+                                },
+                                t.confirm_resignation || 'Confirm'
+                            );
+                        } else {
+                            console.log('Code not verified, showing error');
+                            showAlert(response.message || t.code_does_not_match || 'Invalid verification code. Please try again.');
+                        }
+                    }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
+                        console.error('AJAX call failed!', {
+                            status: jqXHR.status,
+                            statusText: jqXHR.statusText,
+                            textStatus: textStatus,
+                            errorThrown: errorThrown,
+                            responseText: jqXHR.responseText
+                        });
+                        showAlert(t.verification_failed || 'Verification failed. Please try again. Error: ' + textStatus);
+                    });
+                },
+                t.verification_code || 'Verification Code'
+            );
+        }, 'json').fail(function(jqXHR) {
+            console.error('Failed to request verification code:', jqXHR.responseText);
+            showAlert(t.verification_failed || 'Failed to send verification code. Please try again.');
+        });
     } else if (typeof CONFIG !== 'undefined' && CONFIG.verificationMethod === 'email') {
         // Require email verification
         showEmailVerification(
             t.enter_email_for_voting || 'Enter the email address you used when voting', 
             function(email) {
+                console.log('Email entered:', email, 'Calling verify_email.php...');
                 // Verify email with backend
                 $.post('ajax/verify_email.php', {
                     vote_id: voteId,
                     email: email,
                     action: 'cancel_vote'
                 }, function(response) {
+                    console.log('Email verification response:', response);
                     if (response.verified) {
-                        // Email matches - confirm cancellation
+                        // Email matches - confirm cancellation and pass verified email
+                        console.log('Email verified, showing confirmation');
                         showConfirm(
-                            t.confirm_cancel_vote || 'Are you sure you want to cancel your vote for ' + gameName + '?',
+                            t.confirm_cancel_vote || 'Are you sure you want to cancel your vote for ' + gameName + '?', 
                             function() {
                                 doCancel(email); // Pass the verified email
-                            },
+                            }, 
                             t.confirm_resignation || 'Confirm'
                         );
                     } else {
+                        console.log('Email not verified, showing error');
                         showAlert(response.message || t.email_does_not_match || 'Email does not match.');
                     }
-                }, 'json').fail(function() {
-                    showAlert(t.verification_failed || 'Verification failed. Please try again.');
+                }, 'json').fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error('AJAX call failed!', {
+                        status: jqXHR.status,
+                        statusText: jqXHR.statusText,
+                        textStatus: textStatus,
+                        errorThrown: errorThrown,
+                        responseText: jqXHR.responseText
+                    });
+                    showAlert(t.verification_failed || 'Verification failed. Please try again. Error: ' + textStatus);
                 });
             }, 
             t.email_verification_required || 'Verify Email'

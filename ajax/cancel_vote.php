@@ -34,7 +34,7 @@ $current_user = get_current_user($db);
 $vote_id = isset($_POST['vote_id']) ? intval($_POST['vote_id']) : 0;
 
 if (!$vote_id) {
-    echo json_encode(['success' => false, 'error' => 'Invalid parameters']);
+    echo json_encode(['success' => false, 'error' => t('invalid_parameters')]);
     exit;
 }
 
@@ -51,13 +51,13 @@ try {
     $vote = $stmt->fetch(PDO::FETCH_ASSOC);
     
     if (!$vote) {
-        echo json_encode(['success' => false, 'error' => 'Vote not found']);
+        echo json_encode(['success' => false, 'error' => t('vote_not_found')]);
         exit;
     }
     
     // Check if poll is still active
     if ($vote['is_active'] == 0) {
-        echo json_encode(['success' => false, 'error' => 'Cannot cancel vote - poll is already closed']);
+        echo json_encode(['success' => false, 'error' => t('poll_already_closed')]);
         exit;
     }
     
@@ -89,7 +89,7 @@ try {
     }
     
     if (!$can_cancel) {
-        echo json_encode(['success' => false, 'error' => 'Permission denied. Please verify your email.']);
+        echo json_encode(['success' => false, 'error' => t('permission_denied_verify_email')]);
         exit;
     }
     
