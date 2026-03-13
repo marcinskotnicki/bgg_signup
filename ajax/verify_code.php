@@ -206,20 +206,46 @@ try {
                     exit;
                 }
                 
-                // Check if code matches
-                if ($vote['verification_code'] && $vote['verification_code'] === $code) {
+                // Normalize both codes for comparison (handle type coercion)
+                $stored_code = (string)$vote['verification_code'];
+                $entered_code = (string)$code;
+                
+                // DEBUG: Log what we're comparing
+                error_log("VERIFY CODE DEBUG - Vote ID: $vote_id");
+                error_log("VERIFY CODE DEBUG - Stored code: [$stored_code] (type: " . gettype($vote['verification_code']) . ", length: " . strlen($stored_code) . ")");
+                error_log("VERIFY CODE DEBUG - Entered code: [$entered_code] (length: " . strlen($entered_code) . ")");
+                error_log("VERIFY CODE DEBUG - Strict match (===): " . (($stored_code === $entered_code) ? 'YES' : 'NO'));
+                error_log("VERIFY CODE DEBUG - Loose match (==): " . (($stored_code == $entered_code) ? 'YES' : 'NO'));
+                
+                // Check if code matches (using string comparison)
+                if ($stored_code && $stored_code === $entered_code) {
                     $verified = true;
                     
+                    error_log("VERIFY CODE DEBUG - SUCCESS! Code verified for vote $vote_id");
+                    
                     // Regenerate verification code after successful verification
-                    $new_code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+                    $new_code = sprintf('%06d', random_int(0, 999999));
                     $update = $db->prepare("UPDATE poll_votes SET verification_code = ? WHERE id = ?");
                     $update->execute([$new_code, $vote_id]);
+                    
+                    error_log("VERIFY CODE DEBUG - Code regenerated to: $new_code");
                     
                     // Store verification in session (used by cancel_vote.php)
                     if (session_status() === PHP_SESSION_NONE) {
                         session_start();
                     }
                     $_SESSION['verified_vote_' . $vote_id] = time();
+                    
+                    error_log("VERIFY CODE DEBUG - Session variable set: verified_vote_$vote_id = " . $_SESSION['verified_vote_' . $vote_id]);
+                } else {
+                    // DEBUG: Explain why it failed
+                    if (!$stored_code) {
+                        error_log("VERIFY CODE DEBUG - FAILED: No verification code stored in database");
+                    } else {
+                        error_log("VERIFY CODE DEBUG - FAILED: Code mismatch!");
+                        error_log("VERIFY CODE DEBUG - Hex dump stored:  " . bin2hex($stored_code));
+                        error_log("VERIFY CODE DEBUG - Hex dump entered: " . bin2hex($entered_code));
+                    }
                 }
             }
             break;
