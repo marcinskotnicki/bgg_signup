@@ -154,6 +154,7 @@ function get_database_schema() {
             voter_name TEXT NOT NULL,
             voter_email TEXT NOT NULL,
             user_id INTEGER,
+            verification_code TEXT,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             FOREIGN KEY (poll_option_id) REFERENCES poll_options(id) ON DELETE CASCADE
         )"
@@ -178,6 +179,9 @@ function get_schema_migrations() {
         'games' => [
             'creator_email' => "ALTER TABLE games ADD COLUMN creator_email TEXT",
             'verification_code' => "ALTER TABLE games ADD COLUMN verification_code TEXT"
+        ],
+        'poll_votes' => [
+            'verification_code' => "ALTER TABLE poll_votes ADD COLUMN verification_code TEXT"
         ]
     ];
 }
