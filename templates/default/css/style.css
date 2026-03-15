@@ -1086,6 +1086,32 @@ a:hover {
     z-index: 10;
 }
 
+/* Timeline game status colors */
+.timeline-game-open {
+    background: #3498db; /* Blue for open games */
+}
+
+.timeline-game-open:hover {
+    background: #2980b9;
+}
+
+.timeline-game-full {
+    background: #95a5a6; /* Grey for full games */
+}
+
+.timeline-game-full:hover {
+    background: #7f8c8d;
+}
+
+/* Timeline poll styling - distinct color */
+.timeline-poll {
+    background: #9b59b6; /* Purple for polls */
+}
+
+.timeline-poll:hover {
+    background: #8e44ad;
+}
+
 .timeline-game-name {
     font-size: 13px;
     font-weight: bold;
