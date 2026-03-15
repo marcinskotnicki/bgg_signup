@@ -8,9 +8,6 @@
  * - $config: Configuration array
  */
 
-// Load timeline helper
-require_once __DIR__ . '/../../includes/timeline_helper.php';
-
 if (empty($selected_day) || empty($tables_with_games)) {
     echo '<p>' . t('no_games_yet') . '</p>';
     return;
@@ -21,6 +18,11 @@ $start_time = $selected_day['start_time'];
 $end_time = $selected_day['end_time'];
 $extension = $config['timeline_extension'];
 
+// Parse times to minutes
+function time_to_minutes($time) {
+    list($h, $m) = explode(':', $time);
+    return (int)$h * 60 + (int)$m;
+}
 
 $start_minutes = time_to_minutes($start_time);
 $end_minutes = time_to_minutes($end_time);
@@ -82,121 +84,93 @@ $end_hour = ceil($end_with_extension / 60);
         
         <!-- Table rows with games -->
         <?php foreach ($tables_with_games as $table_data): ?>
-            <?php
-            // First pass: Calculate positions and max height needed
-            $game_positions = [];
-            $max_offset = 0;
-            
-            foreach ($table_data['games'] as $game) {
-                // Skip soft-deleted games in timeline
-                if ($game['is_active'] == 0) continue;
-                
-                // Calculate game positioning
-                $game_start = time_to_minutes($game['start_time']);
-                $game_end = $game_start + $game['play_time'];
-                
-                $game_start_pos = (($game_start - $start_minutes) / ($actual_end - $start_minutes)) * 100;
-                $game_end_pos = (($game_end - $start_minutes) / ($actual_end - $start_minutes)) * 100;
-                
-                // Clip to visible range [0, 100]
-                $display_left = max(0, $game_start_pos);
-                $display_right = min(100, $game_end_pos);
-                $display_width = $display_right - $display_left;
-                
-                // Only process if visible in timeline
-                if ($display_right > 0 && $display_left < 100 && $display_width > 0) {
-                    // Check for overlaps with previous games
-                    $vertical_offset = 0;
-                    foreach ($game_positions as $pos) {
-                        if ($game_start_pos < $pos['end'] && $game_end_pos > $pos['start']) {
-                            $vertical_offset = max($vertical_offset, $pos['offset'] + 1);
-                        }
-                    }
-                    
-                    // Track max offset for height calculation
-                    $max_offset = max($max_offset, $vertical_offset);
-                    
-                    // Store this game's position
-                    $game_positions[] = [
-                        'start' => $game_start_pos,
-                        'end' => $game_end_pos,
-                        'offset' => $vertical_offset
-                    ];
-                }
-            }
-            
-            // Calculate required height: base padding + (max_offset * 60px spacing) + 50px game height + base padding
-            $required_height = 10 + ($max_offset * 60) + 50 + 10;
-            ?>
-            
             <div class="timeline-row">
                 <!-- Table label -->
                 <div class="timeline-table-label">
                     <?php echo t('table'); ?> <?php echo $table_data['table']['table_number']; ?>
                 </div>
                 
-                <!-- Games track with dynamic height -->
-                <div class="timeline-games" style="min-height: <?php echo $required_height; ?>px;">
+                <!-- Games track -->
+                <div class="timeline-track">
                     <?php 
-                    // Second pass: Render games with calculated positions
-                    $game_positions = [];
+                    // Combine games and polls for timeline
+                    $timeline_items = [];
                     
-                    foreach ($table_data['games'] as $game): 
-                        // Skip soft-deleted games in timeline
-                        if ($game['is_active'] == 0) continue;
+                    // Add games
+                    foreach ($table_data['games'] as $game) {
+                        $timeline_items[] = [
+                            'type' => 'game',
+                            'data' => $game,
+                            'name' => $game['name'],
+                            'start_time' => $game['start_time'],
+                            'duration' => $game['play_time'],
+                            'id' => $game['id']
+                        ];
+                    }
+                    
+                    // Add polls (fixed 120 minute duration)
+                    foreach ($table_data['polls'] as $poll) {
+                        if ($poll['start_time']) {
+                            $timeline_items[] = [
+                                'type' => 'poll',
+                                'data' => $poll,
+                                'name' => t('game_poll'),
+                                'start_time' => $poll['start_time'],
+                                'duration' => 120, // Fixed 2-hour duration
+                                'id' => $poll['id']
+                            ];
+                        }
+                    }
+                    
+                    // Sort by start time
+                    usort($timeline_items, function($a, $b) {
+                        return strcmp($a['start_time'], $b['start_time']);
+                    });
+                    ?>
+                    
+                    <?php foreach ($timeline_items as $item): ?>
+                        <?php
+                        // Calculate positioning
+                        $item_start = time_to_minutes($item['start_time']);
+                        $item_end = $item_start + $item['duration'];
                         
-                        // Calculate game positioning
-                        $game_start = time_to_minutes($game['start_time']);
-                        $game_end = $game_start + $game['play_time'];
-                        
-                        $game_start_pos = (($game_start - $start_minutes) / ($actual_end - $start_minutes)) * 100;
-                        $game_end_pos = (($game_end - $start_minutes) / ($actual_end - $start_minutes)) * 100;
-                        
-                        // Clip to visible range [0, 100]
-                        $display_left = max(0, $game_start_pos);
-                        $display_right = min(100, $game_end_pos);
-                        $display_width = $display_right - $display_left;
+                        $item_start_pos = (($item_start - $start_minutes) / ($actual_end - $start_minutes)) * 100;
+                        $item_end_pos = (($item_end - $start_minutes) / ($actual_end - $start_minutes)) * 100;
+                        $item_width = $item_end_pos - $item_start_pos;
                         
                         // Only show if visible in timeline
-                        if ($display_right > 0 && $display_left < 100 && $display_width > 0):
-                            // Count active players
-                            $active_players = count(array_filter($game['players'], function($p) { 
-                                return $p['is_reserve'] == 0; 
-                            }));
-                            
-                            // Determine if game is full
-                            $is_full = $active_players >= $game['max_players'];
-                            $fill_class = $is_full ? 'timeline-game-full' : 'timeline-game-open';
-                            
-                            // Check for overlaps with previous games
-                            $vertical_offset = 0;
-                            foreach ($game_positions as $pos) {
-                                // Check if this game overlaps with existing game
-                                if ($game_start_pos < $pos['end'] && $game_end_pos > $pos['start']) {
-                                    // Overlaps! Move down
-                                    $vertical_offset = max($vertical_offset, $pos['offset'] + 1);
-                                }
-                            }
-                            
-                            // Store this game's position for future overlap checks
-                            $game_positions[] = [
-                                'start' => $game_start_pos,
-                                'end' => $game_end_pos,
-                                'offset' => $vertical_offset
-                            ];
-                            
-                            // Calculate top position (60px per row)
-                            $top_position = 10 + ($vertical_offset * 60);
-                        ?>
-                            <div class="timeline-game <?php echo $fill_class; ?>" 
-                                 data-game-id="<?php echo $game['id']; ?>"
-                                 style="left: <?php echo $display_left; ?>%; width: <?php echo $display_width; ?>%; top: <?php echo $top_position; ?>px;"
-                                 title="<?php echo htmlspecialchars($game['name']); ?> (<?php echo $active_players; ?>/<?php echo $game['max_players']; ?>)">
-                                <div class="timeline-game-content">
-                                    <div class="timeline-game-name"><?php echo htmlspecialchars($game['name']); ?></div>
-                                    <div class="timeline-game-players"><?php echo $active_players; ?>/<?php echo $game['max_players']; ?></div>
+                        if ($item_end_pos > 0 && $item_start_pos < 100):
+                            if ($item['type'] === 'game'):
+                                $game = $item['data'];
+                                // Count active players
+                                $active_players = count(array_filter($game['players'], function($p) { 
+                                    return $p['is_reserve'] == 0; 
+                                }));
+                                
+                                // Determine if game is full
+                                $is_full = $active_players >= $game['max_players'];
+                                $fill_class = $is_full ? 'timeline-game-full' : 'timeline-game-open';
+                            ?>
+                                <div class="timeline-game <?php echo $fill_class; ?>" 
+                                     data-game-id="<?php echo $game['id']; ?>"
+                                     style="left: <?php echo max(0, $item_start_pos); ?>%; width: <?php echo min(100 - max(0, $item_start_pos), $item_width); ?>%;"
+                                     title="<?php echo htmlspecialchars($game['name']); ?> (<?php echo $active_players; ?>/<?php echo $game['max_players']; ?>)">
+                                    <div class="timeline-game-content">
+                                        <div class="timeline-game-name"><?php echo htmlspecialchars($game['name']); ?></div>
+                                        <div class="timeline-game-players"><?php echo $active_players; ?>/<?php echo $game['max_players']; ?></div>
+                                    </div>
                                 </div>
-                            </div>
+                            <?php else: // poll ?>
+                                <?php $poll = $item['data']; ?>
+                                <div class="timeline-game timeline-poll" 
+                                     data-poll-id="<?php echo $poll['id']; ?>"
+                                     style="left: <?php echo max(0, $item_start_pos); ?>%; width: <?php echo min(100 - max(0, $item_start_pos), $item_width); %>%;"
+                                     title="<?php echo t('game_poll'); ?>">
+                                    <div class="timeline-game-content">
+                                        <div class="timeline-game-name"><?php echo t('poll'); ?></div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         <?php endif; ?>
                     <?php endforeach; ?>
                 </div>
@@ -205,3 +179,40 @@ $end_hour = ceil($end_with_extension / 60);
     </div>
 </div>
 
+<script>
+// Make timeline games clickable
+$(document).on('click', '.timeline-game', function() {
+    const gameId = $(this).data('game-id');
+    const pollId = $(this).data('poll-id');
+    
+    if (gameId) {
+        // Scroll to the game card
+        const gameCard = $('[data-game-id="' + gameId + '"]').not('.timeline-game').first();
+        if (gameCard.length) {
+            $('html, body').animate({
+                scrollTop: gameCard.offset().top - 100
+            }, 500);
+            
+            // Highlight the game briefly
+            gameCard.addClass('highlight-flash');
+            setTimeout(function() {
+                gameCard.removeClass('highlight-flash');
+            }, 2000);
+        }
+    } else if (pollId) {
+        // Scroll to the poll
+        const pollCard = $('[data-poll-id="' + pollId + '"]').not('.timeline-poll').first();
+        if (pollCard.length) {
+            $('html, body').animate({
+                scrollTop: pollCard.offset().top - 100
+            }, 500);
+            
+            // Highlight the poll briefly
+            pollCard.addClass('highlight-flash');
+            setTimeout(function() {
+                pollCard.removeClass('highlight-flash');
+            }, 2000);
+        }
+    }
+});
+</script>
